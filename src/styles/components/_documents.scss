@@ -7,7 +7,8 @@ $excel-green: #107c41;
 $word-blue: #2b579a;
 $sync-red: #a4262c;
 $sparkle-pink: #d15ebc;
-
+$mobile-menu-bg: #fdfdfd;
+$mobile-item-hover: #e1e1e1;
 // Shared Icon Styles
 .folder-icon { color: #797775; }
 .excel-icon { color: $excel-green; }
@@ -57,6 +58,7 @@ body {
 
 // --- Mobile View Styles ---
 .mobile-header {
+    position: absolute; // Layers it on top
     background-color: #f1f1f1;
     padding: 10px 15px;
     display: flex;
@@ -71,7 +73,43 @@ body {
         color: #888;
     }
 }
+.mobile-toolbar-collapse {
+    position: absolute; // Layers it on top
+    top: 100%;          // Positions it exactly below the header
+    left: 0;
+    right: 0;
+    z-index: 1050;      // Ensures it stays above the cards and title
+    background-color: $mobile-menu-bg;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); // Adds depth to the "layer"
 
+    .mobile-toolbar-list {
+        display: flex;
+        flex-direction: column;
+        padding: 10px 0;
+    }
+
+    .mobile-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        font-size: 16px;
+        color: #333;
+        cursor: pointer;
+        gap: 15px;
+
+        // Colors from your image
+        .icon-new, .icon-upload { color: #d15ebc; } 
+        
+        &.active {
+            background-color: $mobile-item-hover; // The grey selection bar
+        }
+
+        i:last-child {
+            color: #888; // The dropdown arrows
+        }
+    }
+}
 .doc-card {
     margin-bottom: 20px;
     border: 1px solid #e0e0e0;
