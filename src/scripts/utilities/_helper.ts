@@ -1,4 +1,4 @@
-const ready = (fn: ()=> void) => {
+const ready = (fn: () => void) => {
   if (document.readyState !== 'loading') {
     fn();
   } else {
