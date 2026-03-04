@@ -10,130 +10,189 @@ $sparkle-pink: #d15ebc;
 $mobile-menu-bg: #fdfdfd;
 $mobile-item-hover: #e1e1e1;
 // Shared Icon Styles
-.folder-icon { color: #797775; }
-.excel-icon { color: $excel-green; }
-.word-icon { color: $word-blue; }
-.sync-icon { color: $sync-red; }
-.flow-icon { color: $sp-primary; }
-.sparkle-icon { color: $sparkle-pink; font-size: 10px; margin-right: 6px; }
+.folder-icon {
+  color: #797775;
+}
+.excel-icon {
+  color: $excel-green;
+}
+.word-icon {
+  color: $word-blue;
+}
+.sync-icon {
+  color: $sync-red;
+}
+.flow-icon {
+  color: $sp-primary;
+}
+.sparkle-icon {
+  color: $sparkle-pink;
+  font-size: 10px;
+  margin-right: 6px;
+}
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 14px;
-    background-color: #fff;
-    @media (max-width: 767.98px) { background-color: #f4f4f4; }
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  background-color: #fff;
+  @media (max-width: 767.98px) {
+    background-color: #f4f4f4;
+  }
 }
 
 .page-title {
-    padding: 24px 0 10px 0;
-    font-size: 28px;
-    font-weight: 300;
+  padding: 24px 0 10px 0;
+  font-size: 28px;
+  font-weight: 300;
 }
 
 // --- Desktop View Styles ---
 .sp-toolbar {
-    padding: 8px 20px;
-    border-bottom: 1px solid $sp-border;
-    gap: 20px;
-    .toolbar-item {
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-}
+  padding: 8px 20px;
+  border-bottom: 1px solid $sp-border;
+  gap: 20px;
+  .toolbar-item {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 
-.sp-table-header, .sp-row {
-    display: grid;
-    grid-template-columns: 40px 2fr 1fr 1fr 100px;
-    padding: 10px 0;
-    border-bottom: 1px solid $sp-border;
+    &:hover {
+      //color: $sp-primary;
+      .custom-svg path {
+        // Optional: change icon color on hover
+        fill: $sp-primary;
+      }
+    }
+  }
+}
+.custom-svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+
+  // Apply the sync red color
+  //   path {
+  //     fill: $sync-red;
+  //   }
+}
+.sp-table-header,
+.sp-row {
+  display: grid;
+  grid-template-columns: 40px 2fr 1fr 1fr 100px;
+  padding: 10px 0;
+  border-bottom: 1px solid $sp-border;
 }
 
 .sp-row {
-    cursor: pointer;
-    &:hover { background-color: $sp-hover-bg; }
-    .modified-cell, .modified-by-cell { color: $sp-text-secondary; }
+  cursor: pointer;
+  &:hover {
+    background-color: $sp-hover-bg;
+  }
+  .modified-cell,
+  .modified-by-cell {
+    color: $sp-text-secondary;
+  }
 }
 
 // --- Mobile View Styles ---
 .mobile-header {
-    position: absolute; // Layers it on top
-    background-color: #f1f1f1;
-    padding: 10px 15px;
+  position: relative; // The reference point for the dropdown
+  background-color: #f1f1f1;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+
+  .header-content {
     display: flex;
-    justify-content: flex-end;
-    border-bottom: 1px solid #ddd;
-    
-    .hamburger-btn {
-        background: #fff;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 5px 10px;
-        color: #888;
-    }
+    justify-content: flex-end; // Pushes button to the right
+    padding: 10px 15px;
+  }
+
+  .hamburger-btn {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 12px;
+    color: #888;
+  }
 }
+
 .mobile-toolbar-collapse {
-    position: absolute; // Layers it on top
-    top: 100%;          // Positions it exactly below the header
-    left: 0;
-    right: 0;
-    z-index: 1050;      // Ensures it stays above the cards and title
-    background-color: $mobile-menu-bg;
-    border-bottom: 1px solid #ddd;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); // Adds depth to the "layer"
+  // LAYER LOGIC
+  position: absolute;
+  top: 100%; // Right below the header bar
+  left: 0; // Start at the far left of the screen
+  right: 0; // End at the far right of the screen
+  width: 100%; // Ensure it fills the space
+  z-index: 9999;
 
-    .mobile-toolbar-list {
-        display: flex;
-        flex-direction: column;
-        padding: 10px 0;
+  background-color: $mobile-menu-bg;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+
+  .mobile-toolbar-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .mobile-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #eee;
+
+    &.active {
+      background-color: $mobile-item-hover;
     }
 
-    .mobile-item {
-        display: flex;
-        align-items: center;
-        padding: 12px 20px;
-        font-size: 16px;
-        color: #333;
-        cursor: pointer;
-        gap: 15px;
-
-        // Colors from your image
-        .icon-new, .icon-upload { color: #d15ebc; } 
-        
-        &.active {
-            background-color: $mobile-item-hover; // The grey selection bar
-        }
-
-        i:last-child {
-            color: #888; // The dropdown arrows
-        }
+    // Icon spacing
+    i:first-child {
+      width: 25px;
     }
+  }
+}
+.text-relative {
+  position: relative;
+  padding-left: 12px; // Make room for the overlapping icon
+
+  .floating-sparkle {
+    position: absolute;
+    left: -0.5px;
+    top: -4px; // Moves it "on top" of the text line
+    pointer-events: none; // Ensures you can still click the text
+  }
 }
 .doc-card {
-    margin-bottom: 20px;
-    border: 1px solid #e0e0e0;
-    background-color: #fff;
-    
-    .doc-row {
-        display: flex;
-        border-bottom: 1px solid #eee;
-        &.header-row { background-color: #fdfdfd; }
-        &:last-child { border-bottom: none; }
-    }
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
 
-    .doc-label {
-        width: 120px;
-        padding: 10px;
-        font-weight: bold;
-        font-style: italic;
+  .doc-row {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    &.header-row {
+      background-color: #fdfdfd;
     }
+    &:last-child {
+      border-bottom: none;
+    }
+  }
 
-    .doc-value {
-        flex-grow: 1;
-        padding: 10px;
-        display: flex;
-        align-items: center;
-        .icon-container { margin-left: auto; }
+  .doc-label {
+    width: 120px;
+    padding: 10px;
+    font-weight: bold;
+    font-style: italic;
+  }
+
+  .doc-value {
+    flex-grow: 1;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    .icon-container {
+      margin-left: auto;
     }
+  }
 }

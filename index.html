@@ -26,26 +26,88 @@
         <i class="fas fa-chevron-down ms-1 small"></i>
       </div>
       <div class="toolbar-item">
-        <i class="fas fa-arrow-up"></i> Upload
+        <svg
+		  class="custom-svg"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 2048 2048"
+        >
+          <path
+            fill="#000000"
+            d="M1536 0v128H384V0h1152zm45 979l-90 90l-467-470v1449H896V599l-467 470l-90-90l621-626l621 626z"
+          />
+        </svg>
+        Upload
         <i class="fas fa-chevron-down ms-1 small"></i>
       </div>
       <div class="toolbar-item">
-        <i class="fas fa-sync sync-icon"></i> Sync
+        <svg
+          class="custom-svg"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 2048 2048"
+        >
+          <path
+            fill="#000000"
+            d="M2048 256v512h-512V640h316q-59-117-146-211t-196-161t-231-103t-255-37q-154 0-295 47T471 309T268 517T136 787L14 749q50-166 149-304t232-237T689 55t335-55q137 0 267 34t245 98t214 157t170 210V256h128zM196 1408q59 117 146 211t196 161t231 103t255 37h128v118q-32 4-64 7t-64 3q-136 0-266-34t-246-100t-214-157t-170-208v243H0v-512h511v128H196zm956-256h896v640h-384v128h127v128h-383v-128h128v-128h-384v-640zm128 512h640v-384h-640v384z"
+          />
+        </svg>
+        Sync
       </div>
       <div class="toolbar-item">
-        <i class="fas fa-file-excel excel-icon"></i> Export to Excel
+        <svg
+          class="custom-svg"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 32 32"
+        >
+          <path
+            fill="#20744a"
+            fill-rule="evenodd"
+            d="M28.781 4.405h-10.13V2.018L2 4.588v22.527l16.651 2.868v-3.538h10.13A1.162 1.162 0 0 0 30 25.349V5.5a1.162 1.162 0 0 0-1.219-1.095Zm.16 21.126H18.617l-.017-1.889h2.487v-2.2h-2.506l-.012-1.3h2.518v-2.2H18.55l-.012-1.3h2.549v-2.2H18.53v-1.3h2.557v-2.2H18.53v-1.3h2.557v-2.2H18.53v-2h10.411Z"
+          />
+          <path
+            fill="#20744a"
+            d="M22.487 7.439h4.323v2.2h-4.323zm0 3.501h4.323v2.2h-4.323zm0 3.501h4.323v2.2h-4.323zm0 3.501h4.323v2.2h-4.323zm0 3.501h4.323v2.2h-4.323z"
+          />
+          <path
+            fill="#fff"
+            fill-rule="evenodd"
+            d="m6.347 10.673l2.146-.123l1.349 3.709l1.594-3.862l2.146-.123l-2.606 5.266l2.606 5.279l-2.269-.153l-1.532-4.024l-1.533 3.871l-2.085-.184l2.422-4.663l-2.238-4.993z"
+          />
+        </svg>
+        Export to Excel
       </div>
       <div class="toolbar-item">
-        <i class="fas fa-share-nodes flow-icon"></i> Flow
+        <svg
+          class="custom-svg"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 2048 2048"
+        >
+          <path
+            d="M1408 256h640v640h-640V640h-120l-449 896H640v256H0v-640h640v256h120l449-896h199V256zM512 1664v-384H128v384h384zm1408-896V384h-384v384h384z"
+          />
+        </svg>
+        Flow
         <i class="fas fa-chevron-down ms-1 small"></i>
       </div>
       <div class="toolbar-item">
-        <i class="fas fa-ellipsis"></i>
+        <svg
+          class="custom-svg"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill="none"
+            stroke="#000000"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0-2 0m7 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0m7 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0"
+          />
+        </svg>
       </div>
     </div>
 
     <div class="mobile-header d-md-none">
-      <div class="d-flex justify-content-end p-2 border-bottom">
+      <div class="header-content">
         <button
           class="hamburger-btn"
           type="button"
@@ -54,30 +116,49 @@
         >
           <i class="fas fa-bars"></i>
         </button>
+      </div>
 
-        <div class="collapse mobile-toolbar-collapse" id="mobileMenu">
-          <div class="mobile-toolbar-list">
-            <div class="mobile-item">
-              <i class="fas fa-plus icon-new"></i> New
-              <i class="fas fa-chevron-down ms-auto small"></i>
-            </div>
-            <div class="mobile-item">
-              <i class="fas fa-arrow-up icon-upload"></i> Upload
-              <i class="fas fa-chevron-down ms-auto small"></i>
-            </div>
-            <div class="mobile-item">
-              <i class="fas fa-sync sync-icon"></i> Sync
-            </div>
-            <div class="mobile-item active">
-              <i class="fas fa-file-excel excel-icon"></i> Export to
-              Excel
-            </div>
-            <div class="mobile-item">
-              <i class="fas fa-share-nodes flow-icon"></i> Flow
-            </div>
-            <div class="mobile-item">
-              <i class="fas fa-ellipsis"></i>
-            </div>
+      <div class="collapse mobile-toolbar-collapse" id="mobileMenu">
+        <div class="mobile-toolbar-list">
+          <div class="mobile-item">
+            <i class="fas fa-plus icon-new"></i> New
+            <i class="fas fa-chevron-down small"></i>
+          </div>
+          <div class="mobile-item">
+            <i class="fas fa-arrow-up icon-upload"></i> Upload
+            <i class="fas fa-chevron-down small"></i>
+          </div>
+          <div class="mobile-item">
+            <i class="fas fa-sync sync-icon"></i> Sync
+          </div>
+          <div class="mobile-item active">
+            <svg
+              class="custom-svg"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 32 32"
+            >
+              <path
+                fill="#20744a"
+                fill-rule="evenodd"
+                d="M28.781 4.405h-10.13V2.018L2 4.588v22.527l16.651 2.868v-3.538h10.13A1.162 1.162 0 0 0 30 25.349V5.5a1.162 1.162 0 0 0-1.219-1.095Zm.16 21.126H18.617l-.017-1.889h2.487v-2.2h-2.506l-.012-1.3h2.518v-2.2H18.55l-.012-1.3h2.549v-2.2H18.53v-1.3h2.557v-2.2H18.53v-1.3h2.557v-2.2H18.53v-2h10.411Z"
+              />
+              <path
+                fill="#20744a"
+                d="M22.487 7.439h4.323v2.2h-4.323zm0 3.501h4.323v2.2h-4.323zm0 3.501h4.323v2.2h-4.323zm0 3.501h4.323v2.2h-4.323zm0 3.501h4.323v2.2h-4.323z"
+              />
+              <path
+                fill="#fff"
+                fill-rule="evenodd"
+                d="m6.347 10.673l2.146-.123l1.349 3.709l1.594-3.862l2.146-.123l-2.606 5.266l2.606 5.279l-2.269-.153l-1.532-4.024l-1.533 3.871l-2.085-.184l2.422-4.663l-2.238-4.993z"
+              />
+            </svg>
+            Export to Excel
+          </div>
+          <div class="mobile-item">
+            <i class="fas fa-share-nodes flow-icon"></i> Flow
+          </div>
+          <div class="mobile-item">
+            <i class="fas fa-ellipsis"></i>
           </div>
         </div>
       </div>
@@ -107,7 +188,25 @@
           <div class="file-icon">
             <i class="fas fa-folder folder-icon"></i>
           </div>
-          <div class="name-cell">CAS</div>
+          <div class="name-cell">
+            <div class="text-relative">
+              <svg
+                class="floating-sparkle"
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="#ff3b30"
+                stroke-width="2"
+              >
+                <path d="M12 6l0 -3" />
+                <path d="M6 12l-3 0" />
+                <path d="M7.75 7.75l-2.15 -2.15" />
+              </svg>
+              CAS
+            </div>
+          </div>
           <div class="modified-cell">April 30</div>
           <div class="modified-by-cell">Megan Bowen</div>
           <div></div>
