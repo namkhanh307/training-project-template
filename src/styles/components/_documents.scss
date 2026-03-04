@@ -1,0 +1,77 @@
+.documents-page {
+    background: #f3f2f1;
+    min-height: 100vh;
+    padding-bottom: 2rem;
+
+    .top-bar {
+        background: #e1dfdd;
+        padding: 0.75rem;
+    }
+
+    .btn-icon {
+        background: #ffffff;
+        border: 1px solid #d2d0ce;
+        border-radius: 4px;
+        padding: 0.4rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        margin: 1rem 0;
+        color: #323130;
+    }
+
+    .document-card {
+        background: #ffffff;
+        border: 1px solid #d2d0ce;
+        margin-bottom: 1rem;
+    }
+
+    .row-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #edebe9;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .label {
+        font-weight: 700; // bold
+        font-style: italic; // italic
+        font-size: 1.05rem; // bigger
+        color: #323130;
+    }
+
+    .value {
+        font-weight: 400;
+        font-size: 0.95rem;
+        color: #605e5c;
+    }
+
+    .icon-menu {
+        width: 24px;
+        height: 24px;
+        fill: #323130;
+    }
+
+    .icon {
+        display: inline-block;
+        vertical-align: middle;
+
+        width: 1.5em;
+        height: 1.5em;
+
+        fill: currentColor;
+        stroke: currentColor;
+
+        flex-shrink: 0;
+    }
+}
