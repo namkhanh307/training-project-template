@@ -1,0 +1,101 @@
+// Variables
+$sp-primary: #0078d4;
+$sp-border: #edebe9;
+$sp-hover-bg: #f3f2f1;
+$sp-text-secondary: #605e5c;
+$excel-green: #107c41;
+$word-blue: #2b579a;
+$sync-red: #a4262c;
+$sparkle-pink: #d15ebc;
+
+// Shared Icon Styles
+.folder-icon { color: #797775; }
+.excel-icon { color: $excel-green; }
+.word-icon { color: $word-blue; }
+.sync-icon { color: $sync-red; }
+.flow-icon { color: $sp-primary; }
+.sparkle-icon { color: $sparkle-pink; font-size: 10px; margin-right: 6px; }
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    background-color: #fff;
+    @media (max-width: 767.98px) { background-color: #f4f4f4; }
+}
+
+.page-title {
+    padding: 24px 0 10px 0;
+    font-size: 28px;
+    font-weight: 300;
+}
+
+// --- Desktop View Styles ---
+.sp-toolbar {
+    padding: 8px 20px;
+    border-bottom: 1px solid $sp-border;
+    gap: 20px;
+    .toolbar-item {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+}
+
+.sp-table-header, .sp-row {
+    display: grid;
+    grid-template-columns: 40px 2fr 1fr 1fr 100px;
+    padding: 10px 0;
+    border-bottom: 1px solid $sp-border;
+}
+
+.sp-row {
+    cursor: pointer;
+    &:hover { background-color: $sp-hover-bg; }
+    .modified-cell, .modified-by-cell { color: $sp-text-secondary; }
+}
+
+// --- Mobile View Styles ---
+.mobile-header {
+    background-color: #f1f1f1;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: flex-end;
+    border-bottom: 1px solid #ddd;
+    
+    .hamburger-btn {
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 5px 10px;
+        color: #888;
+    }
+}
+
+.doc-card {
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    background-color: #fff;
+    
+    .doc-row {
+        display: flex;
+        border-bottom: 1px solid #eee;
+        &.header-row { background-color: #fdfdfd; }
+        &:last-child { border-bottom: none; }
+    }
+
+    .doc-label {
+        width: 120px;
+        padding: 10px;
+        font-weight: bold;
+        font-style: italic;
+    }
+
+    .doc-value {
+        flex-grow: 1;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        .icon-container { margin-left: auto; }
+    }
+}
