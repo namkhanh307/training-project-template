@@ -11,12 +11,6 @@ body {
   background-color: #fff;
 }
 
-.page-title {
-  padding: 24px 0 10px 0;
-  font-size: 28px;
-  font-weight: 300;
-}
-
 .sp-toolbar {
   padding: 8px 20px;
   border-bottom: 1px solid #edebe9;
@@ -30,6 +24,12 @@ body {
 }
 .sp-toolbar .toolbar-item:hover .custom-svg path {
   fill: #0078d4;
+}
+
+.page-title {
+  padding: 24px 0 10px 0;
+  font-size: 28px;
+  font-weight: 300;
 }
 
 .custom-svg {

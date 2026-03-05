@@ -15,15 +15,6 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 14px;
   background-color: #fff;
-  // @media (max-width: 767.98px) {
-  //   background-color: #f4f4f4;
-  // }
-}
-
-.page-title {
-  padding: 24px 0 10px 0;
-  font-size: 28px;
-  font-weight: 300;
 }
 
 // --- Desktop View Styles ---
@@ -46,15 +37,17 @@ body {
     }
   }
 }
+
+.page-title {
+  padding: 24px 0 10px 0;
+  font-size: 28px;
+  font-weight: 300;
+}
+
 .custom-svg {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-
-  // Apply the sync red color
-  //   path {
-  //     fill: $sync-red;
-  //   }
 }
 
 .is-clickable {
