@@ -71,9 +71,6 @@ body {
   border-bottom: 1px solid #edebe9;
   align-items: center;
 }
-.m-table-row--header {
-  font-weight: bold;
-}
 .m-table-row--interactive:hover {
   background-color: #f3f2f1;
 }
@@ -117,8 +114,14 @@ body {
 }
 .m-text-overlay .m-sparkle {
   position: absolute;
-  left: -0.1px;
-  top: -4px;
+  left: 1px;
+  top: -6px;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: #ff3b30;
+  stroke-width: 2;
+  stroke-linecap: round;
   pointer-events: none;
 }
 
@@ -130,9 +133,14 @@ body {
 .m-card__row {
   display: flex;
   border-bottom: 1px solid #eee;
+  justify-content: space-between;
+  align-items: center;
 }
 .m-card__row--header {
   background-color: #ededed;
+}
+.m-card__row--header .m-card__value {
+  text-align: right;
 }
 .m-card__row:last-child {
   border-bottom: none;

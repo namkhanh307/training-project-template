@@ -1,22 +1,27 @@
-// Define the structure of your file data
-interface FileItem {
-  name: string;
-  type: string;
-  modified: string;
-  modifiedBy: string;
-  isNew: boolean;
-}
-
-const renderGrid = (containerId: string, data: FileItem[]): void => {
-  const container = document.getElementById(containerId);
-
-  if (!container) {
-    console.warn(`Container with id "${containerId}" not found.`);
-    return;
+const fileData = [
+  {
+    name: "CAS",
+    type: "Folder",
+    modified: "April 30",
+    modifiedBy: "Megan Bowen",
+    isNew: false
+  },
+  {
+    name: "CoasterAndBargeLoading.xlsx",
+    type: "Excel",
+    modified: "April 30",
+    modifiedBy: "Megan Bowen",
+    isNew: true // We'll use this to conditionally show the sparkle
   }
+];
 
-  // Map through the data and generate the HTML string
-  const htmlContent = data.map((file) => `
+const container = document.querySelector('.d-md-none'); // Your mobile container
+
+// Clear existing static content
+container.innerHTML = '';
+
+fileData.forEach(file => {
+  const cardHTML = `
     <div class="m-card">
       <div class="m-card__row m-card__row--header">
         <div class="m-card__label">File Type</div>
@@ -48,9 +53,7 @@ const renderGrid = (containerId: string, data: FileItem[]): void => {
         <div class="m-card__value">${file.modifiedBy}</div>
       </div>
     </div>
-  `).join('');
-
-  container.innerHTML = htmlContent;
-};
-
-export default renderGrid;
+  `;
+  
+  container.innerHTML += cardHTML;
+});

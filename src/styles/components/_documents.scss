@@ -88,10 +88,6 @@ body {
   border-bottom: 1px solid $color-border;
   align-items: center;
 
-  &--header {
-    font-weight: bold;
-  }
-
   &--interactive:hover {
     background-color: $color-hover-bg;
   }
@@ -138,13 +134,22 @@ body {
 // Sparkle/Overlay Module
 .m-text-overlay {
   position: relative;
-  padding-left: 12px;
+  padding-left: 12px; // Space for the absolute sparkle
 
   .m-sparkle {
     position: absolute;
-    left: -0.1px;
-    top: -4px;
-    pointer-events: none;
+    left: 1px; // Adjusted slightly for better visual alignment
+    top: -6px; // Adjusted to sit "on top" of the first letter
+    width: 14px;
+    height: 14px;
+
+    // SVG Styling
+    fill: none;
+    stroke: #ff3b30; // Your red color
+    stroke-width: 2;
+    stroke-linecap: round;
+
+    pointer-events: none; // Allows user to click the text "through" the icon
   }
 }
 
@@ -157,10 +162,18 @@ body {
   &__row {
     display: flex;
     border-bottom: 1px solid #eee;
-    
+    justify-content: space-between;
+    align-items: center;
+
     &--header {
       background-color: $color-grey;
+
+      // Target the value container ONLY when inside a header row
+      .m-card__value {
+        text-align: right;
+      }
     }
+
     &:last-child {
       border-bottom: none;
     }
@@ -176,6 +189,7 @@ body {
   &__value {
     flex-grow: 1;
     padding: 10px;
+    // Standard rows stay left-aligned by default
   }
 }
 
