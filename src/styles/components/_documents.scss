@@ -4,7 +4,8 @@ $sp-border: #edebe9;
 $sp-hover-bg: #f3f2f1;
 $sp-text-secondary: #605e5c;
 $mobile-menu-bg: #fdfdfd;
-$mobile-item-hover: #e1e1e1;
+$mobile-item-hover: #c2c1c1;
+$grey-color: #ededed;
 // Shared Icon Styles
 .folder-icon {
   color: #797775;
@@ -14,9 +15,9 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 14px;
   background-color: #fff;
-  @media (max-width: 767.98px) {
-    background-color: #f4f4f4;
-  }
+  // @media (max-width: 767.98px) {
+  //   background-color: #f4f4f4;
+  // }
 }
 
 .page-title {
@@ -55,6 +56,18 @@ body {
   //     fill: $sync-red;
   //   }
 }
+
+.is-clickable {
+  cursor: pointer;
+  user-select: none; // Prevents text selection while clicking
+
+  &:hover {
+    //background-color: $sp-hover-bg; // Defined as #f3f2f1 earlier
+    color: $sp-primary; // Darken text slightly on hover
+    //text-decoration: underline; // Optional: adds an underline on hover
+  }
+}
+
 .sp-table-header,
 .sp-row {
   display: grid;
@@ -77,7 +90,7 @@ body {
 // --- Mobile View Styles ---
 .mobile-header {
   position: relative; // The reference point for the dropdown
-  background-color: #f1f1f1;
+  background-color: $grey-color;
   border-bottom: 1px solid #ddd;
   width: 100%;
 
@@ -89,8 +102,8 @@ body {
 
   .hamburger-btn {
     //background: #fff;
-     border: 1px solid #ccc;
-     border-radius: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
     padding: 5px 12px;
     color: #888;
   }
@@ -113,6 +126,10 @@ body {
     display: flex;
     flex-direction: column;
     padding: 0;
+    :hover {
+      background-color: $mobile-item-hover;
+      cursor: pointer;
+    }
   }
 
   .mobile-item {
@@ -120,10 +137,8 @@ body {
     align-items: center;
     padding: 12px 20px;
     border-bottom: 1px solid #eee;
-
-    &.active {
-      background-color: $mobile-item-hover;
-    }
+    gap: 8px;
+    background-color: $grey-color;
 
     // Icon spacing
     i:first-child {
@@ -137,7 +152,7 @@ body {
 
   .floating-sparkle {
     position: absolute;
-    left: -0.5px;
+    left: -0.1px;
     top: -4px; // Moves it "on top" of the text line
     pointer-events: none; // Ensures you can still click the text
   }
@@ -151,7 +166,7 @@ body {
     display: flex;
     border-bottom: 1px solid #eee;
     &.header-row {
-      background-color: #ededed;
+      background-color: $grey-color;
     }
     &:last-child {
       border-bottom: none;
@@ -170,6 +185,16 @@ body {
     padding: 10px;
     display: flex;
     align-items: center;
+    position: relative; // <--- Add this to anchor the sparkle
+
+    .floating-sparkle {
+      position: absolute;
+      left: -1px; // Adjust slightly so it doesn't hit the border
+      top: 2px; // Adjust to sit "on top" of the first letter
+      pointer-events: none;
+      z-index: 2; // Ensures it sits above any other background elements
+    }
+
     .icon-container {
       margin-left: auto;
     }

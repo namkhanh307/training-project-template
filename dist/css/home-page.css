@@ -10,11 +10,6 @@ body {
   font-size: 14px;
   background-color: #fff;
 }
-@media (max-width: 767.98px) {
-  body {
-    background-color: #f4f4f4;
-  }
-}
 
 .page-title {
   padding: 24px 0 10px 0;
@@ -43,6 +38,16 @@ body {
   flex-shrink: 0;
 }
 
+.is-clickable {
+  cursor: pointer;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.is-clickable:hover {
+  color: #0078d4;
+}
+
 .sp-table-header,
 .sp-row {
   display: grid;
@@ -64,7 +69,7 @@ body {
 
 .mobile-header {
   position: relative;
-  background-color: #f1f1f1;
+  background-color: #ededed;
   border-bottom: 1px solid #ddd;
   width: 100%;
 }
@@ -96,14 +101,17 @@ body {
   flex-direction: column;
   padding: 0;
 }
+.mobile-toolbar-collapse .mobile-toolbar-list :hover {
+  background-color: #c2c1c1;
+  cursor: pointer;
+}
 .mobile-toolbar-collapse .mobile-item {
   display: flex;
   align-items: center;
   padding: 12px 20px;
   border-bottom: 1px solid #eee;
-}
-.mobile-toolbar-collapse .mobile-item.active {
-  background-color: #e1e1e1;
+  gap: 8px;
+  background-color: #ededed;
 }
 .mobile-toolbar-collapse .mobile-item i:first-child {
   width: 25px;
@@ -115,7 +123,7 @@ body {
 }
 .text-relative .floating-sparkle {
   position: absolute;
-  left: -0.5px;
+  left: -0.1px;
   top: -4px;
   pointer-events: none;
 }
@@ -146,6 +154,14 @@ body {
   padding: 10px;
   display: flex;
   align-items: center;
+  position: relative;
+}
+.doc-card .doc-value .floating-sparkle {
+  position: absolute;
+  left: -1px;
+  top: 2px;
+  pointer-events: none;
+  z-index: 2;
 }
 .doc-card .doc-value .icon-container {
   margin-left: auto;
