@@ -11,22 +11,40 @@ body {
   background-color: #fff;
 }
 
-.sp-toolbar {
+.toolbar {
   padding: 8px 20px;
   border-bottom: 1px solid #edebe9;
   gap: 20px;
 }
-.sp-toolbar .toolbar-item {
+.toolbar .toolbar-item {
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.sp-toolbar .toolbar-item:hover .custom-svg path {
+.toolbar .toolbar-item:hover .custom-svg path {
   fill: #0078d4;
 }
 
-.page-title {
+.mobile-header {
+  position: relative;
+  background-color: #ededed;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+}
+.mobile-header .header-content {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 15px;
+}
+.mobile-header .hamburger-btn {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px 12px;
+  color: #888;
+}
+
+.document-title {
   padding: 24px 0 10px 0;
   font-size: 28px;
   font-weight: 300;
@@ -61,28 +79,6 @@ body {
 }
 .sp-row:hover {
   background-color: #f3f2f1;
-}
-.sp-row .modified-cell,
-.sp-row .modified-by-cell {
-  color: #605e5c;
-}
-
-.mobile-header {
-  position: relative;
-  background-color: #ededed;
-  border-bottom: 1px solid #ddd;
-  width: 100%;
-}
-.mobile-header .header-content {
-  display: flex;
-  justify-content: flex-end;
-  padding: 10px 15px;
-}
-.mobile-header .hamburger-btn {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 5px 12px;
-  color: #888;
 }
 
 .mobile-toolbar-collapse {
@@ -148,23 +144,6 @@ body {
   padding: 10px;
   font-weight: bold;
   font-style: italic;
-}
-.doc-card .doc-value {
-  flex-grow: 1;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-.doc-card .doc-value .floating-sparkle {
-  position: absolute;
-  left: -1px;
-  top: 2px;
-  pointer-events: none;
-  z-index: 2;
-}
-.doc-card .doc-value .icon-container {
-  margin-left: auto;
 }
 
 /*# sourceMappingURL=home-page.css.map*/

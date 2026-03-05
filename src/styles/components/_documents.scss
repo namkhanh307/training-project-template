@@ -1,11 +1,11 @@
 // Variables
-$sp-primary: #0078d4;
-$sp-border: #edebe9;
-$sp-hover-bg: #f3f2f1;
-$sp-text-secondary: #605e5c;
+$color-primary: #0078d4;
+$color-border: #edebe9;
+$color-hover-bg: #f3f2f1;
+$color-text-secondary: #605e5c;
 $mobile-menu-bg: #fdfdfd;
 $mobile-item-hover: #c2c1c1;
-$grey-color: #ededed;
+$color-grey: #ededed;
 // Shared Icon Styles
 .folder-icon {
   color: #797775;
@@ -18,9 +18,9 @@ body {
 }
 
 // --- Desktop View Styles ---
-.sp-toolbar {
+.toolbar {
   padding: 8px 20px;
-  border-bottom: 1px solid $sp-border;
+  border-bottom: 1px solid $color-border;
   gap: 20px;
   .toolbar-item {
     cursor: pointer;
@@ -32,13 +32,34 @@ body {
       //color: $sp-primary;
       .custom-svg path {
         // Optional: change icon color on hover
-        fill: $sp-primary;
+        fill: $color-primary;
       }
     }
   }
 }
 
-.page-title {
+// --- Mobile View Styles ---
+.mobile-header {
+  position: relative; // The reference point for the dropdown
+  background-color: $color-grey;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+
+  .header-content {
+    display: flex;
+    justify-content: flex-end; // Pushes button to the right
+    padding: 10px 15px;
+  }
+
+  .hamburger-btn {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 12px;
+    color: #888;
+  }
+}
+
+.document-title {
   padding: 24px 0 10px 0;
   font-size: 28px;
   font-weight: 300;
@@ -56,7 +77,7 @@ body {
 
   &:hover {
     //background-color: $sp-hover-bg; // Defined as #f3f2f1 earlier
-    color: $sp-primary; // Darken text slightly on hover
+    color: $color-primary; // Darken text slightly on hover
     //text-decoration: underline; // Optional: adds an underline on hover
   }
 }
@@ -66,44 +87,23 @@ body {
   display: grid;
   grid-template-columns: 40px 2fr 1fr 1fr 100px;
   padding: 10px 0;
-  border-bottom: 1px solid $sp-border;
+  border-bottom: 1px solid $color-border;
 }
 
 .sp-row {
   cursor: pointer;
   &:hover {
-    background-color: $sp-hover-bg;
+    background-color: $color-hover-bg;
   }
-  .modified-cell,
-  .modified-by-cell {
-    color: $sp-text-secondary;
-  }
+  // .modified-cell,
+  // .modified-by-cell {
+  //   color: $color-text-secondary;
+  // }
 }
 
-// --- Mobile View Styles ---
-.mobile-header {
-  position: relative; // The reference point for the dropdown
-  background-color: $grey-color;
-  border-bottom: 1px solid #ddd;
-  width: 100%;
 
-  .header-content {
-    display: flex;
-    justify-content: flex-end; // Pushes button to the right
-    padding: 10px 15px;
-  }
-
-  .hamburger-btn {
-    //background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 5px 12px;
-    color: #888;
-  }
-}
 
 .mobile-toolbar-collapse {
-  // LAYER LOGIC
   position: absolute;
   top: 100%; // Right below the header bar
   left: 0; // Start at the far left of the screen
@@ -131,7 +131,7 @@ body {
     padding: 12px 20px;
     border-bottom: 1px solid #eee;
     gap: 8px;
-    background-color: $grey-color;
+    background-color: $color-grey;
 
     // Icon spacing
     i:first-child {
@@ -159,7 +159,7 @@ body {
     display: flex;
     border-bottom: 1px solid #eee;
     &.header-row {
-      background-color: $grey-color;
+      background-color: $color-grey;
     }
     &:last-child {
       border-bottom: none;
@@ -173,23 +173,23 @@ body {
     font-style: italic;
   }
 
-  .doc-value {
-    flex-grow: 1;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    position: relative; // <--- Add this to anchor the sparkle
+  // .doc-value {
+  //   flex-grow: 1;
+  //   padding: 10px;
+  //   display: flex;
+  //   align-items: center;
+  //   position: relative; // <--- Add this to anchor the sparkle
 
-    .floating-sparkle {
-      position: absolute;
-      left: -1px; // Adjust slightly so it doesn't hit the border
-      top: 2px; // Adjust to sit "on top" of the first letter
-      pointer-events: none;
-      z-index: 2; // Ensures it sits above any other background elements
-    }
+  //   .floating-sparkle {
+  //     position: absolute;
+  //     left: -1px; // Adjust slightly so it doesn't hit the border
+  //     top: 2px; // Adjust to sit "on top" of the first letter
+  //     pointer-events: none;
+  //     z-index: 2; // Ensures it sits above any other background elements
+  //   }
 
-    .icon-container {
-      margin-left: auto;
-    }
-  }
+  //   .icon-container {
+  //     margin-left: auto;
+  //   }
+  // }
 }
