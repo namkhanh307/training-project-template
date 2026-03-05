@@ -1,4 +1,4 @@
-// Variables
+// --- 1. Variables (Settings) ---
 $color-primary: #0078d4;
 $color-border: #edebe9;
 $color-hover-bg: #f3f2f1;
@@ -6,126 +6,117 @@ $color-text-secondary: #605e5c;
 $mobile-menu-bg: #fdfdfd;
 $mobile-item-hover: #c2c1c1;
 $color-grey: #ededed;
-// Shared Icon Styles
-.folder-icon {
-  color: #797775;
-}
 
+// --- 2. Base Rules ---
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 14px;
   background-color: #fff;
 }
 
-// --- Desktop View Styles ---
-.toolbar {
+// --- 3. Layout Rules ---
+.l-toolbar {
+  display: flex;
   padding: 8px 20px;
   border-bottom: 1px solid $color-border;
   gap: 20px;
-  .toolbar-item {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    &:hover {
-      //color: $sp-primary;
-      .custom-svg path {
-        // Optional: change icon color on hover
-        fill: $color-primary;
-      }
-    }
-  }
 }
 
-// --- Mobile View Styles ---
-.mobile-header {
-  position: relative; // The reference point for the dropdown
+.l-header-mobile {
+  position: relative;
   background-color: $color-grey;
   border-bottom: 1px solid #ddd;
   width: 100%;
 
-  .header-content {
+  .l-header-content {
     display: flex;
-    justify-content: flex-end; // Pushes button to the right
+    justify-content: flex-end;
     padding: 10px 15px;
   }
+}
 
-  .hamburger-btn {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 5px 12px;
-    color: #888;
+.l-main-container {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+// --- 4. Module Rules ---
+
+// Toolbar Items
+.m-toolbar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover .m-icon-custom path {
+    fill: $color-primary;
   }
 }
 
-.document-title {
-  padding: 24px 0 10px 0;
-  font-size: 28px;
-  font-weight: 300;
-}
-
-.custom-svg {
+// Icons
+.m-icon-custom {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
 }
 
-.is-clickable {
-  cursor: pointer;
-  user-select: none; // Prevents text selection while clicking
-
-  &:hover {
-    //background-color: $sp-hover-bg; // Defined as #f3f2f1 earlier
-    color: $color-primary; // Darken text slightly on hover
-    //text-decoration: underline; // Optional: adds an underline on hover
-  }
+.m-icon-folder {
+  color: #797775;
 }
 
-.sp-table-header,
-.sp-row {
+// Hamburger Component
+.m-btn-hamburger {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px 12px;
+  color: #888;
+  background: transparent;
+}
+
+// Typography
+.m-title-primary {
+  padding: 24px 0 10px 0;
+  font-size: 28px;
+  font-weight: 300;
+}
+
+// Table/Grid Module
+.m-table-row {
   display: grid;
   grid-template-columns: 40px 2fr 1fr 1fr 100px;
   padding: 10px 0;
   border-bottom: 1px solid $color-border;
-}
+  align-items: center;
 
-.sp-row {
-  cursor: pointer;
-  &:hover {
+  &--header {
+    font-weight: bold;
+  }
+
+  &--interactive:hover {
     background-color: $color-hover-bg;
   }
-  // .modified-cell,
-  // .modified-by-cell {
-  //   color: $color-text-secondary;
-  // }
 }
 
-
-
-.mobile-toolbar-collapse {
+// Mobile Menu Module
+.m-mobile-collapse {
   position: absolute;
-  top: 100%; // Right below the header bar
-  left: 0; // Start at the far left of the screen
-  right: 0; // End at the far right of the screen
-  width: 100%; // Ensure it fills the space
+  top: 100%;
+  left: 0;
+  right: 0;
+  width: 100%;
   z-index: 9999;
-
   background-color: $mobile-menu-bg;
   border-bottom: 1px solid #ddd;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 
-  .mobile-toolbar-list {
+  .m-mobile-list {
     display: flex;
     flex-direction: column;
     padding: 0;
-    :hover {
-      background-color: $mobile-item-hover;
-      cursor: pointer;
-    }
+    margin: 0;
   }
 
-  .mobile-item {
+  .m-mobile-item {
     display: flex;
     align-items: center;
     padding: 12px 20px;
@@ -133,32 +124,41 @@ body {
     gap: 8px;
     background-color: $color-grey;
 
-    // Icon spacing
+    &:hover {
+      background-color: $mobile-item-hover;
+      cursor: pointer;
+    }
+
     i:first-child {
       width: 25px;
     }
   }
 }
-.text-relative {
-  position: relative;
-  padding-left: 12px; // Make room for the overlapping icon
 
-  .floating-sparkle {
+// Sparkle/Overlay Module
+.m-text-overlay {
+  position: relative;
+  padding-left: 12px;
+
+  .m-sparkle {
     position: absolute;
     left: -0.1px;
-    top: -4px; // Moves it "on top" of the text line
-    pointer-events: none; // Ensures you can still click the text
+    top: -4px;
+    pointer-events: none;
   }
 }
-.doc-card {
+
+// Card Module (Mobile)
+.m-card {
   margin-bottom: 20px;
   border: 1px solid #e0e0e0;
   background-color: #fff;
 
-  .doc-row {
+  &__row {
     display: flex;
     border-bottom: 1px solid #eee;
-    &.header-row {
+    
+    &--header {
       background-color: $color-grey;
     }
     &:last-child {
@@ -166,30 +166,25 @@ body {
     }
   }
 
-  .doc-label {
+  &__label {
     width: 120px;
     padding: 10px;
     font-weight: bold;
     font-style: italic;
   }
 
-  // .doc-value {
-  //   flex-grow: 1;
-  //   padding: 10px;
-  //   display: flex;
-  //   align-items: center;
-  //   position: relative; // <--- Add this to anchor the sparkle
+  &__value {
+    flex-grow: 1;
+    padding: 10px;
+  }
+}
 
-  //   .floating-sparkle {
-  //     position: absolute;
-  //     left: -1px; // Adjust slightly so it doesn't hit the border
-  //     top: 2px; // Adjust to sit "on top" of the first letter
-  //     pointer-events: none;
-  //     z-index: 2; // Ensures it sits above any other background elements
-  //   }
+// --- 5. State Rules ---
+.is-clickable {
+  cursor: pointer;
+  user-select: none;
 
-  //   .icon-container {
-  //     margin-left: auto;
-  //   }
-  // }
+  &:hover {
+    color: $color-primary;
+  }
 }
