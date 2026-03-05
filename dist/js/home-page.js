@@ -9,14 +9,33 @@
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
-const renderGrid = (containerId, data) => {
-    const container = document.getElementById(containerId);
-    if (!container) {
-        console.warn(`Container with id "${containerId}" not found.`);
+const renderGrid = (data) => {
+    const desktopContainer = document.getElementById('desktop-row-container');
+    const mobileContainer = document.getElementById('mobile-card-container');
+    if (!desktopContainer || !mobileContainer)
         return;
-    }
-    // Map through the data and generate the HTML string
-    const htmlContent = data.map((file) => `
+    // 1. Generate Desktop HTML
+    const desktopHTML = data
+        .map((file) => `
+    <div class="m-table-row m-table-row--interactive">
+      <div>
+        ${file.type === 'folder'
+        ? `<i class="fas fa-folder m-icon-folder"></i>`
+        : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-excel-2019"></use></svg>`}
+      </div>
+      <div class="m-text-overlay">
+        ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
+        ${file.name}
+      </div>
+      <div>${file.modified}</div>
+      <div>${file.modifiedBy}</div>
+      <div></div>
+    </div>
+  `)
+        .join('');
+    // 2. Generate Mobile HTML
+    const mobileHTML = data
+        .map((file) => `
     <div class="m-card">
       <div class="m-card__row m-card__row--header">
         <div class="m-card__label">File Type</div>
@@ -24,32 +43,28 @@ const renderGrid = (containerId, data) => {
           <i class="fas fa-folder m-icon-folder"></i>
         </div>
       </div>
-
       <div class="m-card__row">
         <div class="m-card__label">Name</div>
         <div class="m-card__value">
           <div class="m-text-overlay">
-            ${file.isNew ? `
-              <svg class="m-sparkle">
-                <use href="src/files/icons.svg#icon-sparkle"></use>
-              </svg>` : ''}
+            ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
             ${file.name}
           </div>
         </div>
       </div>
-
       <div class="m-card__row">
         <div class="m-card__label">Modified</div>
         <div class="m-card__value">${file.modified}</div>
       </div>
-
       <div class="m-card__row">
         <div class="m-card__label">Modified By</div>
         <div class="m-card__value">${file.modifiedBy}</div>
       </div>
     </div>
-  `).join('');
-    container.innerHTML = htmlContent;
+  `)
+        .join('');
+    desktopContainer.innerHTML = desktopHTML;
+    mobileContainer.innerHTML = mobileHTML;
 };
 /* harmony default export */ __webpack_exports__["default"] = (renderGrid);
 
@@ -137,20 +152,20 @@ __webpack_require__.r(__webpack_exports__);
     const myFiles = [
         {
             name: 'Project_Alpha.pdf',
-            type: 'PDF',
+            type: 'folder',
             modified: 'Mar 05',
             modifiedBy: 'Gemini',
             isNew: true,
         },
         {
             name: 'Old_Backup.zip',
-            type: 'Zip',
+            type: 'excel',
             modified: 'Jan 01',
             modifiedBy: 'Admin',
             isNew: false,
         },
     ];
-    (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])('card-container', myFiles);
+    (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])(myFiles);
 });
 
 }();
