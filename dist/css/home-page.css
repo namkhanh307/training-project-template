@@ -5,28 +5,6 @@
   color: #797775;
 }
 
-.excel-icon {
-  color: #107c41;
-}
-
-.word-icon {
-  color: #2b579a;
-}
-
-.sync-icon {
-  color: #a4262c;
-}
-
-.flow-icon {
-  color: #0078d4;
-}
-
-.sparkle-icon {
-  color: #d15ebc;
-  font-size: 10px;
-  margin-right: 6px;
-}
-
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-size: 14px;
@@ -96,7 +74,6 @@ body {
   padding: 10px 15px;
 }
 .mobile-header .hamburger-btn {
-  background: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 5px 12px;
@@ -153,7 +130,7 @@ body {
   border-bottom: 1px solid #eee;
 }
 .doc-card .doc-row.header-row {
-  background-color: #fdfdfd;
+  background-color: #ededed;
 }
 .doc-card .doc-row:last-child {
   border-bottom: none;

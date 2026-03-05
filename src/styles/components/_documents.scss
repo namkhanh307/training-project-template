@@ -3,32 +3,11 @@ $sp-primary: #0078d4;
 $sp-border: #edebe9;
 $sp-hover-bg: #f3f2f1;
 $sp-text-secondary: #605e5c;
-$excel-green: #107c41;
-$word-blue: #2b579a;
-$sync-red: #a4262c;
-$sparkle-pink: #d15ebc;
 $mobile-menu-bg: #fdfdfd;
 $mobile-item-hover: #e1e1e1;
 // Shared Icon Styles
 .folder-icon {
   color: #797775;
-}
-.excel-icon {
-  color: $excel-green;
-}
-.word-icon {
-  color: $word-blue;
-}
-.sync-icon {
-  color: $sync-red;
-}
-.flow-icon {
-  color: $sp-primary;
-}
-.sparkle-icon {
-  color: $sparkle-pink;
-  font-size: 10px;
-  margin-right: 6px;
 }
 
 body {
@@ -109,9 +88,9 @@ body {
   }
 
   .hamburger-btn {
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    //background: #fff;
+     border: 1px solid #ccc;
+     border-radius: 4px;
     padding: 5px 12px;
     color: #888;
   }
@@ -172,7 +151,7 @@ body {
     display: flex;
     border-bottom: 1px solid #eee;
     &.header-row {
-      background-color: #fdfdfd;
+      background-color: #ededed;
     }
     &:last-child {
       border-bottom: none;
