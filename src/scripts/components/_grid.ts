@@ -48,9 +48,12 @@ const renderGrid = (data: FileItem[]): void => {
     <div class="m-card">
       <div class="m-card__row m-card__row--header">
         <div class="m-card__label">File Type</div>
-        <div class="m-card__value">
-          <i class="fas fa-folder m-icon-folder"></i>
-        </div>
+        <div class="me-2">
+        ${
+          file.type === 'folder'
+            ? `<i class="fas fa-folder m-icon-folder"></i>`
+            : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-excel-2019"></use></svg>`
+        }        </div>
       </div>
       <div class="m-card__row">
         <div class="m-card__label">Name</div>

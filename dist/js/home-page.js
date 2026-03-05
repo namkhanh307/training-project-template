@@ -39,9 +39,10 @@ const renderGrid = (data) => {
     <div class="m-card">
       <div class="m-card__row m-card__row--header">
         <div class="m-card__label">File Type</div>
-        <div class="m-card__value">
-          <i class="fas fa-folder m-icon-folder"></i>
-        </div>
+        <div class="me-2">
+        ${file.type === 'folder'
+        ? `<i class="fas fa-folder m-icon-folder"></i>`
+        : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-excel-2019"></use></svg>`}        </div>
       </div>
       <div class="m-card__row">
         <div class="m-card__label">Name</div>
@@ -151,18 +152,40 @@ __webpack_require__.r(__webpack_exports__);
 (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__["default"])(() => {
     const myFiles = [
         {
-            name: 'Project_Alpha.pdf',
+            name: 'CAS',
             type: 'folder',
-            modified: 'Mar 05',
-            modifiedBy: 'Gemini',
+            modified: 'April 30',
+            modifiedBy: 'Megan Bowen',
+            isNew: false,
+        },
+        {
+            name: 'CoasterAndBargeLoading.xlsx',
+            type: 'excel',
+            modified: 'A few seconds ago',
+            modifiedBy: 'Administrator MOD',
+            isNew: true,
+        },
+        ,
+        {
+            name: 'RevenueByServices.xlsx',
+            type: 'excel',
+            modified: 'A few seconds ago',
+            modifiedBy: 'Administrator MOD',
             isNew: true,
         },
         {
-            name: 'Old_Backup.zip',
+            name: 'RevenueByServices2016.xlsx',
             type: 'excel',
-            modified: 'Jan 01',
-            modifiedBy: 'Admin',
-            isNew: false,
+            modified: 'A few seconds ago',
+            modifiedBy: 'Administrator MOD',
+            isNew: true,
+        },
+        {
+            name: 'RevenueByServices2017.xlsx',
+            type: 'excel',
+            modified: 'A few seconds ago',
+            modifiedBy: 'Administrator MOD',
+            isNew: true,
         },
     ];
     (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])(myFiles);

@@ -4,18 +4,40 @@ import renderGrid, { FileItem } from '../components/_grid';
 ready(() => {
   const myFiles: FileItem[] = [
     {
-      name: 'Project_Alpha.pdf',
+      name: 'CAS',
       type: 'folder',
-      modified: 'Mar 05',
-      modifiedBy: 'Gemini',
+      modified: 'April 30',
+      modifiedBy: 'Megan Bowen',
+      isNew: false,
+    },
+    {
+      name: 'CoasterAndBargeLoading.xlsx',
+      type: 'excel',
+      modified: 'A few seconds ago',
+      modifiedBy: 'Administrator MOD',
+      isNew: true,
+    },
+    ,
+    {
+      name: 'RevenueByServices.xlsx',
+      type: 'excel',
+      modified: 'A few seconds ago',
+      modifiedBy: 'Administrator MOD',
       isNew: true,
     },
     {
-      name: 'Old_Backup.zip',
+      name: 'RevenueByServices2016.xlsx',
       type: 'excel',
-      modified: 'Jan 01',
-      modifiedBy: 'Admin',
-      isNew: false,
+      modified: 'A few seconds ago',
+      modifiedBy: 'Administrator MOD',
+      isNew: true,
+    },
+    {
+      name: 'RevenueByServices2017.xlsx',
+      type: 'excel',
+      modified: 'A few seconds ago',
+      modifiedBy: 'Administrator MOD',
+      isNew: true,
     },
   ];
   renderGrid(myFiles);

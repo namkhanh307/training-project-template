@@ -19,7 +19,8 @@ body {
   display: flex;
   padding: 8px 20px;
   border-bottom: 1px solid $color-border;
-  gap: 20px;
+  gap: 35px;
+  background-color: $color-grey;
 }
 
 .l-header-mobile {
@@ -83,10 +84,10 @@ body {
 // Table/Grid Module
 .m-table-row {
   display: grid;
-  grid-template-columns: 40px 2fr 1fr 1fr 100px;
+  grid-template-columns: 5% 35% 15% 15% 30%;
   padding: 10px 0;
   border-bottom: 1px solid $color-border;
-  align-items: center;
+  align-items: start;
 
   &--interactive:hover {
     background-color: $color-hover-bg;
@@ -134,12 +135,13 @@ body {
 // Sparkle/Overlay Module
 .m-text-overlay {
   position: relative;
-  padding-left: 12px; // Space for the absolute sparkle
+  padding-left: 0; // Remove this!
+  display: inline-block;
 
   .m-sparkle {
     position: absolute;
-    left: 1px; // Adjusted slightly for better visual alignment
-    top: -6px; // Adjusted to sit "on top" of the first letter
+    left: -14px; // Move the sparkle into the "margin/padding" area to the left
+    top: -6px;
     width: 14px;
     height: 14px;
 
@@ -162,34 +164,39 @@ body {
   &__row {
     display: flex;
     border-bottom: 1px solid #eee;
-    justify-content: space-between;
     align-items: center;
+    // We remove justify-content: space-between because we want
+    // the value to sit right next to the label's "box"
 
     &--header {
       background-color: $color-grey;
+      justify-content: space-between; // Keep this ONLY for the folder row
 
-      // Target the value container ONLY when inside a header row
       .m-card__value {
-        text-align: right;
+        flex-grow: 1;
+        padding: 10px 10px 10px 24px; // Increase left padding (e.g., 24px) for ALL values
+        text-align: left;
       }
-    }
-
-    &:last-child {
-      border-bottom: none;
     }
   }
 
   &__label {
+    // This is the key: set a solid width so all values start at the same X position
     width: 120px;
+    min-width: 120px;
+    flex-shrink: 0;
     padding: 10px;
     font-weight: bold;
     font-style: italic;
+    color: $color-text-secondary;
   }
 
   &__value {
     flex-grow: 1;
     padding: 10px;
-    // Standard rows stay left-aligned by default
+    display: flex; // Added to help align the sparkle container
+    align-items: center;
+    text-align: left; // Ensure content stays left
   }
 }
 
