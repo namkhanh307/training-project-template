@@ -1,69 +1,33 @@
 @import '../utilities/colors';
 @import '../utilities/fonts';
+
 // --- Base Rules ---
 body {
   font-family: $font-family-base;
   font-size: $font-size-base;
-  background-color: #fff;
 }
 
 // --- Layout Rules ---
 .l-toolbar {
-  display: flex;
-  padding: 8px $spacing-md;
-  border-bottom: $border-main;
   gap: 35px;
   background-color: $color-grey;
 }
 
-.l-header-mobile {
-  position: relative;
-  background-color: $color-grey;
-  border-bottom: $border-light;
-  width: 100%;
-
-  .l-header-content {
-    display: flex;
-    justify-content: flex-end;
-    padding: $spacing-sm 15px;
-  }
-}
-
 // --- Module Rules ---
-
-// Icons
 .m-icon-custom {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
 }
 
-.m-icon-folder {
-  color: #797775;
-}
-
-// Typography
+// Typography - Using Bootstrap 5 standard for 28px/300 weight
 .m-title-primary {
-  padding: $spacing-lg 0 $spacing-sm 0;
-  font-size: $font-size-lg;
-  font-weight: $font-weight-light;
+  padding: 1.5rem 0 0.5rem 0; 
+  font-size: $font-size-lg; // 28px
+  font-weight: 300; 
 }
 
-// Table/Grid Module
-.m-table-row {
-  display: grid;
-  // Using percentages as you defined, but using spacing variables for padding
-  grid-template-columns: 5% 35% 15% 15% 30%;
-  padding: $spacing-sm 0;
-  border-bottom: $border-main;
-  align-items: start;
-
-  &--interactive:hover {
-    background-color: $color-hover-bg;
-  }
-}
-
-// Sparkle/Overlay Module
+// Sparkle/Overlay Module (Unique Logic)
 .m-text-overlay {
   position: relative;
   display: inline-block;
@@ -84,24 +48,15 @@ body {
 
 // Card Module (Mobile)
 .m-card {
-  margin-bottom: $spacing-md;
   border: 1px solid #e0e0e0;
   background-color: #fff;
 
   &__row {
-    display: flex;
     border-bottom: $border-light;
-    align-items: center;
-
+    // Flex logic moved to HTML via Bootstrap classes
+    
     &--header {
       background-color: $color-grey;
-      justify-content: space-between;
-
-      .m-card__value {
-        text-align: right;
-        // The header icon doesn't need the sparkle gutter
-        padding: $spacing-sm; 
-      }
     }
   }
 
@@ -109,18 +64,13 @@ body {
     width: $card-label-width;
     min-width: $card-label-width;
     flex-shrink: 0;
-    padding: $spacing-sm;
-    font-weight: $font-weight-bold;
+    padding: 10px; // Standardized
     font-style: italic;
     color: $color-text-secondary;
   }
 
   &__value {
-    flex-grow: 1;
-    // Apply the sparkle gutter (24px) to ALL content rows for perfect alignment
-    padding: $spacing-sm $spacing-sm $spacing-sm $value-padding-left;
-    display: flex;
-    align-items: center;
-    text-align: left;
+    // Keep your specific alignment gutter
+    padding: 10px 10px 10px $value-padding-left; 
   }
 }
