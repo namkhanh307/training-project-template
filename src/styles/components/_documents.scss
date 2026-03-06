@@ -125,23 +125,22 @@ body {
 // Sparkle/Overlay Module
 .m-text-overlay {
   position: relative;
-  padding-left: 0; // Remove this!
+  padding-left: 0; 
   display: inline-block;
 
   .m-sparkle {
     position: absolute;
-    left: -14px; // Move the sparkle into the "margin/padding" area to the left
+    left: -10px; // move the sparkle into the "margin/padding" area to the left
     top: -6px;
     width: 14px;
     height: 14px;
 
     // SVG Styling
     fill: none;
-    stroke: #ff3b30; // Your red color
+    stroke: #ff3b30; 
     stroke-width: 2;
     stroke-linecap: round;
-
-    pointer-events: none; // Allows user to click the text "through" the icon
+    pointer-events: none; // allows user to click the text "through" the icon
   }
 }
 
@@ -155,23 +154,20 @@ body {
     display: flex;
     border-bottom: 1px solid #eee;
     align-items: center;
-    // We remove justify-content: space-between because we want
-    // the value to sit right next to the label's "box"
 
     &--header {
       background-color: $color-grey;
-      justify-content: space-between; // Keep this ONLY for the folder row
+      justify-content: space-between; 
 
       .m-card__value {
         flex-grow: 1;
-        padding: 10px 10px 10px 24px; // Increase left padding (e.g., 24px) for ALL values
+        padding: 10px 10px 10px 24px; //increase left padding (e.g., 24px) for ALL values
         text-align: left;
       }
     }
   }
 
   &__label {
-    // This is the key: set a solid width so all values start at the same X position
     width: 120px;
     min-width: 120px;
     flex-shrink: 0;
@@ -184,9 +180,9 @@ body {
   &__value {
     flex-grow: 1;
     padding: 10px;
-    display: flex; // Added to help align the sparkle container
+    display: flex; /// align the sparkle container
     align-items: center;
-    text-align: left; // Ensure content stays left
+    text-align: left; // ensure content stays left
   }
 }
 
