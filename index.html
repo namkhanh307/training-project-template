@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="dist/css/home-page.css" />
   </head>
   <body>
+    <!-- Desktop tool bars -->
     <div class="l-toolbar d-none d-md-flex">
       <div class="m-toolbar-item is-clickable">
         <svg class="m-icon-custom">
@@ -58,8 +59,9 @@
         </svg>
       </div>
     </div>
-
-    <div class="l-header-mobile d-md-none">
+    <!-- Mobile tool bars and collapse menu -->
+    <div class="l-header-mobile d-md-none"> <!--display flex on md and above -->
+      <!-- Hamburger button -->
       <div class="l-header-content">
         <button
           class="m-btn-hamburger"
@@ -70,6 +72,7 @@
           <i class="fas fa-bars"></i>
         </button>
       </div>
+      <!-- Collapse menu content -->
       <div class="collapse m-mobile-collapse" id="mobileMenu">
         <div class="m-mobile-list">
           <div class="m-mobile-item">
@@ -112,36 +115,40 @@
         </div>
       </div>
     </div>
+    <!-- Main content container -->
     <div class="l-main-container container-fluid">
       <h1 class="ms-3 m-title-primary">Documents</h1>
-    <div class="ms-5 d-none d-md-block">
-      <div class="m-table-row m-table-row--header">
-        <div class="header-cell">
-          <svg class="m-icon-custom">
-            <use href="src/files/icons.svg#icon-folder"></use>
-          </svg>
+      <!-- Desktop table container (hidden on mobile) -->
+      <div class="ms-5 d-none d-md-block">
+        <!-- Header title -->
+        <div class="m-table-row m-table-row--header">
+          <div class="header-cell">
+            <svg class="m-icon-custom">
+              <use href="src/files/icons.svg#icon-folder"></use>
+            </svg>
+          </div>
+          <div class="header-cell is-clickable">
+            Name <i class="fas fa-chevron-down small"></i>
+          </div>
+          <div class="header-cell is-clickable">
+            Modified <i class="fas fa-chevron-down small"></i>
+          </div>
+          <div class="header-cell is-clickable">
+            Modified By <i class="fas fa-chevron-down small"></i>
+          </div>
+          <div class="header-cell is-clickable">
+            <i class="fas fa-plus"></i> Add column
+          </div>
         </div>
-        <div class="header-cell is-clickable">
-          Name <i class="fas fa-chevron-down small"></i>
-        </div>
-        <div class="header-cell is-clickable">
-          Modified <i class="fas fa-chevron-down small"></i>
-        </div>
-        <div class="header-cell is-clickable">
-          Modified By <i class="fas fa-chevron-down small"></i>
-        </div>
-        <div class="header-cell is-clickable">
-          <i class="fas fa-plus"></i> Add column
-        </div>
+        <!-- Desktop row container (rows will be added dynamically via JavaScript) -->
+        <div id="desktop-row-container"></div>
       </div>
-      <div id="desktop-row-container"></div>
+      <!-- Mobile card container (hidden on desktop) -->
+      <div class="d-md-none">
+        <!-- Mobile card container (cards will be added dynamically via JavaScript) -->
+        <div id="mobile-card-container"></div>
+      </div>
     </div>
-
-    <div class="d-md-none">
-      <div id="mobile-card-container"></div>
-    </div>
-  </div>
-    </body>
     <script src="dist/js/home-page.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
