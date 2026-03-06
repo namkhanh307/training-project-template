@@ -20,8 +20,8 @@ body {
   border-bottom: 1px solid #ddd;
   width: 100%;
 
-  .l-header-content { 
-    display: flex; 
+  .l-header-content {
+    display: flex;
     justify-content: flex-end; //align hamburger to the right(end of main axis)
     padding: 10px 15px; //padding top/bottom 10px, left/right 15px
   }
@@ -37,7 +37,7 @@ body {
 .m-toolbar-item {
   display: flex;
   align-items: center; //align icon and text vertically
-  gap: 6px;// space between icon and text
+  gap: 6px; // space between icon and text
 
   &:hover .m-icon-custom path {
     fill: $color-primary;
@@ -48,7 +48,7 @@ body {
 .m-icon-custom {
   width: 18px;
   height: 18px;
-  flex-shrink: 0;// no shrink, maintain size
+  flex-shrink: 0; // no shrink, maintain size
 }
 
 .m-icon-folder {
@@ -78,10 +78,15 @@ body {
   padding: 10px 0;
   border-bottom: 1px solid $color-border;
   align-items: start;
-
+  &--header {
+    border-bottom: 1px solid black;
+  }
   &--interactive:hover {
     background-color: $color-hover-bg;
   }
+}
+.m-text-secondary {
+  color: $color-text-secondary;
 }
 
 // Mobile Menu Module
@@ -125,7 +130,7 @@ body {
 // Sparkle/Overlay Module
 .m-text-overlay {
   position: relative;
-  padding-left: 0; 
+  padding-left: 0;
   display: inline-block;
 
   .m-sparkle {
@@ -137,7 +142,7 @@ body {
 
     // SVG Styling
     fill: none;
-    stroke: #ff3b30; 
+    stroke: #ff3b30;
     stroke-width: 2;
     stroke-linecap: round;
     pointer-events: none; // allows user to click the text "through" the icon
@@ -157,7 +162,7 @@ body {
 
     &--header {
       background-color: $color-grey;
-      justify-content: space-between; 
+      justify-content: space-between;
 
       .m-card__value {
         flex-grow: 1;
@@ -174,7 +179,7 @@ body {
     padding: 10px;
     font-weight: bold;
     font-style: italic;
-    color: $color-text-secondary;
+    color: black;
   }
 
   &__value {

@@ -27,8 +27,8 @@ const renderGrid = (data) => {
         ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
         ${file.name}
       </div>
-      <div>${file.modified}</div>
-      <div>${file.modifiedBy}</div>
+      <div class="m-text-secondary">${file.modified}</div>
+      <div class="m-text-secondary">${file.modifiedBy}</div>
       <div></div>
     </div>
   `)

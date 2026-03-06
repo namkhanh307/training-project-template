@@ -71,8 +71,15 @@ body {
   border-bottom: 1px solid #edebe9;
   align-items: start;
 }
+.m-table-row--header {
+  border-bottom: 1px solid black;
+}
 .m-table-row--interactive:hover {
   background-color: #f3f2f1;
+}
+
+.m-text-secondary {
+  color: #9d9b99;
 }
 
 .m-mobile-collapse {
@@ -152,7 +159,7 @@ body {
   padding: 10px;
   font-weight: bold;
   font-style: italic;
-  color: #605e5c;
+  color: black;
 }
 .m-card__value {
   flex-grow: 1;
