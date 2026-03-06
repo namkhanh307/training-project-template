@@ -1,24 +1,17 @@
-// --- 1. Variables (Settings) ---
-$color-primary: #0078d4;
-$color-border: #edebe9;
-$color-hover-bg: #f3f2f1;
-$color-text-secondary: #605e5c;
-$mobile-menu-bg: #fdfdfd;
-$mobile-item-hover: #c2c1c1;
-$color-grey: #ededed;
-
-// --- 2. Base Rules ---
+@import '../utilities/colors';
+@import '../utilities/fonts';
+// --- Base Rules ---
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 14px;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
   background-color: #fff;
 }
 
-// --- 3. Layout Rules ---
+// --- Layout Rules ---
 .l-toolbar {
   display: flex;
-  padding: 8px 20px;
-  border-bottom: 1px solid $color-border;
+  padding: 8px $spacing-md;
+  border-bottom: $border-main;
   gap: 35px;
   background-color: $color-grey;
 }
@@ -26,33 +19,17 @@ body {
 .l-header-mobile {
   position: relative;
   background-color: $color-grey;
-  border-bottom: 1px solid #ddd;
+  border-bottom: $border-light;
   width: 100%;
 
   .l-header-content {
     display: flex;
     justify-content: flex-end;
-    padding: 10px 15px;
+    padding: $spacing-sm 15px;
   }
 }
 
-.l-main-container {
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-
-// --- 4. Module Rules ---
-
-// Toolbar Items
-.m-toolbar-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  &:hover .m-icon-custom path {
-    fill: $color-primary;
-  }
-}
+// --- Module Rules ---
 
 // Icons
 .m-icon-custom {
@@ -65,28 +42,20 @@ body {
   color: #797775;
 }
 
-// Hamburger Component
-.m-btn-hamburger {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 5px 12px;
-  color: #888;
-  background: transparent;
-}
-
 // Typography
 .m-title-primary {
-  padding: 24px 0 10px 0;
-  font-size: 28px;
-  font-weight: 300;
+  padding: $spacing-lg 0 $spacing-sm 0;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-light;
 }
 
 // Table/Grid Module
 .m-table-row {
   display: grid;
+  // Using percentages as you defined, but using spacing variables for padding
   grid-template-columns: 5% 35% 15% 15% 30%;
-  padding: 10px 0;
-  border-bottom: 1px solid $color-border;
+  padding: $spacing-sm 0;
+  border-bottom: $border-main;
   align-items: start;
 
   &--interactive:hover {
@@ -94,118 +63,64 @@ body {
   }
 }
 
-// Mobile Menu Module
-.m-mobile-collapse {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 9999;
-  background-color: $mobile-menu-bg;
-  border-bottom: 1px solid #ddd;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-
-  .m-mobile-list {
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    margin: 0;
-  }
-
-  .m-mobile-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 1px solid #eee;
-    gap: 8px;
-    background-color: $color-grey;
-
-    &:hover {
-      background-color: $mobile-item-hover;
-      cursor: pointer;
-    }
-
-    i:first-child {
-      width: 25px;
-    }
-  }
-}
-
 // Sparkle/Overlay Module
 .m-text-overlay {
   position: relative;
-  padding-left: 0; // Remove this!
   display: inline-block;
 
   .m-sparkle {
     position: absolute;
-    left: -14px; // Move the sparkle into the "margin/padding" area to the left
+    left: $sparkle-offset; 
     top: -6px;
-    width: 14px;
-    height: 14px;
-
-    // SVG Styling
+    width: $sparkle-size;
+    height: $sparkle-size;
     fill: none;
-    stroke: #ff3b30; // Your red color
+    stroke: #ff3b30;
     stroke-width: 2;
     stroke-linecap: round;
-
-    pointer-events: none; // Allows user to click the text "through" the icon
+    pointer-events: none;
   }
 }
 
 // Card Module (Mobile)
 .m-card {
-  margin-bottom: 20px;
+  margin-bottom: $spacing-md;
   border: 1px solid #e0e0e0;
   background-color: #fff;
 
   &__row {
     display: flex;
-    border-bottom: 1px solid #eee;
+    border-bottom: $border-light;
     align-items: center;
-    // We remove justify-content: space-between because we want
-    // the value to sit right next to the label's "box"
 
     &--header {
       background-color: $color-grey;
-      justify-content: space-between; // Keep this ONLY for the folder row
+      justify-content: space-between;
 
       .m-card__value {
-        flex-grow: 1;
-        padding: 10px 10px 10px 24px; // Increase left padding (e.g., 24px) for ALL values
-        text-align: left;
+        text-align: right;
+        // The header icon doesn't need the sparkle gutter
+        padding: $spacing-sm; 
       }
     }
   }
 
   &__label {
-    // This is the key: set a solid width so all values start at the same X position
-    width: 120px;
-    min-width: 120px;
+    width: $card-label-width;
+    min-width: $card-label-width;
     flex-shrink: 0;
-    padding: 10px;
-    font-weight: bold;
+    padding: $spacing-sm;
+    font-weight: $font-weight-bold;
     font-style: italic;
     color: $color-text-secondary;
   }
 
   &__value {
     flex-grow: 1;
-    padding: 10px;
-    display: flex; // Added to help align the sparkle container
+    // Apply the sparkle gutter (24px) to ALL content rows for perfect alignment
+    padding: $spacing-sm $spacing-sm $spacing-sm $value-padding-left;
+    display: flex;
     align-items: center;
-    text-align: left; // Ensure content stays left
-  }
-}
-
-// --- 5. State Rules ---
-.is-clickable {
-  cursor: pointer;
-  user-select: none;
-
-  &:hover {
-    color: $color-primary;
+    text-align: left;
   }
 }
