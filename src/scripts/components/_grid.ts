@@ -61,7 +61,14 @@ const renderGrid = (data: Row[]): void => {
         </div>
         <div class="m-text-secondary"> ${file.modified}</div>
         <div class="m-text-secondary">${file.modifiedBy}</div>
-        <div></div>
+        <div class="d-flex gap-2 justify-content-center">
+         <svg class="m-icon-custom" >
+            <use href="src/files/icons.svg#icon-edit"></use>
+          </svg>
+          <svg class="m-icon-custom" onclick="handleDelete('${item.name}', ${isFolder ? `true` : `false`} )">
+            <use href="src/files/icons.svg#icon-delete"></use>
+          </svg>
+        </div>
       </div>
     `;
     })
@@ -81,7 +88,7 @@ const renderGrid = (data: Row[]): void => {
             ${
               isFolder
                 ? `<i class="fas fa-folder m-icon-folder"></i>`
-                : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-excel-2019"></use></svg>`
+                : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${item.extension}"></use></svg>`
             }
           </div>
         </div>

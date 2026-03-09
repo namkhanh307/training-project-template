@@ -192,10 +192,10 @@ const goBack = (): void => {
   };
 
   // 4. Program the Delete Button
-  const deleteBtn = document.getElementById('modalDeleteBtn')!;
-  deleteBtn.onclick = () => {
-    (window as any).handleDelete(file.name, false); // false because it's a file
-  };
+  // const deleteBtn = document.getElementById('modalDeleteBtn')!;
+  // deleteBtn.onclick = () => {
+  //   (window as any).handleDelete(file.name, false); // false because it's a file
+  // };
 
   // 5. Show the modal
   modal.style.display = 'flex';
@@ -203,7 +203,10 @@ const goBack = (): void => {
 (window as any).closeModal = () => {
   document.getElementById('fileModal')!.style.display = 'none';
 };
-(window as any).handleUploadFile = () => {
+(window as any).handleUploadFile = (isMobile: boolean) => {
+  if(isMobile){
+    document.getElementById('mobileMenu')!.classList.remove('show');
+  }
   const fileInput = document.getElementById(
     'fileInput',
   ) as HTMLInputElement;
@@ -252,6 +255,7 @@ const goBack = (): void => {
   }
 };
 (window as any).handleAddFolderDesktop = () => {
+  
   const newFolder: Folder = {
     name: '', // Empty initially
     path: '',
@@ -278,6 +282,42 @@ const goBack = (): void => {
     input.focus();
     input.select();
   }
+};
+(window as any).saveFolderName = (event: any) => {
+  const newName = event.target.value.trim() || 'New folder';
+
+  // 1. Find the folder that is currently in "edit mode"
+  const folderBeingEdited = currentFolder.subFolders.find((f) => f.isEditing);
+  if (!folderBeingEdited) return;
+
+  // 2. DUPLICATION CHECK: Check if ANY other folder has this exact name
+  const isDuplicate = currentFolder.subFolders.some(
+    (f) => f !== folderBeingEdited && f.name.toLowerCase() === newName.toLowerCase()
+  );
+
+  // 3. If it's a duplicate, stop the save!
+  if (isDuplicate) {
+    alert(`This destination already contains a folder named '${newName}'.`);
+    
+    // Refocus the input so the user can fix the name
+    setTimeout(() => {
+      event.target.focus();
+      event.target.select();
+    }, 10);
+    
+    return; // EXITS THE FUNCTION EARLY
+  }
+
+  // 4. If it's unique, proceed with saving as normal
+  folderBeingEdited.name = newName;
+  folderBeingEdited.path = currentFolder.path === '/' 
+    ? `/${newName}` 
+    : `${currentFolder.path}/${newName}`;
+    
+  delete folderBeingEdited.isEditing;
+
+  saveToStorage(rootFolder); // ALWAYS save rootFolder!
+  renderGrid([...currentFolder.subFolders, ...currentFolder.files]);
 };
 (window as any).handleAddFolderMobile = () => {
   // 1. Hide the Bootstrap menu correctly
@@ -350,31 +390,37 @@ document.getElementById('newFolderNameInput')?.addEventListener('keypress', (e) 
 (window as any).closeNewFolderModal = () => {
   document.getElementById('newFolderModal')!.style.display = 'none';
 };
-(window as any).saveFolderName = (event: any) => {
-  const newName = event.target.value.trim() || 'New folder';
+// (window as any).saveFolderName = (event: any) => {
+//   const newName = event.target.value.trim() || 'New folder';
 
-  // Find the folder that was being edited
-  const folder = currentFolder.subFolders.find((f) => f.isEditing);
+//   // Find the folder that was being edited
+//   const folder = currentFolder.subFolders.find((f) => f.isEditing);
 
-  if (folder) {
-    folder.name = newName;
-    folder.path =
-      currentFolder.path === '/'
-        ? `/${newName}`
-        : `${currentFolder.path}/${newName}`;
-    delete folder.isEditing; // Remove editing state
-  }
+//   if (folder) {
+//     folder.name = newName;
+//     folder.path =
+//       currentFolder.path === '/'
+//         ? `/${newName}`
+//         : `${currentFolder.path}/${newName}`;
+//     delete folder.isEditing; // Remove editing state
+//   }
 
-  saveToStorage(rootFolder);
-  renderGrid([...currentFolder.subFolders, ...currentFolder.files]);
-};
+//   saveToStorage(rootFolder);
+//   renderGrid([...currentFolder.subFolders, ...currentFolder.files]);
+// };
 (window as any).handleRenameKey = (event: KeyboardEvent) => {
+  const target = event.target as HTMLInputElement;
+
+  // If they press Enter, force the input to lose focus.
+  // This automatically triggers the "onblur" event, which calls saveFolderName!
   if (event.key === 'Enter') {
-    (event.target as HTMLInputElement).blur(); // Triggers saveFolderName
+    target.blur(); 
   }
+  
+  // Optional: If they press Escape, cancel the creation
   if (event.key === 'Escape') {
-    // Optional: Remove the folder if they hit Esc
-    currentFolder.subFolders.shift();
+    // Remove the temporary folder from the array
+    currentFolder.subFolders.shift(); 
     renderGrid([...currentFolder.subFolders, ...currentFolder.files]);
   }
 };

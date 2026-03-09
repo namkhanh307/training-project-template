@@ -39,7 +39,7 @@
       />
       <div
         class="m-toolbar-item is-clickable"
-        onclick="handleUploadFile()"
+        onclick="handleUploadFile(false)"
       >
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-upload"></use>
@@ -106,7 +106,7 @@
             New
             <i class="fas fa-chevron-down small"></i>
           </div>
-          <div class="m-mobile-item" onclick="handleUploadFile()">
+          <div class="m-mobile-item" onclick="handleUploadFile(true)">
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-upload"></use>
             </svg>
@@ -164,6 +164,7 @@
           <div class="is-clickable">
             Modified By <i class="fas fa-chevron-down small"></i>
           </div>
+          <div class="is-clickable d-flex justify-content-center">Action</div>
           <div class="is-clickable">
             <i class="fas fa-plus"></i> Add column
           </div>
@@ -201,9 +202,9 @@
           </p>
           <hr />
           <div class="d-flex gap-2 justify-content-end">
-            <button id="modalDeleteBtn" class="btn btn-danger">
+            <!-- <button id="modalDeleteBtn" class="btn btn-danger">
               <i class="fa-solid fa-trash"></i> Delete
-            </button>
+            </button> -->
             <button id="modalDownloadBtn" class="btn btn-primary">
               <i class="fas fa-download me-2"></i> Download
             </button>

@@ -77,7 +77,7 @@ body {
 // Table/Grid Module
 .m-table-row {
   display: grid; //make it a grid container
-  grid-template-columns: 5% 35% 15% 15% 30%;
+  grid-template-columns: 5% 35% 15% 10% 10% 30%;
   padding: 10px 0;
   border-bottom: 1px solid $color-border;
   align-items: start;

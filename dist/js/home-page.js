@@ -42,7 +42,14 @@ const renderGrid = (data) => {
         </div>
         <div class="m-text-secondary"> ${file.modified}</div>
         <div class="m-text-secondary">${file.modifiedBy}</div>
-        <div></div>
+        <div class="d-flex gap-2 justify-content-center">
+         <svg class="m-icon-custom" >
+            <use href="src/files/icons.svg#icon-edit"></use>
+          </svg>
+          <svg class="m-icon-custom" onclick="handleDelete('${item.name}', ${isFolder ? `true` : `false`} )">
+            <use href="src/files/icons.svg#icon-delete"></use>
+          </svg>
+        </div>
       </div>
     `;
     })
@@ -59,7 +66,7 @@ const renderGrid = (data) => {
           <div class="me-2">
             ${isFolder
             ? `<i class="fas fa-folder m-icon-folder"></i>`
-            : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-excel-2019"></use></svg>`}
+            : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${item.extension}"></use></svg>`}
           </div>
         </div>
         <div class="m-card__row">
@@ -388,17 +395,20 @@ window.handleFileClick = (fileName) => {
         window.handleDownloadFile(file.name);
     };
     // 4. Program the Delete Button
-    const deleteBtn = document.getElementById('modalDeleteBtn');
-    deleteBtn.onclick = () => {
-        window.handleDelete(file.name, false); // false because it's a file
-    };
+    // const deleteBtn = document.getElementById('modalDeleteBtn')!;
+    // deleteBtn.onclick = () => {
+    //   (window as any).handleDelete(file.name, false); // false because it's a file
+    // };
     // 5. Show the modal
     modal.style.display = 'flex';
 };
 window.closeModal = () => {
     document.getElementById('fileModal').style.display = 'none';
 };
-window.handleUploadFile = () => {
+window.handleUploadFile = (isMobile) => {
+    if (isMobile) {
+        document.getElementById('mobileMenu').classList.remove('show');
+    }
     const fileInput = document.getElementById('fileInput');
     fileInput.click();
 };
@@ -458,6 +468,33 @@ window.handleAddFolderDesktop = () => {
         input.focus();
         input.select();
     }
+};
+window.saveFolderName = (event) => {
+    const newName = event.target.value.trim() || 'New folder';
+    // 1. Find the folder that is currently in "edit mode"
+    const folderBeingEdited = currentFolder.subFolders.find((f) => f.isEditing);
+    if (!folderBeingEdited)
+        return;
+    // 2. DUPLICATION CHECK: Check if ANY other folder has this exact name
+    const isDuplicate = currentFolder.subFolders.some((f) => f !== folderBeingEdited && f.name.toLowerCase() === newName.toLowerCase());
+    // 3. If it's a duplicate, stop the save!
+    if (isDuplicate) {
+        alert(`This destination already contains a folder named '${newName}'.`);
+        // Refocus the input so the user can fix the name
+        setTimeout(() => {
+            event.target.focus();
+            event.target.select();
+        }, 10);
+        return; // EXITS THE FUNCTION EARLY
+    }
+    // 4. If it's unique, proceed with saving as normal
+    folderBeingEdited.name = newName;
+    folderBeingEdited.path = currentFolder.path === '/'
+        ? `/${newName}`
+        : `${currentFolder.path}/${newName}`;
+    delete folderBeingEdited.isEditing;
+    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder); // ALWAYS save rootFolder!
+    (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])([...currentFolder.subFolders, ...currentFolder.files]);
 };
 window.handleAddFolderMobile = () => {
     // 1. Hide the Bootstrap menu correctly
@@ -519,27 +556,31 @@ document.getElementById('newFolderNameInput')?.addEventListener('keypress', (e) 
 window.closeNewFolderModal = () => {
     document.getElementById('newFolderModal').style.display = 'none';
 };
-window.saveFolderName = (event) => {
-    const newName = event.target.value.trim() || 'New folder';
-    // Find the folder that was being edited
-    const folder = currentFolder.subFolders.find((f) => f.isEditing);
-    if (folder) {
-        folder.name = newName;
-        folder.path =
-            currentFolder.path === '/'
-                ? `/${newName}`
-                : `${currentFolder.path}/${newName}`;
-        delete folder.isEditing; // Remove editing state
-    }
-    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder);
-    (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])([...currentFolder.subFolders, ...currentFolder.files]);
-};
+// (window as any).saveFolderName = (event: any) => {
+//   const newName = event.target.value.trim() || 'New folder';
+//   // Find the folder that was being edited
+//   const folder = currentFolder.subFolders.find((f) => f.isEditing);
+//   if (folder) {
+//     folder.name = newName;
+//     folder.path =
+//       currentFolder.path === '/'
+//         ? `/${newName}`
+//         : `${currentFolder.path}/${newName}`;
+//     delete folder.isEditing; // Remove editing state
+//   }
+//   saveToStorage(rootFolder);
+//   renderGrid([...currentFolder.subFolders, ...currentFolder.files]);
+// };
 window.handleRenameKey = (event) => {
+    const target = event.target;
+    // If they press Enter, force the input to lose focus.
+    // This automatically triggers the "onblur" event, which calls saveFolderName!
     if (event.key === 'Enter') {
-        event.target.blur(); // Triggers saveFolderName
+        target.blur();
     }
+    // Optional: If they press Escape, cancel the creation
     if (event.key === 'Escape') {
-        // Optional: Remove the folder if they hit Esc
+        // Remove the temporary folder from the array
         currentFolder.subFolders.shift();
         (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])([...currentFolder.subFolders, ...currentFolder.files]);
     }
