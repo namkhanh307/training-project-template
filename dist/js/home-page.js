@@ -232,12 +232,12 @@ __webpack_require__.r(__webpack_exports__);
 
 // Define your root data structure
 let rootFolder = {
-    name: 'Documents',
-    path: '/Documents',
+    name: 'Root',
+    path: '/',
     subFolders: [
         {
             name: 'CAS',
-            path: '/Documents/CAS',
+            path: '/CAS',
             subFolders: [],
             files: [
                 {
@@ -293,6 +293,19 @@ const navigateToFolder = (folder, isBack = false) => {
         navigationHistory.push(currentFolder);
     }
     currentFolder = folder;
+    // --- NEW: Update the Path Display ---
+    const pathDisplay = document.getElementById('folder-path-display');
+    if (pathDisplay) {
+        if (folder.path === '/') {
+            pathDisplay.innerText = 'Documents';
+        }
+        else {
+            // Convert "/CAS/Finance" into "Documents > CAS > Finance"
+            const formattedPath = folder.path.replace(/\//g, ' > ');
+            pathDisplay.innerText = `Documents ${formattedPath}`;
+        }
+    }
+    // ------------------------------------
     const combinedItems = [
         ...folder.subFolders,
         ...folder.files,

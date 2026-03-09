@@ -9,12 +9,12 @@ import {
 
 // Define your root data structure
 let rootFolder: Folder = {
-  name: 'Documents',
-  path: '/Documents',
+  name: 'Root',
+  path: '/',
   subFolders: [
     {
       name: 'CAS',
-      path: '/Documents/CAS',
+      path: '/CAS',
       subFolders: [],
       files: [
         {
@@ -76,6 +76,20 @@ const navigateToFolder = (
   }
 
   currentFolder = folder;
+  
+  // --- NEW: Update the Path Display ---
+  const pathDisplay = document.getElementById('folder-path-display');
+  if (pathDisplay) {
+    if (folder.path === '/') {
+      pathDisplay.innerText = 'Documents';
+    } else {
+      // Convert "/CAS/Finance" into "Documents > CAS > Finance"
+      const formattedPath = folder.path.replace(/\//g, ' > ');
+      pathDisplay.innerText = `Documents ${formattedPath}`;
+    }
+  }
+  // ------------------------------------
+
   const combinedItems: Row[] = [
     ...folder.subFolders,
     ...folder.files,

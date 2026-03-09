@@ -71,6 +71,13 @@
           <use href="src/files/icons.svg#icon-more"></use>
         </svg>
       </div>
+      <div
+        id="back-btn"
+        class="m-toolbar-item is-clickable d-none"
+        onclick="goBack()"
+      >
+        <i class="fas fa-arrow-left"></i>
+      </div>
     </div>
     <!-- Mobile tool bars and collapse menu -->
     <div class="l-header-mobile d-md-none">
@@ -135,14 +142,6 @@
         <h1 id="folder-path-display" class="m-title-primary mb-0">
           Documents
         </h1>
-
-        <button
-          id="back-btn"
-          class="m-btn-back btn btn-sm d-none"
-          onclick="goBack()"
-        >
-          <i class="fas fa-arrow-left"></i>
-        </button>
       </div>
       <!-- Desktop table container (hidden on mobile) -->
       <div class="ms-5 d-none d-md-block">
