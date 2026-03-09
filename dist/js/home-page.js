@@ -34,7 +34,7 @@ const renderGrid = (data) => {
         <div>
           ${isFolder
             ? `<i class="fas fa-folder m-icon-folder"></i>`
-            : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-excel-2019"></use></svg>`}
+            : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${item.extension}"></use></svg>`}
         </div>
         <div class="m-text-overlay">
           ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
@@ -232,12 +232,12 @@ __webpack_require__.r(__webpack_exports__);
 
 // Define your root data structure
 let rootFolder = {
-    name: 'Root',
-    path: '/',
+    name: 'Documents',
+    path: '/Documents',
     subFolders: [
         {
             name: 'CAS',
-            path: '/CAS',
+            path: '/Documents/CAS',
             subFolders: [],
             files: [
                 {
@@ -334,7 +334,9 @@ window.handleFileClick = (fileName) => {
     // 2. Open Modal & Fill Text
     const modal = document.getElementById('fileModal');
     document.getElementById('modalFileName').innerText = file.name;
-    // ... (fill other fields like modifiedBy) ...
+    document.getElementById('modalFileExtension').innerText = file.extension;
+    document.getElementById('modalFileModified').innerText = file.modified;
+    document.getElementById('modalFileModifiedBy').innerText = file.modifiedBy;
     // 3. Program the Download Button
     const downloadBtn = document.getElementById('modalDownloadBtn');
     downloadBtn.onclick = () => {
@@ -361,11 +363,18 @@ window.onFileSelected = (event) => {
     if (files && files.length > 0) {
         const selectedFile = files[0];
         const reader = new FileReader();
+        // --- NEW: Extract the extension safely ---
+        // lastIndexOf returns -1 if no dot is found.
+        // We check > 0 to ignore files that just start with a dot (like .env)
+        const lastDotIndex = selectedFile.name.lastIndexOf('.');
+        const fileExtension = lastDotIndex > 0
+            ? selectedFile.name.substring(lastDotIndex + 1).toLowerCase()
+            : '';
         reader.onload = (e) => {
             const base64String = e.target?.result;
             const newFile = {
                 name: selectedFile.name,
-                extension: 'xlsx',
+                extension: fileExtension, // <-- Assign the extracted extension here
                 modified: 'Just now',
                 modifiedBy: 'You',
                 isNew: true,

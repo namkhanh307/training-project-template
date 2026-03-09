@@ -52,7 +52,7 @@ const renderGrid = (data: Row[]): void => {
           ${
             isFolder
               ? `<i class="fas fa-folder m-icon-folder"></i>`
-              : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-excel-2019"></use></svg>`
+              : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${item.extension}"></use></svg>`
           }
         </div>
         <div class="m-text-overlay">

@@ -9,12 +9,12 @@ import {
 
 // Define your root data structure
 let rootFolder: Folder = {
-  name: 'Root',
-  path: '/',
+  name: 'Documents',
+  path: '/Documents',
   subFolders: [
     {
       name: 'CAS',
-      path: '/CAS',
+      path: '/Documents/CAS',
       subFolders: [],
       files: [
         {
@@ -124,7 +124,9 @@ const goBack = (): void => {
   // 2. Open Modal & Fill Text
   const modal = document.getElementById('fileModal')!;
   document.getElementById('modalFileName')!.innerText = file.name;
-  // ... (fill other fields like modifiedBy) ...
+  document.getElementById('modalFileExtension')!.innerText = file.extension;
+  document.getElementById('modalFileModified')!.innerText = file.modified;
+  document.getElementById('modalFileModifiedBy')!.innerText = file.modifiedBy;
 
   // 3. Program the Download Button
   const downloadBtn = document.getElementById('modalDownloadBtn')!;
@@ -158,12 +160,20 @@ const goBack = (): void => {
     const selectedFile = files[0];
     const reader = new FileReader();
 
+    // --- NEW: Extract the extension safely ---
+    // lastIndexOf returns -1 if no dot is found.
+    // We check > 0 to ignore files that just start with a dot (like .env)
+    const lastDotIndex = selectedFile.name.lastIndexOf('.');
+    const fileExtension = lastDotIndex > 0 
+      ? selectedFile.name.substring(lastDotIndex + 1).toLowerCase() 
+      : '';
+
     reader.onload = (e) => {
       const base64String = e.target?.result as string;
 
       const newFile: File = {
         name: selectedFile.name,
-        extension: 'xlsx',
+        extension: fileExtension, // <-- Assign the extracted extension here
         modified: 'Just now',
         modifiedBy: 'You',
         isNew: true,
