@@ -207,26 +207,53 @@ body {
 
 .m-modal {
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
+  top: 0; 
+  left: 0; 
+  width: 100vw;  /* Forces it to span the entire screen width */
+  height: 100vh; /* Forces it to span the entire screen height */
   background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center;
+  display: none; /* Controlled by JS */
+  align-items: center;     /* Centers vertically */
+  justify-content: center; /* Centers horizontally */
   z-index: 1000;
 }
+/* 1. Add a max/fixed width to the modal content */
 .m-modal-content {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  min-width: 300px;
+  width: 400px; /* Gives it a solid size on desktop */
+  max-width: 90vw; /* Keeps it responsive on mobile phones */
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
+
 .m-modal-header {
   display: flex;
   justify-content: space-between;
+  align-items: center; /* Vertically center the text and button */
   border-bottom: 1px solid #eee;
   margin-bottom: 15px;
+  padding-bottom: 10px; /* Give it a little breathing room */
 }
+
+/* 2. Target the h3 specifically for truncation */
+#modalFileName {
+  margin: 0; /* Reset default browser margins */
+  white-space: nowrap; /* Prevent text from wrapping to a second line */
+  overflow: hidden; /* Hide the text that spills over */
+  text-overflow: ellipsis; /* Add the '...' */
+  min-width: 0; /* CRITICAL: Tells flexbox it's allowed to shrink below its content size */
+  flex: 1; /* Take up remaining space */
+  padding-right: 15px; /* Keep the text from touching the close button */
+}
+
+/* 3. Make sure the close button never shrinks */
 .btn-close {
-  border: none; background: none; font-size: 1.5rem; cursor: pointer;
+  flex-shrink: 0; 
+  border: none; 
+  background: none; 
+  font-size: 1.5rem; 
+  cursor: pointer;
 }
 .m-input-rename {
   border: 1px solid #0078d4;
