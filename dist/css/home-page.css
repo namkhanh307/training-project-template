@@ -14,6 +14,10 @@ body {
   background-color: #ededed;
 }
 
+.l-page-header {
+  min-height: 50px;
+}
+
 .l-header-mobile {
   position: relative;
   background-color: #ededed;
@@ -70,6 +74,7 @@ body {
   padding: 10px 0;
   border-bottom: 1px solid #edebe9;
   align-items: start;
+  cursor: pointer;
 }
 .m-table-row--header {
   border-bottom: 1px solid black;
@@ -177,6 +182,50 @@ body {
 }
 .is-clickable:hover {
   color: #0078d4;
+}
+
+.m-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.m-modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 300px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.m-modal-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 15px;
+}
+
+.btn-close {
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.m-input-rename {
+  border: 1px solid #0078d4;
+  outline: none;
+  padding: 2px 5px;
+  font-size: inherit;
+  font-family: inherit;
+  width: 80%;
 }
 
 /*# sourceMappingURL=home-page.css.map*/

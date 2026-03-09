@@ -20,14 +20,27 @@
   <body>
     <!-- Desktop tool bars -->
     <div class="l-toolbar d-none d-md-flex">
-      <div class="m-toolbar-item is-clickable">
+      <div
+        class="m-toolbar-item is-clickable"
+        onclick="handleAddFolderDesktop()"
+      >
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-new"></use>
         </svg>
         New
         <i class="fas fa-chevron-down ms-1 small"></i>
       </div>
-      <div class="m-toolbar-item is-clickable">
+      <input
+        type="file"
+        id="fileInput"
+        style="display: none"
+        accept=".xlsx,.xls,.doc,.docx,.pdf"
+        onchange="onFileSelected(event)"
+      />
+      <div
+        class="m-toolbar-item is-clickable"
+        onclick="handleUploadFile()"
+      >
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-upload"></use>
         </svg>
@@ -60,7 +73,8 @@
       </div>
     </div>
     <!-- Mobile tool bars and collapse menu -->
-    <div class="l-header-mobile d-md-none"> <!--display flex on md and above -->
+    <div class="l-header-mobile d-md-none">
+      <!--display flex on md and above -->
       <!-- Hamburger button -->
       <div class="l-header-content">
         <button
@@ -117,7 +131,17 @@
     </div>
     <!-- Main content container -->
     <div class="l-main-container container-fluid">
-      <h1 class="ms-3 m-title-primary">Documents</h1>
+      <div class="d-flex align-items-center">
+        <h1 class="m-title-primary mb-0">Documents</h1>
+
+        <button
+          id="back-btn"
+          class="m-btn-back btn btn-sm d-none"
+          onclick="goBack()"
+        >
+          <i class="fas fa-arrow-left"></i>
+        </button>
+      </div>
       <!-- Desktop table container (hidden on mobile) -->
       <div class="ms-5 d-none d-md-block">
         <!-- Header title -->
@@ -147,6 +171,39 @@
       <div class="d-md-none">
         <!-- Mobile card container (cards will be added dynamically via JavaScript) -->
         <div id="mobile-card-container"></div>
+      </div>
+    </div>
+    <!-- File details modal -->
+    <div id="fileModal" class="m-modal" style="display: none">
+      <div class="m-modal-content">
+        <div class="m-modal-header">
+          <h3 id="modalFileName">File Details</h3>
+          <button onclick="closeModal()" class="btn-close">
+            &times;
+          </button>
+        </div>
+        <div class="m-modal-body">
+          <p>
+            <strong>Type:</strong> <span id="modalFileType"></span>
+          </p>
+          <p>
+            <strong>Modified:</strong>
+            <span id="modalFileModified"></span>
+          </p>
+          <p>
+            <strong>Modified By:</strong>
+            <span id="modalFileUser"></span>
+          </p>
+          <hr />
+          <div class="d-flex gap-2 justify-content-end">
+            <button id="modalDeleteBtn" class="btn btn-danger">
+              <i class="fa-solid fa-trash"></i> Delete
+            </button>
+            <button id="modalDownloadBtn" class="btn btn-primary">
+              <i class="fas fa-download me-2"></i> Download
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     <script src="dist/js/home-page.js"></script>
