@@ -71,13 +71,13 @@
           <use href="src/files/icons.svg#icon-more"></use>
         </svg>
       </div>
-      <div
+      <!-- <div
         id="back-btn"
         class="m-toolbar-item is-clickable d-none"
         onclick="goBack()"
       >
         <i class="fas fa-arrow-left"></i>
-      </div>
+      </div> -->
     </div>
     <!-- Mobile tool bars and collapse menu -->
     <div class="l-header-mobile d-md-none">
@@ -96,14 +96,17 @@
       <!-- Collapse menu content -->
       <div class="collapse m-mobile-collapse" id="mobileMenu">
         <div class="m-mobile-list">
-          <div class="m-mobile-item">
+          <div
+            class="m-mobile-item"
+            onclick="handleAddFolderMobile()"
+          >
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-new"></use>
             </svg>
             New
             <i class="fas fa-chevron-down small"></i>
           </div>
-          <div class="m-mobile-item">
+          <div class="m-mobile-item" onclick="handleUploadFile()">
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-upload"></use>
             </svg>
@@ -180,7 +183,7 @@
         <div class="m-modal-header">
           <h3 id="modalFileName">File Details</h3>
           <button onclick="closeModal()" class="btn-close">
-            &times;
+            <i class="fa-solid fa-x"></i>
           </button>
         </div>
         <div class="m-modal-body">
@@ -203,6 +206,46 @@
             </button>
             <button id="modalDownloadBtn" class="btn btn-primary">
               <i class="fas fa-download me-2"></i> Download
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- New folder modal -->
+    <div id="newFolderModal" class="m-modal" style="display: none">
+      <div class="m-modal-content">
+        <div class="m-modal-header">
+          <h3 class="mb-0">Create New Folder</h3>
+          <button onclick="closeNewFolderModal()" class="btn-close">
+            <i class="fa-solid fa-x"></i>
+          </button>
+        </div>
+        <div class="m-modal-body">
+          <div class="mb-4">
+            <label
+              for="newFolderNameInput"
+              class="form-label text-secondary mb-1"
+              >Folder Name</label
+            >
+            <input
+              type="text"
+              id="newFolderNameInput"
+              class="form-control"
+              placeholder="New folder"
+            />
+          </div>
+          <div class="d-flex gap-2 justify-content-end">
+            <button
+              class="btn btn-light"
+              onclick="closeNewFolderModal()"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              onclick="submitNewFolder()"
+            >
+              Create
             </button>
           </div>
         </div>

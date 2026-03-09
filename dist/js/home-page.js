@@ -288,29 +288,34 @@ let currentFolder = rootFolder;
  * Navigates into a folder and saves the previous one to history
  */
 const navigateToFolder = (folder, isBack = false) => {
-    // If we aren't going back, push the current folder to history before moving
     if (!isBack && currentFolder && currentFolder !== folder) {
         navigationHistory.push(currentFolder);
     }
     currentFolder = folder;
-    // --- NEW: Update the Path Display ---
+    // --- NEW: Interactive Breadcrumb Generator ---
     const pathDisplay = document.getElementById('folder-path-display');
     if (pathDisplay) {
-        if (folder.path === '/') {
-            pathDisplay.innerText = 'Documents';
+        // 1. Always start with the Root (Documents)
+        let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('/')">Documents</span>`;
+        // 2. If we are deep in a folder, split the path and build the links
+        if (folder.path !== '/') {
+            const segments = folder.path
+                .split('/')
+                .filter((s) => s.length > 0);
+            let buildPath = '';
+            segments.forEach((segment) => {
+                buildPath += `/${segment}`; // Reconstruct the path step-by-step (e.g., /CAS, then /CAS/Finance)
+                breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
+                breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('${buildPath}')">${segment}</span>`;
+            });
         }
-        else {
-            // Convert "/CAS/Finance" into "Documents > CAS > Finance"
-            const formattedPath = folder.path.replace(/\//g, ' > ');
-            pathDisplay.innerText = `Documents ${formattedPath}`;
-        }
+        pathDisplay.innerHTML = breadcrumbsHTML;
     }
-    // ------------------------------------
+    // ---------------------------------------------
     const combinedItems = [
         ...folder.subFolders,
         ...folder.files,
     ];
-    // Update the UI
     (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])(combinedItems);
     (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.updateBackButtonVisibility)(navigationHistory);
 };
@@ -330,6 +335,30 @@ window.goBack = goBack;
 /**
  * Global handler for the onclick events generated in your grid
  */
+window.navigateFromBreadcrumb = (targetPath) => {
+    // If they clicked the root "Documents" link
+    if (targetPath === '/') {
+        navigateToFolder(rootFolder);
+        return;
+    }
+    // Split the target path into folder names (e.g., ['CAS', 'Finance'])
+    const segments = targetPath.split('/').filter((s) => s.length > 0);
+    // Start searching from the top of the tree
+    let foundFolder = rootFolder;
+    // Walk down the tree folder by folder
+    for (const segment of segments) {
+        const nextFolder = foundFolder.subFolders.find((f) => f.name === segment);
+        if (nextFolder) {
+            foundFolder = nextFolder;
+        }
+        else {
+            console.error(`Folder ${segment} not found in path ${targetPath}`);
+            return; // Stop if something goes wrong
+        }
+    }
+    // Once we've found the final folder, navigate to it!
+    navigateToFolder(foundFolder);
+};
 window.handleFolderClick = (folderName) => {
     const target = currentFolder.subFolders.find((f) => f.name === folderName);
     target.isNew = false; // Mark as read when clicked
@@ -347,9 +376,12 @@ window.handleFileClick = (fileName) => {
     // 2. Open Modal & Fill Text
     const modal = document.getElementById('fileModal');
     document.getElementById('modalFileName').innerText = file.name;
-    document.getElementById('modalFileExtension').innerText = file.extension;
-    document.getElementById('modalFileModified').innerText = file.modified;
-    document.getElementById('modalFileModifiedBy').innerText = file.modifiedBy;
+    document.getElementById('modalFileExtension').innerText =
+        file.extension;
+    document.getElementById('modalFileModified').innerText =
+        file.modified;
+    document.getElementById('modalFileModifiedBy').innerText =
+        file.modifiedBy;
     // 3. Program the Download Button
     const downloadBtn = document.getElementById('modalDownloadBtn');
     downloadBtn.onclick = () => {
@@ -426,6 +458,66 @@ window.handleAddFolderDesktop = () => {
         input.focus();
         input.select();
     }
+};
+window.handleAddFolderMobile = () => {
+    // 1. Hide the Bootstrap menu correctly
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (mobileMenu) {
+        mobileMenu.classList.remove('show');
+    }
+    // 2. Clear the input from the last time it was used
+    const input = document.getElementById('newFolderNameInput');
+    if (input)
+        input.value = '';
+    // 3. Show the new modal
+    const modal = document.getElementById('newFolderModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+    // 4. Try to focus the input automatically for the user
+    setTimeout(() => input?.focus(), 100);
+};
+window.submitNewFolder = () => {
+    const input = document.getElementById('newFolderNameInput');
+    let newName = input.value.trim();
+    // If they left it blank, default to "New folder"
+    if (!newName) {
+        newName = 'New folder';
+    }
+    // Check if a folder with this name already exists
+    const isDuplicate = currentFolder.subFolders.some((f) => f.name.toLowerCase() === newName.toLowerCase());
+    if (isDuplicate) {
+        alert('A folder with this name already exists.');
+        input.focus();
+        return; // Stop the function
+    }
+    // Create the new folder object
+    const newFolder = {
+        name: newName,
+        path: currentFolder.path === '/' ? `/${newName}` : `${currentFolder.path}/${newName}`,
+        subFolders: [],
+        files: [],
+        modified: 'Just now',
+        modifiedBy: 'Administrator MOD',
+        isNew: true,
+        type: 'folder',
+    };
+    // Add it to the top of the list
+    currentFolder.subFolders.unshift(newFolder);
+    // Save and Re-render
+    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder);
+    (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])([...currentFolder.subFolders, ...currentFolder.files]);
+    // Close the modal
+    window.closeNewFolderModal();
+};
+document.getElementById('newFolderNameInput')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        window.submitNewFolder();
+    }
+});
+window.closeNewFolderModal = () => {
+    document.getElementById('newFolderModal').style.display = 'none';
 };
 window.saveFolderName = (event) => {
     const newName = event.target.value.trim() || 'New folder';

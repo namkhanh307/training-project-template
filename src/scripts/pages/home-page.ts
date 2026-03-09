@@ -70,32 +70,41 @@ const navigateToFolder = (
   folder: Folder,
   isBack: boolean = false,
 ): void => {
-  // If we aren't going back, push the current folder to history before moving
   if (!isBack && currentFolder && currentFolder !== folder) {
     navigationHistory.push(currentFolder);
   }
 
   currentFolder = folder;
-  
-  // --- NEW: Update the Path Display ---
+
+  // --- NEW: Interactive Breadcrumb Generator ---
   const pathDisplay = document.getElementById('folder-path-display');
   if (pathDisplay) {
-    if (folder.path === '/') {
-      pathDisplay.innerText = 'Documents';
-    } else {
-      // Convert "/CAS/Finance" into "Documents > CAS > Finance"
-      const formattedPath = folder.path.replace(/\//g, ' > ');
-      pathDisplay.innerText = `Documents ${formattedPath}`;
+    // 1. Always start with the Root (Documents)
+    let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('/')">Documents</span>`;
+
+    // 2. If we are deep in a folder, split the path and build the links
+    if (folder.path !== '/') {
+      const segments = folder.path
+        .split('/')
+        .filter((s) => s.length > 0);
+      let buildPath = '';
+
+      segments.forEach((segment) => {
+        buildPath += `/${segment}`; // Reconstruct the path step-by-step (e.g., /CAS, then /CAS/Finance)
+        breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
+        breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('${buildPath}')">${segment}</span>`;
+      });
     }
+
+    pathDisplay.innerHTML = breadcrumbsHTML;
   }
-  // ------------------------------------
+  // ---------------------------------------------
 
   const combinedItems: Row[] = [
     ...folder.subFolders,
     ...folder.files,
   ];
 
-  // Update the UI
   renderGrid(combinedItems);
   updateBackButtonVisibility(navigationHistory);
 };
@@ -118,6 +127,37 @@ const goBack = (): void => {
 /**
  * Global handler for the onclick events generated in your grid
  */
+(window as any).navigateFromBreadcrumb = (targetPath: string) => {
+  // If they clicked the root "Documents" link
+  if (targetPath === '/') {
+    navigateToFolder(rootFolder);
+    return;
+  }
+
+  // Split the target path into folder names (e.g., ['CAS', 'Finance'])
+  const segments = targetPath.split('/').filter((s) => s.length > 0);
+
+  // Start searching from the top of the tree
+  let foundFolder = rootFolder;
+
+  // Walk down the tree folder by folder
+  for (const segment of segments) {
+    const nextFolder = foundFolder.subFolders.find(
+      (f) => f.name === segment,
+    );
+    if (nextFolder) {
+      foundFolder = nextFolder;
+    } else {
+      console.error(
+        `Folder ${segment} not found in path ${targetPath}`,
+      );
+      return; // Stop if something goes wrong
+    }
+  }
+
+  // Once we've found the final folder, navigate to it!
+  navigateToFolder(foundFolder);
+};
 (window as any).handleFolderClick = (folderName: string) => {
   const target = currentFolder.subFolders.find(
     (f) => f.name === folderName,
@@ -138,9 +178,12 @@ const goBack = (): void => {
   // 2. Open Modal & Fill Text
   const modal = document.getElementById('fileModal')!;
   document.getElementById('modalFileName')!.innerText = file.name;
-  document.getElementById('modalFileExtension')!.innerText = file.extension;
-  document.getElementById('modalFileModified')!.innerText = file.modified;
-  document.getElementById('modalFileModifiedBy')!.innerText = file.modifiedBy;
+  document.getElementById('modalFileExtension')!.innerText =
+    file.extension;
+  document.getElementById('modalFileModified')!.innerText =
+    file.modified;
+  document.getElementById('modalFileModifiedBy')!.innerText =
+    file.modifiedBy;
 
   // 3. Program the Download Button
   const downloadBtn = document.getElementById('modalDownloadBtn')!;
@@ -178,9 +221,10 @@ const goBack = (): void => {
     // lastIndexOf returns -1 if no dot is found.
     // We check > 0 to ignore files that just start with a dot (like .env)
     const lastDotIndex = selectedFile.name.lastIndexOf('.');
-    const fileExtension = lastDotIndex > 0 
-      ? selectedFile.name.substring(lastDotIndex + 1).toLowerCase() 
-      : '';
+    const fileExtension =
+      lastDotIndex > 0
+        ? selectedFile.name.substring(lastDotIndex + 1).toLowerCase()
+        : '';
 
     reader.onload = (e) => {
       const base64String = e.target?.result as string;
@@ -199,7 +243,7 @@ const goBack = (): void => {
       currentFolder.files.push(newFile);
 
       // Save to localStorage & Refresh UI
-      saveToStorage(rootFolder); 
+      saveToStorage(rootFolder);
       navigateToFolder(currentFolder, true);
     };
 
@@ -234,6 +278,77 @@ const goBack = (): void => {
     input.focus();
     input.select();
   }
+};
+(window as any).handleAddFolderMobile = () => {
+  // 1. Hide the Bootstrap menu correctly
+  const mobileMenu = document.getElementById('mobileMenu');
+  if (mobileMenu) {
+    mobileMenu.classList.remove('show');
+  }
+
+  // 2. Clear the input from the last time it was used
+  const input = document.getElementById('newFolderNameInput') as HTMLInputElement;
+  if (input) input.value = '';
+
+  // 3. Show the new modal
+  const modal = document.getElementById('newFolderModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+
+  // 4. Try to focus the input automatically for the user
+  setTimeout(() => input?.focus(), 100);
+};
+(window as any).submitNewFolder = () => {
+  const input = document.getElementById('newFolderNameInput') as HTMLInputElement;
+  let newName = input.value.trim();
+
+  // If they left it blank, default to "New folder"
+  if (!newName) {
+    newName = 'New folder';
+  }
+
+  // Check if a folder with this name already exists
+  const isDuplicate = currentFolder.subFolders.some(
+    (f) => f.name.toLowerCase() === newName.toLowerCase()
+  );
+
+  if (isDuplicate) {
+    alert('A folder with this name already exists.');
+    input.focus();
+    return; // Stop the function
+  }
+
+  // Create the new folder object
+  const newFolder: Folder = {
+    name: newName,
+    path: currentFolder.path === '/' ? `/${newName}` : `${currentFolder.path}/${newName}`,
+    subFolders: [],
+    files: [],
+    modified: 'Just now',
+    modifiedBy: 'Administrator MOD',
+    isNew: true,
+    type: 'folder',
+  };
+
+  // Add it to the top of the list
+  currentFolder.subFolders.unshift(newFolder);
+
+  // Save and Re-render
+  saveToStorage(rootFolder);
+  renderGrid([...currentFolder.subFolders, ...currentFolder.files]);
+
+  // Close the modal
+  (window as any).closeNewFolderModal();
+};
+document.getElementById('newFolderNameInput')?.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    (window as any).submitNewFolder();
+  }
+});
+(window as any).closeNewFolderModal = () => {
+  document.getElementById('newFolderModal')!.style.display = 'none';
 };
 (window as any).saveFolderName = (event: any) => {
   const newName = event.target.value.trim() || 'New folder';
