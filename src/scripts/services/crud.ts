@@ -2,7 +2,7 @@ import { File, Folder } from '../models/entity';
 import { EditingState } from '../models/model';
 import { closeModal, openModal } from '../utilities/_modal';
 import { saveToStorage } from '../utilities/_storageUtil';
-import { UIManager } from '../utilities/uiManager';
+import { UIManager, UIManager } from '../utilities/uiManager';
 
 export function triggerUpload() {
   // Mobile safety check (optional: remove 'show' class if triggered from mobile menu)
@@ -58,7 +58,7 @@ export async function processFileSelection(
 
   // Instead of calling global navigateToFolder, just refresh the UI
   // If you need path updates, trigger your UIManager.updatePath(...) here
-  refreshUI();
+  UIManager.refreshUI(currentFolder);
 
   target.value = ''; // Reset input
 }
@@ -91,7 +91,7 @@ export function createNewFolderDesktop(
   };
 
   currentFolder.subFolders.unshift(newFolder);
-  refreshUI();
+  UIManager.refreshUI(currentFolder);
 
   const input = document.getElementById(
     'new-folder-input',
@@ -201,20 +201,20 @@ export function deleteItem(
 }
 export function openRenameModal(
   stateRef: EditingState,
-  oldName: string, 
-  isFolder: boolean
+  oldName: string,
+  isFolder: boolean,
 ) {
-  // CRITICAL FIX: Mutate the properties of the passed object. 
-  // Do NOT reassign the whole object (stateRef = {...})!
   stateRef.oldName = oldName;
   stateRef.isFolder = isFolder;
 
-  const input = document.getElementById('renameInput') as HTMLInputElement;
+  const input = document.getElementById(
+    'renameInput',
+  ) as HTMLInputElement;
 
   if (input) {
     input.value = oldName;
     openModal('renameModal');
-    
+
     setTimeout(() => {
       input.focus();
       if (!isFolder && oldName.includes('.')) {
@@ -225,12 +225,15 @@ export function openRenameModal(
     }, 100);
   }
 }
-export function submitRename(currentFolder: Folder) {
+export function submitRename(
+  stateRef: EditingState,
+  currentFolder: Folder,
+) {
   const input = document.getElementById(
     'renameInput',
   ) as HTMLInputElement;
   const newName = input.value.trim();
-  const { oldName, isFolder } = this._editingItemState;
+  const { oldName, isFolder } = stateRef;
 
   if (!newName || newName === oldName) {
     closeModal('renameModal');

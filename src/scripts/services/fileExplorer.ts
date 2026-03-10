@@ -97,7 +97,7 @@ export class FileExplorer {
 
       switch (action) {
         case 'open-folder':
-          if (itemName) handleFolderClick(this._currentFolder,itemName);
+          if (itemName) handleFolderClick(this._navigationHistory, this._currentFolder,itemName);
           break;
         case 'open-file':
           if (itemName) handleFileClick(this._currentFolder, itemName);
@@ -149,7 +149,7 @@ export class FileExplorer {
       switch (action) {
         // --- Rename Modal ---
         case 'submit-rename':
-          submitRename(this._currentFolder);
+          submitRename(this._editingItemState, this._currentFolder);
           break;
         case 'close-rename':
           closeModal('renameModal');
@@ -203,7 +203,7 @@ export class FileExplorer {
           const target = event.target as HTMLElement;
           if (target.id === 'renameInput') {
             event.preventDefault();
-            submitRename(this._currentFolder);
+            submitRename(this._editingItemState, this._currentFolder);
           } else if (target.id === 'newFolderNameInput') {
             event.preventDefault();
             submitNewFolderMobile(this._currentFolder); // Assuming you migrated your submitNewFolder logic!
@@ -221,7 +221,7 @@ export class FileExplorer {
         '[data-path]',
       ) as HTMLElement;
       if (target && target.dataset.path) {
-        navigateFromBreadcrumb(this._rootFolder, this._currentFolder, UIManager.refreshUI.bind(this), target.dataset.path);
+        navigateFromBreadcrumb(this._navigationHistory, this._rootFolder, this._currentFolder, UIManager.refreshUI.bind(this), target.dataset.path);
       }
     });
   }

@@ -69,7 +69,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
     (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__.saveToStorage)(rootFolder);
     // Instead of calling global navigateToFolder, just refresh the UI
     // If you need path updates, trigger your UIManager.updatePath(...) here
-    refreshUI();
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.refreshUI(currentFolder);
     target.value = ''; // Reset input
 }
 function createNewFolderDesktop(currentFolder, refreshUI) {
@@ -93,7 +93,7 @@ function createNewFolderDesktop(currentFolder, refreshUI) {
         type: 'folder',
     };
     currentFolder.subFolders.unshift(newFolder);
-    refreshUI();
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.refreshUI(currentFolder);
     const input = document.getElementById('new-folder-input');
     if (input) {
         input.value = folderName;
@@ -174,8 +174,6 @@ function deleteItem(currentFolder, name, isFolder) {
     _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
 }
 function openRenameModal(stateRef, oldName, isFolder) {
-    // CRITICAL FIX: Mutate the properties of the passed object. 
-    // Do NOT reassign the whole object (stateRef = {...})!
     stateRef.oldName = oldName;
     stateRef.isFolder = isFolder;
     const input = document.getElementById('renameInput');
@@ -193,10 +191,10 @@ function openRenameModal(stateRef, oldName, isFolder) {
         }, 100);
     }
 }
-function submitRename(currentFolder) {
+function submitRename(stateRef, currentFolder) {
     const input = document.getElementById('renameInput');
     const newName = input.value.trim();
-    const { oldName, isFolder } = this._editingItemState;
+    const { oldName, isFolder } = stateRef;
     if (!newName || newName === oldName) {
         (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('renameModal');
         return;
@@ -389,7 +387,7 @@ class FileExplorer {
             switch (action) {
                 case 'open-folder':
                     if (itemName)
-                        (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.handleFolderClick)(this._currentFolder, itemName);
+                        (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.handleFolderClick)(this._navigationHistory, this._currentFolder, itemName);
                     break;
                 case 'open-file':
                     if (itemName)
@@ -436,7 +434,7 @@ class FileExplorer {
             switch (action) {
                 // --- Rename Modal ---
                 case 'submit-rename':
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitRename)(this._currentFolder);
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitRename)(this._editingItemState, this._currentFolder);
                     break;
                 case 'close-rename':
                     (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('renameModal');
@@ -477,7 +475,7 @@ class FileExplorer {
                 const target = event.target;
                 if (target.id === 'renameInput') {
                     event.preventDefault();
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitRename)(this._currentFolder);
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitRename)(this._editingItemState, this._currentFolder);
                 }
                 else if (target.id === 'newFolderNameInput') {
                     event.preventDefault();
@@ -491,7 +489,7 @@ class FileExplorer {
         pathDisplay?.addEventListener('click', (event) => {
             const target = event.target.closest('[data-path]');
             if (target && target.dataset.path) {
-                (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI.bind(this), target.dataset.path);
+                (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._navigationHistory, this._rootFolder, this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI.bind(this), target.dataset.path);
             }
         });
     }
@@ -643,22 +641,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _uiManager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./uiManager */ "./src/scripts/utilities/uiManager.ts");
 
-function handleFolderClick(currentFolder, folderName) {
+function handleFolderClick(navigationHistory, currentFolder, folderName) {
     const targetFolder = currentFolder.subFolders.find((f) => f.name === folderName);
     if (!targetFolder)
         return;
     targetFolder.isNew = false;
-    this.saveAndRefresh();
+    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.saveAndRefresh(currentFolder);
     // Push to history before moving
-    this._navigationHistory.push(currentFolder);
+    navigationHistory.push(currentFolder);
     currentFolder = targetFolder;
     _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
-    this.refreshUI();
+    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.refreshUI(currentFolder);
 }
-function navigateFromBreadcrumb(rootFolder, currentFolder, refreshUI, targetPath) {
+function navigateFromBreadcrumb(navigationHistory, rootFolder, currentFolder, refreshUI, targetPath) {
     if (targetPath === '/') {
         currentFolder = rootFolder;
-        this._navigationHistory = []; // Clear history if returning to root
+        navigationHistory = []; // Clear history if returning to root
     }
     else {
         const segments = targetPath
@@ -675,7 +673,7 @@ function navigateFromBreadcrumb(rootFolder, currentFolder, refreshUI, targetPath
         currentFolder = foundFolder;
     }
     _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
-    refreshUI();
+    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.refreshUI(currentFolder);
 }
 
 
@@ -731,9 +729,9 @@ class UIManager {
             ...currentFolder.files,
         ]);
     }
-    static saveAndRefresh(rootFolder) {
-        (0,_storageUtil__WEBPACK_IMPORTED_MODULE_0__.saveToStorage)(rootFolder);
-        this.refreshUI(rootFolder);
+    static saveAndRefresh(currentFolder) {
+        (0,_storageUtil__WEBPACK_IMPORTED_MODULE_0__.saveToStorage)(currentFolder);
+        this.refreshUI(currentFolder);
     }
     static updateBreadcrumbs(modalId, currentFolder) {
         const pathDisplay = document.getElementById(modalId);

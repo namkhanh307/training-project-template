@@ -1,27 +1,27 @@
 import { Folder } from "../models/entity";
 import { UIManager } from "./uiManager";
 
-  export function handleFolderClick(currentFolder: Folder, folderName: string) {
+  export function handleFolderClick(navigationHistory: Folder[], currentFolder: Folder, folderName: string) {
     const targetFolder = currentFolder.subFolders.find(
       (f) => f.name === folderName,
     );
     if (!targetFolder) return;
 
     targetFolder.isNew = false;
-    this.saveAndRefresh();
+    UIManager.saveAndRefresh(currentFolder);
 
     // Push to history before moving
-    this._navigationHistory.push(currentFolder);
+    navigationHistory.push(currentFolder);
     currentFolder = targetFolder;
 
     UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
-    this.refreshUI();
+    UIManager.refreshUI(currentFolder);
   }
 
-    export function navigateFromBreadcrumb(rootFolder: Folder, currentFolder: Folder, refreshUI : () => void, targetPath: string) {
+    export function navigateFromBreadcrumb(navigationHistory: Folder[], rootFolder: Folder, currentFolder: Folder, refreshUI : () => void, targetPath: string) {
     if (targetPath === '/') {
       currentFolder = rootFolder;
-      this._navigationHistory = []; // Clear history if returning to root
+      navigationHistory = []; // Clear history if returning to root
     } else {
       const segments = targetPath
         .split('/')
@@ -39,5 +39,5 @@ import { UIManager } from "./uiManager";
     }
 
     UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
-    refreshUI();
+    UIManager.refreshUI(currentFolder);
   }

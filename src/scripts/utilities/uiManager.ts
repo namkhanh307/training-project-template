@@ -8,9 +8,9 @@ export class UIManager {
       ...currentFolder.files,
     ]);
   }
-  static saveAndRefresh(rootFolder: Folder) {
-    saveToStorage(rootFolder);
-    this.refreshUI(rootFolder);
+  static saveAndRefresh(currentFolder: Folder) {
+    saveToStorage(currentFolder);
+    this.refreshUI(currentFolder);
   }
 
   static renderGrid = (data: Row[]): void => {
