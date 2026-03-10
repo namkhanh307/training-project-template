@@ -690,7 +690,6 @@ function updateUrlPath(folderPath) {
         encodeURIComponent(folderPath);
     window.history.pushState({ path: folderPath }, '', newUrl);
 }
-// Reads the URL when the page first loads
 function getPathFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('path') || '/';

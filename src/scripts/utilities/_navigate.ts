@@ -22,7 +22,6 @@ export function handleFolderClick(
   //UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
   UIManager.refreshUI(currentFolder);
 }
-
 export function navigateFromBreadcrumb(
   rootFolder: Folder,
   targetPath: string,
@@ -53,8 +52,6 @@ export function updateUrlPath(folderPath: string) {
     encodeURIComponent(folderPath);
   window.history.pushState({ path: folderPath }, '', newUrl);
 }
-
-// Reads the URL when the page first loads
 export function getPathFromUrl(): string {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get('path') || '/';

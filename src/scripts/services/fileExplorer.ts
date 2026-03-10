@@ -280,7 +280,6 @@ export class FileExplorer {
       () => UIManager.refreshUI(this._currentFolder);
     });
   }
-  
   private initMobileMenuEvents() {
     const mobileMenuList = document.querySelector('.m-mobile-list');
 
