@@ -1,13 +1,14 @@
 import { Folder, File } from '../models/entity';
 import { rootFolder } from '../utilities/_initData';
+import { closeModal } from '../utilities/_modal';
 import { handleFolderClick, navigateFromBreadcrumb } from '../utilities/_navigate';
 import {
   loadFromStorage,
   saveToStorage,
 } from '../utilities/_storageUtil';
 import { UIManager } from '../utilities/uiManager';
-import { processFileSelection, triggerUpload } from './crudFile';
-import { createNewFolderDesktop, saveFolderName } from './crudFolder';
+import { deleteItem, downloadFile, handleFileClick, openMobileOptionsSheet, openNewFolderMobile, openRenameModal, processFileSelection, submitNewFolderMobile, submitRename, triggerUpload } from './crud';
+import { createNewFolderDesktop, saveFolderName } from './crud';
 
 export class FileExplorer {
   _rootFolder: Folder;
@@ -25,25 +26,12 @@ export class FileExplorer {
     this.setupEventListeners();
 
     // Initial Render
-    this.refreshUI();
+    UIManager.refreshUI(this._currentFolder);
     UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
   }
 
   // A handy helper to keep your code DRY (Don't Repeat Yourself)
-  private refreshUI() {
-    UIManager.renderGrid([
-      ...this._currentFolder.subFolders,
-      ...this._currentFolder.files,
-    ]);
-  }
-  private saveAndRefresh() {
-    saveToStorage(this._rootFolder);
-    this.refreshUI();
-  }
 
-  // --- 1. THE ACTION METHOD ---
-
-  // --- 2. THE EVENT ROUTER ---
   private setupEventListeners() {
     this.initToolbarEvents();
     this.initGridEvents();
@@ -71,7 +59,7 @@ export class FileExplorer {
         case 'new-folder':
           createNewFolderDesktop(
             this._currentFolder,
-            this.refreshUI.bind(this),
+            UIManager.refreshUI.bind(this),
           );
           break;
         case 'upload-file':
@@ -87,7 +75,7 @@ export class FileExplorer {
         this,
         this._rootFolder,
         this._currentFolder,
-        this.refreshUI.bind(this),
+        UIManager.refreshUI.bind(this),
       ),
     );
   }
@@ -112,17 +100,17 @@ export class FileExplorer {
           if (itemName) handleFolderClick(this._currentFolder,itemName);
           break;
         case 'open-file':
-          if (itemName) this.handleFileClick(itemName);
+          if (itemName) handleFileClick(this._currentFolder, itemName);
           break;
         case 'delete':
-          if (itemName) this.deleteItem(itemName, isFolder);
+          if (itemName) deleteItem(this._currentFolder, itemName, isFolder);
           break;
         case 'edit':
-          if (itemName) this.openRenameModal(itemName, isFolder);
+          if (itemName) openRenameModal(this._editingItemState, itemName, isFolder);
           break;
         case 'mobile-options':
           if (itemName)
-            this.openMobileOptionsSheet(itemName, isFolder);
+            openMobileOptionsSheet(itemName, isFolder);
           break;
       }
     });
@@ -144,7 +132,7 @@ export class FileExplorer {
     mainContainer?.addEventListener('focusout', (event) => {
       const target = event.target as HTMLElement;
       if (target.id === 'new-folder-input') {
-        this.saveFolderName(target as HTMLInputElement);
+        saveFolderName(this._currentFolder, target as HTMLInputElement);
       }
     });
   }
@@ -161,47 +149,48 @@ export class FileExplorer {
       switch (action) {
         // --- Rename Modal ---
         case 'submit-rename':
-          this.submitRename();
+          submitRename(this._currentFolder);
           break;
         case 'close-rename':
-          this.closeModal('renameModal');
+          closeModal('renameModal');
           break;
 
         // --- Mobile Options Sheet ---
         case 'trigger-mobile-rename':
-          this.closeModal('mobileOptionsModal');
-          this.openRenameModal(
+          closeModal('mobileOptionsModal');
+          openRenameModal(this._editingItemState,
             this._mobileActionItem.name,
             this._mobileActionItem.isFolder,
           );
           break;
         case 'trigger-mobile-delete':
-          this.closeModal('mobileOptionsModal');
-          this.deleteItem(
+          closeModal('mobileOptionsModal');
+          deleteItem(
+            this._currentFolder,
             this._mobileActionItem.name,
             this._mobileActionItem.isFolder,
           );
           break;
         case 'close-mobile-options':
-          this.closeModal('mobileOptionsModal');
+          closeModal('mobileOptionsModal');
           break;
 
         // --- File Viewer Modal ---
         case 'download-file':
           const fileName =
             document.getElementById('modalFileName')?.innerText;
-          if (fileName) this.downloadFile(fileName);
+          if (fileName) downloadFile(this._currentFolder,fileName);
           break;
         case 'close-file-modal':
-          this.closeModal('fileModal');
+          closeModal('fileModal');
           break;
 
         // --- New Folder Modal (Mobile) ---
         case 'submit-new-folder':
-          this.submitNewFolderMobile();
+          submitNewFolderMobile(this._currentFolder);
           break;
         case 'close-new-folder':
-          this.closeModal('newFolderModal');
+          closeModal('newFolderModal');
           break;
       }
     });
@@ -214,10 +203,10 @@ export class FileExplorer {
           const target = event.target as HTMLElement;
           if (target.id === 'renameInput') {
             event.preventDefault();
-            this.submitRename();
+            submitRename(this._currentFolder);
           } else if (target.id === 'newFolderNameInput') {
             event.preventDefault();
-            this.submitNewFolderMobile(); // Assuming you migrated your submitNewFolder logic!
+            submitNewFolderMobile(this._currentFolder); // Assuming you migrated your submitNewFolder logic!
           }
         }
       },
@@ -232,7 +221,7 @@ export class FileExplorer {
         '[data-path]',
       ) as HTMLElement;
       if (target && target.dataset.path) {
-        navigateFromBreadcrumb(this._rootFolder, this._currentFolder, this.refreshUI.bind(this), target.dataset.path);
+        navigateFromBreadcrumb(this._rootFolder, this._currentFolder, UIManager.refreshUI.bind(this), target.dataset.path);
       }
     });
   }
@@ -247,7 +236,7 @@ export class FileExplorer {
 
       switch (action) {
         case 'new-folder':
-          this.openNewFolderMobile(); 
+          openNewFolderMobile(); 
           break;
         case 'upload-file':
           triggerUpload(); // Reuses the exact same method as desktop!
@@ -255,245 +244,5 @@ export class FileExplorer {
         // You can easily wire up sync/export here later
       }
     });
-  }
-
-  // --- ACTIONS: NAVIGATION & BREADCRUMBS ---
-
-  // --- ACTIONS: FILES ---
-  private handleFileClick(fileName: string) {
-    const file = this._currentFolder.files.find(
-      (f) => f.name === fileName,
-    );
-    if (!file) return;
-
-    file.isNew = false;
-    this.saveAndRefresh();
-
-    document.getElementById('modalFileName')!.innerText = file.name;
-    document.getElementById('modalFileExtension')!.innerText =
-      file.extension;
-    document.getElementById('modalFileModified')!.innerText =
-      file.modified;
-    document.getElementById('modalFileModifiedBy')!.innerText =
-      file.modifiedBy;
-
-    this.openModal('fileModal');
-  }
-
-  private downloadFile(fileName: string) {
-    const file = this._currentFolder.files.find(
-      (f) => f.name === fileName,
-    );
-    if (!file || !file.data) return;
-
-    const link = document.createElement('a');
-    link.href = file.data;
-    link.download = file.name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  // --- ACTIONS: CRUD LOGIC ---
-  private deleteItem(name: string, isFolder: boolean) {
-    if (
-      !confirm(
-        `Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`,
-      )
-    )
-      return;
-
-    if (isFolder) {
-      this._currentFolder.subFolders =
-        this._currentFolder.subFolders.filter((f) => f.name !== name);
-    } else {
-      this._currentFolder.files = this._currentFolder.files.filter(
-        (f) => f.name !== name,
-      );
-    }
-    this.saveAndRefresh();
-  }
-
-  private saveFolderName(inputElement: HTMLInputElement) {
-    const newName = inputElement.value.trim() || 'New folder';
-    const folderBeingEdited = this._currentFolder.subFolders.find(
-      (f) => f.isEditing,
-    );
-
-    if (!folderBeingEdited) return;
-
-    const isDuplicate = this._currentFolder.subFolders.some(
-      (f) =>
-        f !== folderBeingEdited &&
-        f.name.toLowerCase() === newName.toLowerCase(),
-    );
-
-    if (isDuplicate) {
-      alert(
-        `This destination already contains a folder named '${newName}'.`,
-      );
-      setTimeout(() => {
-        inputElement.focus();
-        inputElement.select();
-      }, 10);
-      return;
-    }
-
-    folderBeingEdited.name = newName;
-    folderBeingEdited.path =
-      this._currentFolder.path === '/'
-        ? `/${newName}`
-        : `${this._currentFolder.path}/${newName}`;
-    delete folderBeingEdited.isEditing;
-
-    this.saveAndRefresh();
-  }
-
-  // --- ACTIONS: MODAL HANDLERS ---
-  private openRenameModal(oldName: string, isFolder: boolean) {
-    this._editingItemState = { oldName, isFolder };
-    const input = document.getElementById(
-      'renameInput',
-    ) as HTMLInputElement;
-
-    if (input) {
-      input.value = oldName;
-      this.openModal('renameModal');
-      setTimeout(() => {
-        input.focus();
-        if (!isFolder && oldName.includes('.')) {
-          input.setSelectionRange(0, oldName.lastIndexOf('.'));
-        } else {
-          input.select();
-        }
-      }, 100);
-    }
-  }
-
-  private submitRename() {
-    const input = document.getElementById(
-      'renameInput',
-    ) as HTMLInputElement;
-    const newName = input.value.trim();
-    const { oldName, isFolder } = this._editingItemState;
-
-    if (!newName || newName === oldName) {
-      this.closeModal('renameModal');
-      return;
-    }
-
-    const itemArray = isFolder
-      ? this._currentFolder.subFolders
-      : this._currentFolder.files;
-    if (
-      itemArray.some(
-        (f) => f.name.toLowerCase() === newName.toLowerCase(),
-      )
-    ) {
-      alert('An item with this name already exists.');
-      input.focus();
-      return;
-    }
-
-    const target = itemArray.find((f) => f.name === oldName);
-    if (target) {
-      target.name = newName;
-      if (isFolder) {
-        target.path =
-          this._currentFolder.path === '/'
-            ? `/${newName}`
-            : `${this._currentFolder.path}/${newName}`;
-      } else {
-        const lastDot = newName.lastIndexOf('.');
-        (target as File).extension =
-          lastDot > 0
-            ? newName.substring(lastDot + 1).toLowerCase()
-            : '';
-      }
-    }
-
-    this.saveAndRefresh();
-    this.closeModal('renameModal');
-  }
-
-  private openMobileOptionsSheet(name: string, isFolder: boolean) {
-    this._mobileActionItem = { name, isFolder };
-    const title = document.getElementById('optionsModalTitle');
-    if (title) title.innerText = name;
-    this.openModal('mobileOptionsModal');
-  }
-  // --- ACTIONS: MOBILE NEW FOLDER ---
-
-  private openNewFolderMobile() {
-    // 1. Hide the Bootstrap mobile menu (if it's open)
-    document.getElementById('mobileMenu')?.classList.remove('show');
-
-    // 2. Clear the input from the last time it was used
-    const input = document.getElementById(
-      'newFolderNameInput',
-    ) as HTMLInputElement;
-    if (input) input.value = '';
-
-    // 3. Open the modal
-    this.openModal('newFolderModal');
-
-    // 4. Try to focus the input automatically for the user
-    setTimeout(() => input?.focus(), 100);
-  }
-
-  private submitNewFolderMobile() {
-    const input = document.getElementById(
-      'newFolderNameInput',
-    ) as HTMLInputElement;
-    let newName = input.value.trim();
-
-    // If they left it blank, default to "New folder"
-    if (!newName) {
-      newName = 'New folder';
-    }
-
-    // Check if a folder with this name already exists
-    const isDuplicate = this._currentFolder.subFolders.some(
-      (f) => f.name.toLowerCase() === newName.toLowerCase(),
-    );
-
-    if (isDuplicate) {
-      alert('A folder with this name already exists.');
-      input.focus();
-      return; // Stop the function early
-    }
-
-    // Create the new folder object
-    const newFolder: Folder = {
-      name: newName,
-      path:
-        this._currentFolder.path === '/'
-          ? `/${newName}`
-          : `${this._currentFolder.path}/${newName}`,
-      subFolders: [],
-      files: [],
-      modified: 'Just now',
-      modifiedBy: 'Administrator MOD',
-      isNew: true,
-      type: 'folder',
-      // Notice: NO 'isEditing: true' here! Mobile doesn't use the inline grid input.
-    };
-
-    // Add it to the top of the list
-    this._currentFolder.subFolders.unshift(newFolder);
-
-    // Save state, redraw the grid, and close the modal
-    this.saveAndRefresh();
-    this.closeModal('newFolderModal');
-  }
-  // --- UTILS ---
-  private openModal(id: string) {
-    const modal = document.getElementById(id);
-    if (modal) modal.style.display = 'flex';
-  }
-
-  private closeModal(id: string) {
-    const modal = document.getElementById(id);
-    if (modal) modal.style.display = 'none';
   }
 }

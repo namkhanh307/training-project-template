@@ -2,18 +2,32 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./src/scripts/services/crudFile.ts":
-/*!******************************************!*\
-  !*** ./src/scripts/services/crudFile.ts ***!
-  \******************************************/
+/***/ "./src/scripts/services/crud.ts":
+/*!**************************************!*\
+  !*** ./src/scripts/services/crud.ts ***!
+  \**************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   createNewFolderDesktop: function() { return /* binding */ createNewFolderDesktop; },
+/* harmony export */   deleteItem: function() { return /* binding */ deleteItem; },
+/* harmony export */   downloadFile: function() { return /* binding */ downloadFile; },
+/* harmony export */   handleFileClick: function() { return /* binding */ handleFileClick; },
+/* harmony export */   openMobileOptionsSheet: function() { return /* binding */ openMobileOptionsSheet; },
+/* harmony export */   openNewFolderMobile: function() { return /* binding */ openNewFolderMobile; },
+/* harmony export */   openRenameModal: function() { return /* binding */ openRenameModal; },
 /* harmony export */   processFileSelection: function() { return /* binding */ processFileSelection; },
+/* harmony export */   saveFolderName: function() { return /* binding */ saveFolderName; },
+/* harmony export */   submitNewFolderMobile: function() { return /* binding */ submitNewFolderMobile; },
+/* harmony export */   submitRename: function() { return /* binding */ submitRename; },
 /* harmony export */   triggerUpload: function() { return /* binding */ triggerUpload; }
 /* harmony export */ });
-/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+/* harmony import */ var _utilities_modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_modal */ "./src/scripts/utilities/_modal.ts");
+/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+/* harmony import */ var _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilities/uiManager */ "./src/scripts/utilities/uiManager.ts");
+
+
 
 function triggerUpload() {
     // Mobile safety check (optional: remove 'show' class if triggered from mobile menu)
@@ -42,7 +56,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
                     modified: 'Just now',
                     modifiedBy: 'You',
                     isNew: true,
-                    path: "",
+                    path: '',
                     data: e.target?.result,
                     type: 'file',
                 });
@@ -52,59 +66,12 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
     });
     const processedFiles = await Promise.all(filePromises);
     currentFolder.files.push(...processedFiles);
-    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_0__.saveToStorage)(rootFolder);
+    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__.saveToStorage)(rootFolder);
     // Instead of calling global navigateToFolder, just refresh the UI
     // If you need path updates, trigger your UIManager.updatePath(...) here
     refreshUI();
     target.value = ''; // Reset input
 }
-
-
-/***/ }),
-
-/***/ "./src/scripts/services/crudFolder.ts":
-/*!********************************************!*\
-  !*** ./src/scripts/services/crudFolder.ts ***!
-  \********************************************/
-/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   createNewFolderDesktop: function() { return /* binding */ createNewFolderDesktop; },
-/* harmony export */   saveFolderName: function() { return /* binding */ saveFolderName; }
-/* harmony export */ });
-/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
-
-//delete folder
-// const deleteFolderDesktop = () => {
-//   const container = document.getElementById('desktop-row-container');
-//   container?.addEventListener('click', (event) => {
-//     // 1. Find the closest element with a 'data-action' attribute.
-//     // We use .closest() because the user might click the <use> or <path> INSIDE the <svg>!
-//     const target = (event.target as HTMLElement).closest(
-//       '[data-action]',
-//     ) as HTMLElement;
-//     // If they clicked empty space or a row without an action, do nothing.
-//     if (!target) return;
-//     // 2. Stop propagation so row-clicks don't fire simultaneously
-//     event.stopPropagation();
-//     // 3. Extract your data from the dataset
-//     const action = target.dataset.action; // "delete"
-//     const itemName = target.dataset.name; // e.g., "Report.xlsx"
-//     const itemType = target.dataset.type; // "folder" or "file"
-//     // 4. Route the logic
-//     if (action === 'delete' && itemName) {
-//       const isFolder = itemType === 'folder';
-//       // Call your internal delete function (no window prefix needed!)
-//       deleteItem(itemName, isFolder);
-//     }
-//     // You can easily add more routes later!
-//     if (action === 'edit' && itemName) {
-//       openRenameModal(itemName, itemType === 'folder');
-//     }
-//   });
-// };
-// Look, mom! No (window as any)!
 function createNewFolderDesktop(currentFolder, refreshUI) {
     let baseName = 'New folder';
     let folderName = baseName;
@@ -134,7 +101,188 @@ function createNewFolderDesktop(currentFolder, refreshUI) {
         input.select();
     }
 }
-function saveFolderName(rootFolder, currentFolder, refreshUI, inputElement) {
+// export function saveFolderName(
+//   rootFolder: Folder,
+//   currentFolder: Folder,
+//   refreshUI: () => void,
+//   inputElement: HTMLInputElement,
+// ) {
+//   const newName = inputElement.value.trim() || 'New folder';
+//   const folderBeingEdited = currentFolder.subFolders.find(
+//     (f) => f.isEditing,
+//   );
+//   if (!folderBeingEdited) return;
+//   const isDuplicate = currentFolder.subFolders.some(
+//     (f) =>
+//       f !== folderBeingEdited &&
+//       f.name.toLowerCase() === newName.toLowerCase(),
+//   );
+//   if (isDuplicate) {
+//     alert(
+//       `This destination already contains a folder named '${newName}'.`,
+//     );
+//     setTimeout(() => {
+//       inputElement.focus();
+//       inputElement.select();
+//     }, 10);
+//     return;
+//   }
+//   folderBeingEdited.name = newName;
+//   folderBeingEdited.path =
+//     currentFolder.path === '/'
+//       ? `/${newName}`
+//       : `${currentFolder.path}/${newName}`;
+//   delete folderBeingEdited.isEditing;
+//   saveToStorage(rootFolder);
+//   refreshUI();
+// }
+function handleFileClick(currentFolder, fileName) {
+    const file = currentFolder.files.find((f) => f.name === fileName);
+    if (!file)
+        return;
+    file.isNew = false;
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
+    document.getElementById('modalFileName').innerText = file.name;
+    document.getElementById('modalFileExtension').innerText =
+        file.extension;
+    document.getElementById('modalFileModified').innerText =
+        file.modified;
+    document.getElementById('modalFileModifiedBy').innerText =
+        file.modifiedBy;
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.openModal)('fileModal');
+}
+function downloadFile(currentFolder, fileName) {
+    const file = currentFolder.files.find((f) => f.name === fileName);
+    if (!file || !file.data)
+        return;
+    const link = document.createElement('a');
+    link.href = file.data;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+function deleteItem(currentFolder, name, isFolder) {
+    if (!confirm(`Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`))
+        return;
+    if (isFolder) {
+        currentFolder.subFolders = currentFolder.subFolders.filter((f) => f.name !== name);
+    }
+    else {
+        currentFolder.files = currentFolder.files.filter((f) => f.name !== name);
+    }
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
+}
+function openRenameModal(stateRef, oldName, isFolder) {
+    // CRITICAL FIX: Mutate the properties of the passed object. 
+    // Do NOT reassign the whole object (stateRef = {...})!
+    stateRef.oldName = oldName;
+    stateRef.isFolder = isFolder;
+    const input = document.getElementById('renameInput');
+    if (input) {
+        input.value = oldName;
+        (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.openModal)('renameModal');
+        setTimeout(() => {
+            input.focus();
+            if (!isFolder && oldName.includes('.')) {
+                input.setSelectionRange(0, oldName.lastIndexOf('.'));
+            }
+            else {
+                input.select();
+            }
+        }, 100);
+    }
+}
+function submitRename(currentFolder) {
+    const input = document.getElementById('renameInput');
+    const newName = input.value.trim();
+    const { oldName, isFolder } = this._editingItemState;
+    if (!newName || newName === oldName) {
+        (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('renameModal');
+        return;
+    }
+    const itemArray = isFolder
+        ? currentFolder.subFolders
+        : currentFolder.files;
+    if (itemArray.some((f) => f.name.toLowerCase() === newName.toLowerCase())) {
+        alert('An item with this name already exists.');
+        input.focus();
+        return;
+    }
+    const target = itemArray.find((f) => f.name === oldName);
+    if (target) {
+        target.name = newName;
+        if (isFolder) {
+            target.path =
+                currentFolder.path === '/'
+                    ? `/${newName}`
+                    : `${currentFolder.path}/${newName}`;
+        }
+        else {
+            const lastDot = newName.lastIndexOf('.');
+            target.extension =
+                lastDot > 0
+                    ? newName.substring(lastDot + 1).toLowerCase()
+                    : '';
+        }
+    }
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('renameModal');
+}
+function openMobileOptionsSheet(name, isFolder) {
+    this._mobileActionItem = { name, isFolder };
+    const title = document.getElementById('optionsModalTitle');
+    if (title)
+        title.innerText = name;
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.openModal)('mobileOptionsModal');
+}
+function openNewFolderMobile() {
+    // 1. Hide the Bootstrap mobile menu (if it's open)
+    document.getElementById('mobileMenu')?.classList.remove('show');
+    // 2. Clear the input from the last time it was used
+    const input = document.getElementById('newFolderNameInput');
+    if (input)
+        input.value = '';
+    // 3. Open the modal
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.openModal)('newFolderModal');
+    // 4. Try to focus the input automatically for the user
+    setTimeout(() => input?.focus(), 100);
+}
+function submitNewFolderMobile(currentFolder) {
+    const input = document.getElementById('newFolderNameInput');
+    let newName = input.value.trim();
+    // If they left it blank, default to "New folder"
+    if (!newName) {
+        newName = 'New folder';
+    }
+    // Check if a folder with this name already exists
+    const isDuplicate = currentFolder.subFolders.some((f) => f.name.toLowerCase() === newName.toLowerCase());
+    if (isDuplicate) {
+        alert('A folder with this name already exists.');
+        input.focus();
+        return; // Stop the function early
+    }
+    // Create the new folder object
+    const newFolder = {
+        name: newName,
+        path: currentFolder.path === '/'
+            ? `/${newName}`
+            : `${currentFolder.path}/${newName}`,
+        subFolders: [],
+        files: [],
+        modified: 'Just now',
+        modifiedBy: 'You',
+        isNew: true,
+        type: 'folder',
+        // Notice: NO 'isEditing: true' here! Mobile doesn't use the inline grid input.
+    };
+    // Add it to the top of the list
+    currentFolder.subFolders.unshift(newFolder);
+    // Save state, redraw the grid, and close the modal
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('newFolderModal');
+}
+function saveFolderName(currentFolder, inputElement) {
     const newName = inputElement.value.trim() || 'New folder';
     const folderBeingEdited = currentFolder.subFolders.find((f) => f.isEditing);
     if (!folderBeingEdited)
@@ -155,8 +303,7 @@ function saveFolderName(rootFolder, currentFolder, refreshUI, inputElement) {
             ? `/${newName}`
             : `${currentFolder.path}/${newName}`;
     delete folderBeingEdited.isEditing;
-    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_0__.saveToStorage)(rootFolder);
-    refreshUI();
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
 }
 
 
@@ -173,11 +320,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   FileExplorer: function() { return /* binding */ FileExplorer; }
 /* harmony export */ });
 /* harmony import */ var _utilities_initData__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_initData */ "./src/scripts/utilities/_initData.ts");
-/* harmony import */ var _utilities_navigate__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utilities/_navigate */ "./src/scripts/utilities/_navigate.ts");
-/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
-/* harmony import */ var _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilities/uiManager */ "./src/scripts/utilities/uiManager.ts");
-/* harmony import */ var _crudFile__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./crudFile */ "./src/scripts/services/crudFile.ts");
-/* harmony import */ var _crudFolder__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./crudFolder */ "./src/scripts/services/crudFolder.ts");
+/* harmony import */ var _utilities_modal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utilities/_modal */ "./src/scripts/utilities/_modal.ts");
+/* harmony import */ var _utilities_navigate__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilities/_navigate */ "./src/scripts/utilities/_navigate.ts");
+/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+/* harmony import */ var _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utilities/uiManager */ "./src/scripts/utilities/uiManager.ts");
+/* harmony import */ var _crud__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./crud */ "./src/scripts/services/crud.ts");
+
 
 
 
@@ -190,27 +338,15 @@ class FileExplorer {
         //State for modals
         this._editingItemState = { oldName: '', isFolder: false };
         this._mobileActionItem = { name: '', isFolder: false };
-        this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder);
+        this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder);
         this._currentFolder = this._rootFolder;
         // Setup event listeners once when the app starts
         this.setupEventListeners();
         // Initial Render
-        this.refreshUI();
-        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
+        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
     }
     // A handy helper to keep your code DRY (Don't Repeat Yourself)
-    refreshUI() {
-        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.renderGrid([
-            ...this._currentFolder.subFolders,
-            ...this._currentFolder.files,
-        ]);
-    }
-    saveAndRefresh() {
-        (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(this._rootFolder);
-        this.refreshUI();
-    }
-    // --- 1. THE ACTION METHOD ---
-    // --- 2. THE EVENT ROUTER ---
     setupEventListeners() {
         this.initToolbarEvents();
         this.initGridEvents();
@@ -229,15 +365,15 @@ class FileExplorer {
             const action = target.dataset.action;
             switch (action) {
                 case 'new-folder':
-                    (0,_crudFolder__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, this.refreshUI.bind(this));
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI.bind(this));
                     break;
                 case 'upload-file':
-                    (0,_crudFile__WEBPACK_IMPORTED_MODULE_4__.triggerUpload)();
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.triggerUpload)();
                     break;
             }
         });
         // 2. Listener for the Hidden File Input
-        fileInput?.addEventListener('change', _crudFile__WEBPACK_IMPORTED_MODULE_4__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, this.refreshUI.bind(this)));
+        fileInput?.addEventListener('change', _crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI.bind(this)));
     }
     initGridEvents() {
         // We attach one listener to the main container that holds both grids
@@ -253,23 +389,23 @@ class FileExplorer {
             switch (action) {
                 case 'open-folder':
                     if (itemName)
-                        (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_1__.handleFolderClick)(this._currentFolder, itemName);
+                        (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.handleFolderClick)(this._currentFolder, itemName);
                     break;
                 case 'open-file':
                     if (itemName)
-                        this.handleFileClick(itemName);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.handleFileClick)(this._currentFolder, itemName);
                     break;
                 case 'delete':
                     if (itemName)
-                        this.deleteItem(itemName, isFolder);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.deleteItem)(this._currentFolder, itemName, isFolder);
                     break;
                 case 'edit':
                     if (itemName)
-                        this.openRenameModal(itemName, isFolder);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openRenameModal)(this._editingItemState, itemName, isFolder);
                     break;
                 case 'mobile-options':
                     if (itemName)
-                        this.openMobileOptionsSheet(itemName, isFolder);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openMobileOptionsSheet)(itemName, isFolder);
                     break;
             }
         });
@@ -286,7 +422,7 @@ class FileExplorer {
         mainContainer?.addEventListener('focusout', (event) => {
             const target = event.target;
             if (target.id === 'new-folder-input') {
-                this.saveFolderName(target);
+                (0,_crud__WEBPACK_IMPORTED_MODULE_5__.saveFolderName)(this._currentFolder, target);
             }
         });
     }
@@ -300,38 +436,38 @@ class FileExplorer {
             switch (action) {
                 // --- Rename Modal ---
                 case 'submit-rename':
-                    this.submitRename();
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitRename)(this._currentFolder);
                     break;
                 case 'close-rename':
-                    this.closeModal('renameModal');
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('renameModal');
                     break;
                 // --- Mobile Options Sheet ---
                 case 'trigger-mobile-rename':
-                    this.closeModal('mobileOptionsModal');
-                    this.openRenameModal(this._mobileActionItem.name, this._mobileActionItem.isFolder);
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('mobileOptionsModal');
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openRenameModal)(this._editingItemState, this._mobileActionItem.name, this._mobileActionItem.isFolder);
                     break;
                 case 'trigger-mobile-delete':
-                    this.closeModal('mobileOptionsModal');
-                    this.deleteItem(this._mobileActionItem.name, this._mobileActionItem.isFolder);
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('mobileOptionsModal');
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.deleteItem)(this._currentFolder, this._mobileActionItem.name, this._mobileActionItem.isFolder);
                     break;
                 case 'close-mobile-options':
-                    this.closeModal('mobileOptionsModal');
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('mobileOptionsModal');
                     break;
                 // --- File Viewer Modal ---
                 case 'download-file':
                     const fileName = document.getElementById('modalFileName')?.innerText;
                     if (fileName)
-                        this.downloadFile(fileName);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.downloadFile)(this._currentFolder, fileName);
                     break;
                 case 'close-file-modal':
-                    this.closeModal('fileModal');
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('fileModal');
                     break;
                 // --- New Folder Modal (Mobile) ---
                 case 'submit-new-folder':
-                    this.submitNewFolderMobile();
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitNewFolderMobile)(this._currentFolder);
                     break;
                 case 'close-new-folder':
-                    this.closeModal('newFolderModal');
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('newFolderModal');
                     break;
             }
         });
@@ -341,11 +477,11 @@ class FileExplorer {
                 const target = event.target;
                 if (target.id === 'renameInput') {
                     event.preventDefault();
-                    this.submitRename();
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitRename)(this._currentFolder);
                 }
                 else if (target.id === 'newFolderNameInput') {
                     event.preventDefault();
-                    this.submitNewFolderMobile(); // Assuming you migrated your submitNewFolder logic!
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitNewFolderMobile)(this._currentFolder); // Assuming you migrated your submitNewFolder logic!
                 }
             }
         });
@@ -355,7 +491,7 @@ class FileExplorer {
         pathDisplay?.addEventListener('click', (event) => {
             const target = event.target.closest('[data-path]');
             if (target && target.dataset.path) {
-                (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_1__.navigateFromBreadcrumb)(this._rootFolder, this._currentFolder, this.refreshUI.bind(this), target.dataset.path);
+                (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI.bind(this), target.dataset.path);
             }
         });
     }
@@ -368,197 +504,14 @@ class FileExplorer {
             const action = target.dataset.action;
             switch (action) {
                 case 'new-folder':
-                    this.openNewFolderMobile();
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openNewFolderMobile)();
                     break;
                 case 'upload-file':
-                    (0,_crudFile__WEBPACK_IMPORTED_MODULE_4__.triggerUpload)(); // Reuses the exact same method as desktop!
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.triggerUpload)(); // Reuses the exact same method as desktop!
                     break;
                 // You can easily wire up sync/export here later
             }
         });
-    }
-    // --- ACTIONS: NAVIGATION & BREADCRUMBS ---
-    // --- ACTIONS: FILES ---
-    handleFileClick(fileName) {
-        const file = this._currentFolder.files.find((f) => f.name === fileName);
-        if (!file)
-            return;
-        file.isNew = false;
-        this.saveAndRefresh();
-        document.getElementById('modalFileName').innerText = file.name;
-        document.getElementById('modalFileExtension').innerText =
-            file.extension;
-        document.getElementById('modalFileModified').innerText =
-            file.modified;
-        document.getElementById('modalFileModifiedBy').innerText =
-            file.modifiedBy;
-        this.openModal('fileModal');
-    }
-    downloadFile(fileName) {
-        const file = this._currentFolder.files.find((f) => f.name === fileName);
-        if (!file || !file.data)
-            return;
-        const link = document.createElement('a');
-        link.href = file.data;
-        link.download = file.name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-    // --- ACTIONS: CRUD LOGIC ---
-    deleteItem(name, isFolder) {
-        if (!confirm(`Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`))
-            return;
-        if (isFolder) {
-            this._currentFolder.subFolders =
-                this._currentFolder.subFolders.filter((f) => f.name !== name);
-        }
-        else {
-            this._currentFolder.files = this._currentFolder.files.filter((f) => f.name !== name);
-        }
-        this.saveAndRefresh();
-    }
-    saveFolderName(inputElement) {
-        const newName = inputElement.value.trim() || 'New folder';
-        const folderBeingEdited = this._currentFolder.subFolders.find((f) => f.isEditing);
-        if (!folderBeingEdited)
-            return;
-        const isDuplicate = this._currentFolder.subFolders.some((f) => f !== folderBeingEdited &&
-            f.name.toLowerCase() === newName.toLowerCase());
-        if (isDuplicate) {
-            alert(`This destination already contains a folder named '${newName}'.`);
-            setTimeout(() => {
-                inputElement.focus();
-                inputElement.select();
-            }, 10);
-            return;
-        }
-        folderBeingEdited.name = newName;
-        folderBeingEdited.path =
-            this._currentFolder.path === '/'
-                ? `/${newName}`
-                : `${this._currentFolder.path}/${newName}`;
-        delete folderBeingEdited.isEditing;
-        this.saveAndRefresh();
-    }
-    // --- ACTIONS: MODAL HANDLERS ---
-    openRenameModal(oldName, isFolder) {
-        this._editingItemState = { oldName, isFolder };
-        const input = document.getElementById('renameInput');
-        if (input) {
-            input.value = oldName;
-            this.openModal('renameModal');
-            setTimeout(() => {
-                input.focus();
-                if (!isFolder && oldName.includes('.')) {
-                    input.setSelectionRange(0, oldName.lastIndexOf('.'));
-                }
-                else {
-                    input.select();
-                }
-            }, 100);
-        }
-    }
-    submitRename() {
-        const input = document.getElementById('renameInput');
-        const newName = input.value.trim();
-        const { oldName, isFolder } = this._editingItemState;
-        if (!newName || newName === oldName) {
-            this.closeModal('renameModal');
-            return;
-        }
-        const itemArray = isFolder
-            ? this._currentFolder.subFolders
-            : this._currentFolder.files;
-        if (itemArray.some((f) => f.name.toLowerCase() === newName.toLowerCase())) {
-            alert('An item with this name already exists.');
-            input.focus();
-            return;
-        }
-        const target = itemArray.find((f) => f.name === oldName);
-        if (target) {
-            target.name = newName;
-            if (isFolder) {
-                target.path =
-                    this._currentFolder.path === '/'
-                        ? `/${newName}`
-                        : `${this._currentFolder.path}/${newName}`;
-            }
-            else {
-                const lastDot = newName.lastIndexOf('.');
-                target.extension =
-                    lastDot > 0
-                        ? newName.substring(lastDot + 1).toLowerCase()
-                        : '';
-            }
-        }
-        this.saveAndRefresh();
-        this.closeModal('renameModal');
-    }
-    openMobileOptionsSheet(name, isFolder) {
-        this._mobileActionItem = { name, isFolder };
-        const title = document.getElementById('optionsModalTitle');
-        if (title)
-            title.innerText = name;
-        this.openModal('mobileOptionsModal');
-    }
-    // --- ACTIONS: MOBILE NEW FOLDER ---
-    openNewFolderMobile() {
-        // 1. Hide the Bootstrap mobile menu (if it's open)
-        document.getElementById('mobileMenu')?.classList.remove('show');
-        // 2. Clear the input from the last time it was used
-        const input = document.getElementById('newFolderNameInput');
-        if (input)
-            input.value = '';
-        // 3. Open the modal
-        this.openModal('newFolderModal');
-        // 4. Try to focus the input automatically for the user
-        setTimeout(() => input?.focus(), 100);
-    }
-    submitNewFolderMobile() {
-        const input = document.getElementById('newFolderNameInput');
-        let newName = input.value.trim();
-        // If they left it blank, default to "New folder"
-        if (!newName) {
-            newName = 'New folder';
-        }
-        // Check if a folder with this name already exists
-        const isDuplicate = this._currentFolder.subFolders.some((f) => f.name.toLowerCase() === newName.toLowerCase());
-        if (isDuplicate) {
-            alert('A folder with this name already exists.');
-            input.focus();
-            return; // Stop the function early
-        }
-        // Create the new folder object
-        const newFolder = {
-            name: newName,
-            path: this._currentFolder.path === '/'
-                ? `/${newName}`
-                : `${this._currentFolder.path}/${newName}`,
-            subFolders: [],
-            files: [],
-            modified: 'Just now',
-            modifiedBy: 'Administrator MOD',
-            isNew: true,
-            type: 'folder',
-            // Notice: NO 'isEditing: true' here! Mobile doesn't use the inline grid input.
-        };
-        // Add it to the top of the list
-        this._currentFolder.subFolders.unshift(newFolder);
-        // Save state, redraw the grid, and close the modal
-        this.saveAndRefresh();
-        this.closeModal('newFolderModal');
-    }
-    // --- UTILS ---
-    openModal(id) {
-        const modal = document.getElementById(id);
-        if (modal)
-            modal.style.display = 'flex';
-    }
-    closeModal(id) {
-        const modal = document.getElementById(id);
-        if (modal)
-            modal.style.display = 'none';
     }
 }
 
@@ -648,6 +601,31 @@ let rootFolder = {
     isNew: true,
     type: 'folder',
 };
+
+
+/***/ }),
+
+/***/ "./src/scripts/utilities/_modal.ts":
+/*!*****************************************!*\
+  !*** ./src/scripts/utilities/_modal.ts ***!
+  \*****************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   closeModal: function() { return /* binding */ closeModal; },
+/* harmony export */   openModal: function() { return /* binding */ openModal; }
+/* harmony export */ });
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal)
+        modal.style.display = 'flex';
+}
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal)
+        modal.style.display = 'none';
+}
 
 
 /***/ }),
@@ -744,7 +722,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   UIManager: function() { return /* binding */ UIManager; }
 /* harmony export */ });
+/* harmony import */ var _storageUtil__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+
 class UIManager {
+    static refreshUI(currentFolder) {
+        UIManager.renderGrid([
+            ...currentFolder.subFolders,
+            ...currentFolder.files,
+        ]);
+    }
+    static saveAndRefresh(rootFolder) {
+        (0,_storageUtil__WEBPACK_IMPORTED_MODULE_0__.saveToStorage)(rootFolder);
+        this.refreshUI(rootFolder);
+    }
     static updateBreadcrumbs(modalId, currentFolder) {
         const pathDisplay = document.getElementById(modalId);
         if (!pathDisplay)
@@ -763,7 +753,6 @@ class UIManager {
         }
         pathDisplay.innerHTML = breadcrumbsHTML;
     }
-    static showModal(path) { }
 }
 UIManager.renderGrid = (data) => {
     const desktopContainer = document.getElementById('desktop-row-container');

@@ -1,0 +1,9 @@
+export function openModal(id: string) {
+  const modal = document.getElementById(id);
+  if (modal) modal.style.display = 'flex';
+}
+
+export function closeModal(id: string) {
+  const modal = document.getElementById(id);
+  if (modal) modal.style.display = 'none';
+}

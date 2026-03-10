@@ -1,6 +1,18 @@
 import { Row, File, Folder } from '../models/entity';
+import { saveToStorage } from './_storageUtil';
 
 export class UIManager {
+  static refreshUI(currentFolder: Folder) {
+    UIManager.renderGrid([
+      ...currentFolder.subFolders,
+      ...currentFolder.files,
+    ]);
+  }
+  static saveAndRefresh(rootFolder: Folder) {
+    saveToStorage(rootFolder);
+    this.refreshUI(rootFolder);
+  }
+
   static renderGrid = (data: Row[]): void => {
     const desktopContainer = document.getElementById(
       'desktop-row-container',
@@ -105,5 +117,4 @@ export class UIManager {
     }
     pathDisplay.innerHTML = breadcrumbsHTML;
   }
-  static showModal (path: string) {}
 }
