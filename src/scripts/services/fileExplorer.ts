@@ -47,7 +47,7 @@ export class FileExplorer {
     ) as HTMLInputElement;
 
     // 1. Router for all Toolbar Clicks
-    desktopToolbar?.addEventListener('click', (event) => {
+    desktopToolbar?.addEventListener('click', async (event) => {
       const target = (event.target as HTMLElement).closest(
         '[data-action]',
       ) as HTMLElement;
@@ -57,9 +57,9 @@ export class FileExplorer {
 
       switch (action) {
         case 'new-folder':
-          createNewFolderDesktop(
+          await createNewFolderDesktop(
             this._currentFolder,
-            UIManager.refreshUI.bind(this),
+            () => UIManager.refreshUI(this._currentFolder),
           );
           break;
         case 'upload-file':
@@ -75,7 +75,7 @@ export class FileExplorer {
         this,
         this._rootFolder,
         this._currentFolder,
-        UIManager.refreshUI.bind(this),
+        () => UIManager.refreshUI(this._currentFolder),
       ),
     );
   }

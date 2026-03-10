@@ -72,7 +72,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
     _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.refreshUI(currentFolder);
     target.value = ''; // Reset input
 }
-function createNewFolderDesktop(currentFolder, refreshUI) {
+async function createNewFolderDesktop(currentFolder, refreshUI) {
     let baseName = 'New folder';
     let folderName = baseName;
     let counter = 1;
@@ -93,7 +93,7 @@ function createNewFolderDesktop(currentFolder, refreshUI) {
         type: 'folder',
     };
     currentFolder.subFolders.unshift(newFolder);
-    refreshUI();
+    await refreshUI();
     const input = document.getElementById('new-folder-input');
     if (input) {
         input.value = folderName;
@@ -356,14 +356,14 @@ class FileExplorer {
         const desktopToolbar = document.querySelector('.l-toolbar');
         const fileInput = document.getElementById('fileInput');
         // 1. Router for all Toolbar Clicks
-        desktopToolbar?.addEventListener('click', (event) => {
+        desktopToolbar?.addEventListener('click', async (event) => {
             const target = event.target.closest('[data-action]');
             if (!target)
                 return;
             const action = target.dataset.action;
             switch (action) {
                 case 'new-folder':
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI.bind(this));
+                    await (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder));
                     break;
                 case 'upload-file':
                     (0,_crud__WEBPACK_IMPORTED_MODULE_5__.triggerUpload)();
@@ -371,7 +371,7 @@ class FileExplorer {
             }
         });
         // 2. Listener for the Hidden File Input
-        fileInput?.addEventListener('change', _crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI.bind(this)));
+        fileInput?.addEventListener('change', _crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder)));
     }
     initGridEvents() {
         // We attach one listener to the main container that holds both grids

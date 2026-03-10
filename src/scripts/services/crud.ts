@@ -62,9 +62,9 @@ export async function processFileSelection(
 
   target.value = ''; // Reset input
 }
-export function createNewFolderDesktop(
+export async function createNewFolderDesktop(
   currentFolder: Folder,
-  refreshUI: () => void,
+  refreshUI: () => Promise<void>,
 ) {
   let baseName = 'New folder';
   let folderName = baseName;
@@ -91,7 +91,7 @@ export function createNewFolderDesktop(
   };
 
   currentFolder.subFolders.unshift(newFolder);
-  refreshUI();
+  await refreshUI();
 
   const input = document.getElementById(
     'new-folder-input',
