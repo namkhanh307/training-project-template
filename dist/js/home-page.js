@@ -83,7 +83,9 @@ async function createNewFolderDesktop(currentFolder, refreshUI) {
     }
     const newFolder = {
         name: folderName,
-        path: '',
+        path: currentFolder.path === '/'
+            ? `/${folderName}`
+            : `${currentFolder.path}/${folderName}`,
         subFolders: [],
         files: [],
         modified: 'Just now',
@@ -336,13 +338,13 @@ class FileExplorer {
         //State for modals
         this._editingItemState = { oldName: '', isFolder: false };
         this._mobileActionItem = { name: '', isFolder: false };
-        this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder);
-        const initialPath = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)();
-        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, initialPath);
+        this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder); //load database 
+        const initialPath = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)(); //read url
+        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, initialPath); //locate current folder 
         // Setup event listeners once when the app starts
-        this.setupEventListeners();
+        this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
         // Initial Render
-        () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
         _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
         window.addEventListener('popstate', () => {
             const path = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)();
@@ -378,7 +380,7 @@ class FileExplorer {
             }
         });
         // 2. Listener for the Hidden File Input
-        fileInput?.addEventListener('change', _crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder)));
+        fileInput?.addEventListener('change', _crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder)));
     }
     initGridEvents() {
         // We attach one listener to the main container that holds both grids

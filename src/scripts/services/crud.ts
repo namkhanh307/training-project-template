@@ -80,7 +80,10 @@ export async function createNewFolderDesktop(
 
   const newFolder: Folder = {
     name: folderName,
-    path: '',
+    path:
+      currentFolder.path === '/'
+        ? `/${folderName}`
+        : `${currentFolder.path}/${folderName}`,
     subFolders: [],
     files: [],
     modified: 'Just now',
@@ -376,7 +379,7 @@ export function saveFolderName(
     currentFolder.path === '/'
       ? `/${newName}`
       : `${currentFolder.path}/${newName}`;
-  delete folderBeingEdited.isEditing;
 
+  delete folderBeingEdited.isEditing;
   UIManager.saveAndRefresh(currentFolder);
 }

@@ -35,17 +35,17 @@ export class FileExplorer {
   private _mobileActionItem = { name: '', isFolder: false };
 
   constructor() {
-    this._rootFolder = loadFromStorage(rootFolder);
-    const initialPath = getPathFromUrl();
+    this._rootFolder = loadFromStorage(rootFolder); //load database 
+    const initialPath = getPathFromUrl(); //read url
     this._currentFolder = navigateFromBreadcrumb(
       this._rootFolder,
       initialPath,
-    );
+    ); //locate current folder 
     // Setup event listeners once when the app starts
-    this.setupEventListeners();
+    this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
 
     // Initial Render
-    () => UIManager.refreshUI(this._currentFolder);
+    UIManager.refreshUI(this._currentFolder);
     UIManager.updateBreadcrumbs(
       'folder-path-display',
       this._currentFolder,
@@ -108,7 +108,7 @@ export class FileExplorer {
         this,
         this._rootFolder,
         this._currentFolder,
-        () => UIManager.refreshUI(this._currentFolder),
+        UIManager.refreshUI(this._currentFolder),
       ),
     );
   }

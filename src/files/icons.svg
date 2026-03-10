@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
     <symbol id="icon-new" viewBox="0 0 20 20">
-        <path fill="currentColor"
+        <path fill="#f24995"
             d="M10 0c.423 0 .766.343.766.766v8.467h8.468a.766.766 0 1 1 0 1.533h-8.468v8.468a.766.766 0 1 1-1.532 0l-.001-8.468H.766a.766.766 0 0 1 0-1.532l8.467-.001V.766A.768.768 0 0 1 10 0Z" />
     </symbol>
 
     <symbol id="icon-upload" viewBox="0 0 2048 2048">
-        <path fill="currentColor"
+        <path fill="#f24995"
             d="M1536 0v128H384V0h1152zm45 979l-90 90l-467-470v1449H896V599l-467 470l-90-90l621-626l621 626z" />
     </symbol>
 
     <symbol id="icon-sync" viewBox="0 0 2048 2048">
-        <path fill="currentColor"
+        <path fill="#f24995"
             d="M2048 256v512h-512V640h316q-59-117-146-211t-196-161t-231-103t-255-37q-154 0-295 47T471 309T268 517T136 787L14 749q50-166 149-304t232-237T689 55t335-55q137 0 267 34t245 98t214 157t170 210V256h128zM196 1408q59 117 146 211t196 161t231 103t255 37h128v118q-32 4-64 7t-64 3q-136 0-266-34t-246-100t-214-157t-170-208v243H0v-512h511v128H196zm956-256h896v640h-384v128h127v128h-383v-128h128v-128h-384v-640zm128 512h640v-384h-640v384z" />
     </symbol>
 
@@ -55,7 +55,7 @@
         />
     </symbol>
     <symbol id="icon-flow" viewBox="0 0 2048 2048">
-        <path
+        <path fill="#f24995"
             d="M1408 256h640v640h-640V640h-120l-449 896H640v256H0v-640h640v256h120l449-896h199V256zM512 1664v-384H128v384h384zm1408-896V384h-384v384h384z" />
     </symbol>
 
