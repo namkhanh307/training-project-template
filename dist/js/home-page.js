@@ -337,12 +337,18 @@ class FileExplorer {
         this._editingItemState = { oldName: '', isFolder: false };
         this._mobileActionItem = { name: '', isFolder: false };
         this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder);
-        this._currentFolder = this._rootFolder;
+        const initialPath = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)();
+        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, initialPath);
         // Setup event listeners once when the app starts
         this.setupEventListeners();
         // Initial Render
-        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+        () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
         _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
+        window.addEventListener('popstate', () => {
+            const path = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)();
+            this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, path);
+            () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+        });
     }
     // A handy helper to keep your code DRY (Don't Repeat Yourself)
     setupEventListeners() {
@@ -488,9 +494,14 @@ class FileExplorer {
         const pathDisplay = document.getElementById('folder-path-display');
         pathDisplay?.addEventListener('click', (event) => {
             const target = event.target.closest('[data-path]');
-            if (target && target.dataset.path) {
-                (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._navigationHistory, this._rootFolder, this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI.bind(this), target.dataset.path);
-            }
+            if (!target || !target.dataset.path)
+                return;
+            // 1. Calculate the new folder
+            this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, target.dataset.path);
+            // 2. Update the URL visually
+            (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.updateUrlPath)(this._currentFolder.path || '/');
+            // 3. Render
+            () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
         });
     }
     initMobileMenuEvents() {
@@ -636,8 +647,10 @@ function closeModal(id) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getPathFromUrl: function() { return /* binding */ getPathFromUrl; },
 /* harmony export */   handleFolderClick: function() { return /* binding */ handleFolderClick; },
-/* harmony export */   navigateFromBreadcrumb: function() { return /* binding */ navigateFromBreadcrumb; }
+/* harmony export */   navigateFromBreadcrumb: function() { return /* binding */ navigateFromBreadcrumb; },
+/* harmony export */   updateUrlPath: function() { return /* binding */ updateUrlPath; }
 /* harmony export */ });
 /* harmony import */ var _uiManager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./uiManager */ "./src/scripts/utilities/uiManager.ts");
 
@@ -650,30 +663,37 @@ function handleFolderClick(navigationHistory, currentFolder, folderName) {
     // Push to history before moving
     navigationHistory.push(currentFolder);
     currentFolder = targetFolder;
-    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
+    updateUrlPath(currentFolder.path || '/');
+    //UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
     _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.refreshUI(currentFolder);
 }
-function navigateFromBreadcrumb(navigationHistory, rootFolder, currentFolder, refreshUI, targetPath) {
-    if (targetPath === '/') {
-        currentFolder = rootFolder;
-        navigationHistory = []; // Clear history if returning to root
-    }
-    else {
-        const segments = targetPath
-            .split('/')
-            .filter((s) => s.length > 0);
-        let foundFolder = rootFolder;
-        for (const segment of segments) {
-            const nextFolder = foundFolder.subFolders.find((f) => f.name === segment);
-            if (nextFolder)
-                foundFolder = nextFolder;
-            else
-                return; // Stop if path is invalid
+function navigateFromBreadcrumb(rootFolder, targetPath) {
+    if (targetPath === '/')
+        return rootFolder;
+    const segments = targetPath.split('/').filter((s) => s.length > 0);
+    let foundFolder = rootFolder;
+    for (const segment of segments) {
+        const nextFolder = foundFolder.subFolders.find((f) => f.name === segment);
+        if (nextFolder) {
+            foundFolder = nextFolder;
         }
-        currentFolder = foundFolder;
+        else {
+            console.warn(`Folder missing at path: ${targetPath}`);
+            return rootFolder; // Fallback to root if path is broken
+        }
     }
-    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
-    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.refreshUI(currentFolder);
+    return foundFolder;
+}
+function updateUrlPath(folderPath) {
+    const newUrl = window.location.pathname +
+        '?path=' +
+        encodeURIComponent(folderPath);
+    window.history.pushState({ path: folderPath }, '', newUrl);
+}
+// Reads the URL when the page first loads
+function getPathFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('path') || '/';
 }
 
 

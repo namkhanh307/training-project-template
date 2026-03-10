@@ -1,13 +1,29 @@
 import { Folder, File } from '../models/entity';
 import { rootFolder } from '../utilities/_initData';
 import { closeModal } from '../utilities/_modal';
-import { handleFolderClick, navigateFromBreadcrumb } from '../utilities/_navigate';
+import {
+  getPathFromUrl,
+  handleFolderClick,
+  navigateFromBreadcrumb,
+  updateUrlPath,
+} from '../utilities/_navigate';
 import {
   loadFromStorage,
   saveToStorage,
 } from '../utilities/_storageUtil';
 import { UIManager } from '../utilities/uiManager';
-import { deleteItem, downloadFile, handleFileClick, openMobileOptionsSheet, openNewFolderMobile, openRenameModal, processFileSelection, submitNewFolderMobile, submitRename, triggerUpload } from './crud';
+import {
+  deleteItem,
+  downloadFile,
+  handleFileClick,
+  openMobileOptionsSheet,
+  openNewFolderMobile,
+  openRenameModal,
+  processFileSelection,
+  submitNewFolderMobile,
+  submitRename,
+  triggerUpload,
+} from './crud';
 import { createNewFolderDesktop, saveFolderName } from './crud';
 
 export class FileExplorer {
@@ -20,14 +36,28 @@ export class FileExplorer {
 
   constructor() {
     this._rootFolder = loadFromStorage(rootFolder);
-    this._currentFolder = this._rootFolder;
-
+    const initialPath = getPathFromUrl();
+    this._currentFolder = navigateFromBreadcrumb(
+      this._rootFolder,
+      initialPath,
+    );
     // Setup event listeners once when the app starts
     this.setupEventListeners();
 
     // Initial Render
-    UIManager.refreshUI(this._currentFolder);
-    UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
+    () => UIManager.refreshUI(this._currentFolder);
+    UIManager.updateBreadcrumbs(
+      'folder-path-display',
+      this._currentFolder,
+    );
+    window.addEventListener('popstate', () => {
+      const path = getPathFromUrl();
+      this._currentFolder = navigateFromBreadcrumb(
+        this._rootFolder,
+        path,
+      );
+      () => UIManager.refreshUI(this._currentFolder);
+    });
   }
 
   // A handy helper to keep your code DRY (Don't Repeat Yourself)
@@ -57,9 +87,8 @@ export class FileExplorer {
 
       switch (action) {
         case 'new-folder':
-          await createNewFolderDesktop(
-            this._currentFolder,
-            () => UIManager.refreshUI(this._currentFolder),
+          await createNewFolderDesktop(this._currentFolder, () =>
+            UIManager.refreshUI(this._currentFolder),
           );
           break;
         case 'upload-file':
@@ -97,20 +126,31 @@ export class FileExplorer {
 
       switch (action) {
         case 'open-folder':
-          if (itemName) handleFolderClick(this._navigationHistory, this._currentFolder,itemName);
+          if (itemName)
+            handleFolderClick(
+              this._navigationHistory,
+              this._currentFolder,
+              itemName,
+            );
           break;
         case 'open-file':
-          if (itemName) handleFileClick(this._currentFolder, itemName);
+          if (itemName)
+            handleFileClick(this._currentFolder, itemName);
           break;
         case 'delete':
-          if (itemName) deleteItem(this._currentFolder, itemName, isFolder);
+          if (itemName)
+            deleteItem(this._currentFolder, itemName, isFolder);
           break;
         case 'edit':
-          if (itemName) openRenameModal(this._editingItemState, itemName, isFolder);
+          if (itemName)
+            openRenameModal(
+              this._editingItemState,
+              itemName,
+              isFolder,
+            );
           break;
         case 'mobile-options':
-          if (itemName)
-            openMobileOptionsSheet(itemName, isFolder);
+          if (itemName) openMobileOptionsSheet(itemName, isFolder);
           break;
       }
     });
@@ -132,7 +172,10 @@ export class FileExplorer {
     mainContainer?.addEventListener('focusout', (event) => {
       const target = event.target as HTMLElement;
       if (target.id === 'new-folder-input') {
-        saveFolderName(this._currentFolder, target as HTMLInputElement);
+        saveFolderName(
+          this._currentFolder,
+          target as HTMLInputElement,
+        );
       }
     });
   }
@@ -158,7 +201,8 @@ export class FileExplorer {
         // --- Mobile Options Sheet ---
         case 'trigger-mobile-rename':
           closeModal('mobileOptionsModal');
-          openRenameModal(this._editingItemState,
+          openRenameModal(
+            this._editingItemState,
             this._mobileActionItem.name,
             this._mobileActionItem.isFolder,
           );
@@ -179,7 +223,7 @@ export class FileExplorer {
         case 'download-file':
           const fileName =
             document.getElementById('modalFileName')?.innerText;
-          if (fileName) downloadFile(this._currentFolder,fileName);
+          if (fileName) downloadFile(this._currentFolder, fileName);
           break;
         case 'close-file-modal':
           closeModal('fileModal');
@@ -216,27 +260,41 @@ export class FileExplorer {
     const pathDisplay = document.getElementById(
       'folder-path-display',
     );
+
     pathDisplay?.addEventListener('click', (event) => {
       const target = (event.target as HTMLElement).closest(
         '[data-path]',
       ) as HTMLElement;
-      if (target && target.dataset.path) {
-        navigateFromBreadcrumb(this._navigationHistory, this._rootFolder, this._currentFolder, UIManager.refreshUI.bind(this), target.dataset.path);
-      }
+      if (!target || !target.dataset.path) return;
+
+      // 1. Calculate the new folder
+      this._currentFolder = navigateFromBreadcrumb(
+        this._rootFolder,
+        target.dataset.path,
+      );
+
+      // 2. Update the URL visually
+      updateUrlPath(this._currentFolder.path || '/');
+
+      // 3. Render
+      () => UIManager.refreshUI(this._currentFolder);
     });
   }
+  
   private initMobileMenuEvents() {
     const mobileMenuList = document.querySelector('.m-mobile-list');
 
     mobileMenuList?.addEventListener('click', (event) => {
-      const target = (event.target as HTMLElement).closest('[data-action]') as HTMLElement;
+      const target = (event.target as HTMLElement).closest(
+        '[data-action]',
+      ) as HTMLElement;
       if (!target) return;
 
       const action = target.dataset.action;
 
       switch (action) {
         case 'new-folder':
-          openNewFolderMobile(); 
+          openNewFolderMobile();
           break;
         case 'upload-file':
           triggerUpload(); // Reuses the exact same method as desktop!
