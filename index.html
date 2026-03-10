@@ -22,63 +22,55 @@
     <div class="l-toolbar d-none d-md-flex">
       <div
         class="m-toolbar-item is-clickable"
-        onclick="handleAddFolderDesktop()"
+        data-action="new-folder-desktop"
       >
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-new"></use>
         </svg>
-        New
-        <i class="fas fa-chevron-down ms-1 small"></i>
+        New <i class="fas fa-chevron-down ms-1 small"></i>
       </div>
+
       <input
         type="file"
         id="fileInput"
         style="display: none"
         accept=".xlsx,.xls,.doc,.docx,.pdf"
         multiple
-        onchange="onFileSelected(event)"
       />
+
       <div
         class="m-toolbar-item is-clickable"
-        onclick="handleUploadFile(false)"
+        data-action="upload-file"
       >
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-upload"></use>
         </svg>
-        Upload
-        <i class="fas fa-chevron-down ms-1 small"></i>
+        Upload <i class="fas fa-chevron-down ms-1 small"></i>
       </div>
-      <div class="m-toolbar-item is-clickable">
+
+      <div class="m-toolbar-item is-clickable" data-action="sync">
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-sync"></use>
         </svg>
         Sync
       </div>
-      <div class="m-toolbar-item is-clickable">
+      <div class="m-toolbar-item is-clickable" data-action="export">
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-excel"></use>
         </svg>
         Export to Excel
       </div>
-      <div class="m-toolbar-item is-clickable">
+      <div class="m-toolbar-item is-clickable" data-action="flow">
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-flow"></use>
         </svg>
         Flow
-        <i class="fas fa-chevron-down ms-1 small"></i>
       </div>
-      <div class="m-toolbar-item is-clickable">
+      <div class="m-toolbar-item is-clickable" data-action="more">
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-more"></use>
         </svg>
       </div>
-      <!-- <div
-        id="back-btn"
-        class="m-toolbar-item is-clickable d-none"
-        onclick="goBack()"
-      >
-        <i class="fas fa-arrow-left"></i>
-      </div> -->
     </div>
     <!-- Mobile tool bars and collapse menu -->
     <div class="l-header-mobile d-md-none">
