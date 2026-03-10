@@ -204,7 +204,7 @@ const goBack = (): void => {
   document.getElementById('fileModal')!.style.display = 'none';
 };
 (window as any).handleUploadFile = (isMobile: boolean) => {
-  if(isMobile){
+  if (isMobile) {
     document.getElementById('mobileMenu')!.classList.remove('show');
   }
   const fileInput = document.getElementById(
@@ -255,7 +255,6 @@ const goBack = (): void => {
   }
 };
 (window as any).handleAddFolderDesktop = () => {
-  
   const newFolder: Folder = {
     name: '', // Empty initially
     path: '',
@@ -287,33 +286,40 @@ const goBack = (): void => {
   const newName = event.target.value.trim() || 'New folder';
 
   // 1. Find the folder that is currently in "edit mode"
-  const folderBeingEdited = currentFolder.subFolders.find((f) => f.isEditing);
+  const folderBeingEdited = currentFolder.subFolders.find(
+    (f) => f.isEditing,
+  );
   if (!folderBeingEdited) return;
 
   // 2. DUPLICATION CHECK: Check if ANY other folder has this exact name
   const isDuplicate = currentFolder.subFolders.some(
-    (f) => f !== folderBeingEdited && f.name.toLowerCase() === newName.toLowerCase()
+    (f) =>
+      f !== folderBeingEdited &&
+      f.name.toLowerCase() === newName.toLowerCase(),
   );
 
   // 3. If it's a duplicate, stop the save!
   if (isDuplicate) {
-    alert(`This destination already contains a folder named '${newName}'.`);
-    
+    alert(
+      `This destination already contains a folder named '${newName}'.`,
+    );
+
     // Refocus the input so the user can fix the name
     setTimeout(() => {
       event.target.focus();
       event.target.select();
     }, 10);
-    
+
     return; // EXITS THE FUNCTION EARLY
   }
 
   // 4. If it's unique, proceed with saving as normal
   folderBeingEdited.name = newName;
-  folderBeingEdited.path = currentFolder.path === '/' 
-    ? `/${newName}` 
-    : `${currentFolder.path}/${newName}`;
-    
+  folderBeingEdited.path =
+    currentFolder.path === '/'
+      ? `/${newName}`
+      : `${currentFolder.path}/${newName}`;
+
   delete folderBeingEdited.isEditing;
 
   saveToStorage(rootFolder); // ALWAYS save rootFolder!
@@ -327,7 +333,9 @@ const goBack = (): void => {
   }
 
   // 2. Clear the input from the last time it was used
-  const input = document.getElementById('newFolderNameInput') as HTMLInputElement;
+  const input = document.getElementById(
+    'newFolderNameInput',
+  ) as HTMLInputElement;
   if (input) input.value = '';
 
   // 3. Show the new modal
@@ -340,7 +348,9 @@ const goBack = (): void => {
   setTimeout(() => input?.focus(), 100);
 };
 (window as any).submitNewFolder = () => {
-  const input = document.getElementById('newFolderNameInput') as HTMLInputElement;
+  const input = document.getElementById(
+    'newFolderNameInput',
+  ) as HTMLInputElement;
   let newName = input.value.trim();
 
   // If they left it blank, default to "New folder"
@@ -350,7 +360,7 @@ const goBack = (): void => {
 
   // Check if a folder with this name already exists
   const isDuplicate = currentFolder.subFolders.some(
-    (f) => f.name.toLowerCase() === newName.toLowerCase()
+    (f) => f.name.toLowerCase() === newName.toLowerCase(),
   );
 
   if (isDuplicate) {
@@ -362,7 +372,10 @@ const goBack = (): void => {
   // Create the new folder object
   const newFolder: Folder = {
     name: newName,
-    path: currentFolder.path === '/' ? `/${newName}` : `${currentFolder.path}/${newName}`,
+    path:
+      currentFolder.path === '/'
+        ? `/${newName}`
+        : `${currentFolder.path}/${newName}`,
     subFolders: [],
     files: [],
     modified: 'Just now',
@@ -381,12 +394,14 @@ const goBack = (): void => {
   // Close the modal
   (window as any).closeNewFolderModal();
 };
-document.getElementById('newFolderNameInput')?.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    (window as any).submitNewFolder();
-  }
-});
+document
+  .getElementById('newFolderNameInput')
+  ?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      (window as any).submitNewFolder();
+    }
+  });
 (window as any).closeNewFolderModal = () => {
   document.getElementById('newFolderModal')!.style.display = 'none';
 };
@@ -414,13 +429,13 @@ document.getElementById('newFolderNameInput')?.addEventListener('keypress', (e) 
   // If they press Enter, force the input to lose focus.
   // This automatically triggers the "onblur" event, which calls saveFolderName!
   if (event.key === 'Enter') {
-    target.blur(); 
+    target.blur();
   }
-  
+
   // Optional: If they press Escape, cancel the creation
   if (event.key === 'Escape') {
     // Remove the temporary folder from the array
-    currentFolder.subFolders.shift(); 
+    currentFolder.subFolders.shift();
     renderGrid([...currentFolder.subFolders, ...currentFolder.files]);
   }
 };
@@ -468,6 +483,145 @@ document.getElementById('newFolderNameInput')?.addEventListener('keypress', (e) 
 
     renderGrid([...currentFolder.subFolders, ...currentFolder.files]);
   }
+};
+// 1. Temporary state to remember what we are renaming
+let editingItemState = { oldName: '', isFolder: false };
+
+// 2. Open the Modal
+(window as any).handleEdit = (oldName: string, isFolder: boolean) => {
+  editingItemState = { oldName, isFolder };
+
+  const modal = document.getElementById('renameModal');
+  const input = document.getElementById(
+    'renameInput',
+  ) as HTMLInputElement;
+
+  if (modal && input) {
+    input.value = oldName;
+    modal.style.display = 'flex';
+
+    // Pro-Tip UX: Select the text automatically.
+    // If it's a file, we only highlight the name, not the extension!
+    setTimeout(() => {
+      input.focus();
+      if (!isFolder && oldName.includes('.')) {
+        input.setSelectionRange(0, oldName.lastIndexOf('.'));
+      } else {
+        input.select();
+      }
+    }, 100);
+  }
+  document
+    .getElementById('renameInput')
+    ?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        (window as any).submitRename();
+      }
+    });
+};
+
+// 3. Save the new name
+(window as any).submitRename = () => {
+  const input = document.getElementById(
+    'renameInput',
+  ) as HTMLInputElement;
+  const newName = input.value.trim();
+
+  // If they left it blank or didn't change the name, just close it
+  if (!newName || newName === editingItemState.oldName) {
+    (window as any).closeRenameModal();
+    return;
+  }
+
+  // Check for duplicates in the respective array
+  let isDuplicate = false;
+  if (editingItemState.isFolder) {
+    isDuplicate = currentFolder.subFolders.some(
+      (f) => f.name.toLowerCase() === newName.toLowerCase(),
+    );
+  } else {
+    isDuplicate = currentFolder.files.some(
+      (f) => f.name.toLowerCase() === newName.toLowerCase(),
+    );
+  }
+
+  if (isDuplicate) {
+    alert('An item with this name already exists in this location.');
+    input.focus();
+    return;
+  }
+
+  // Apply the rename
+  if (editingItemState.isFolder) {
+    const target = currentFolder.subFolders.find(
+      (f) => f.name === editingItemState.oldName,
+    );
+    if (target) {
+      target.name = newName;
+      target.path =
+        currentFolder.path === '/'
+          ? `/${newName}`
+          : `${currentFolder.path}/${newName}`;
+    }
+  } else {
+    const target = currentFolder.files.find(
+      (f) => f.name === editingItemState.oldName,
+    );
+    if (target) {
+      target.name = newName;
+      // Update extension in case they renamed "report.xlsx" to "report.csv"
+      const lastDotIndex = newName.lastIndexOf('.');
+      target.extension =
+        lastDotIndex > 0
+          ? newName.substring(lastDotIndex + 1).toLowerCase()
+          : '';
+    }
+  }
+
+  // Save & Refresh
+  saveToStorage(rootFolder);
+  renderGrid([...currentFolder.subFolders, ...currentFolder.files]);
+  (window as any).closeRenameModal();
+};
+// 1. Temporary state for the mobile options menu
+let currentMobileActionItem = { name: '', isFolder: false };
+
+// 2. Open the Action Sheet
+(window as any).handleOptionDropdown = (name: string, isFolder: boolean) => {
+  currentMobileActionItem = { name, isFolder };
+  
+  const modal = document.getElementById('mobileOptionsModal');
+  const title = document.getElementById('optionsModalTitle');
+  
+  if (title) title.innerText = name; // Show the file/folder name as the title
+  if (modal) modal.style.display = 'flex';
+};
+
+// 3. Close Helper
+(window as any).closeOptionsModal = () => {
+  const modal = document.getElementById('mobileOptionsModal');
+  if (modal) modal.style.display = 'none';
+};
+
+// 4. Trigger Rename
+(window as any).triggerMobileRename = () => {
+  (window as any).closeOptionsModal();
+  // Fire the exact same rename modal logic we built for desktop!
+  (window as any).handleEdit(currentMobileActionItem.name, currentMobileActionItem.isFolder);
+};
+
+// 5. Trigger Delete
+(window as any).triggerMobileDelete = () => {
+  (window as any).closeOptionsModal();
+  // Fire the exact same delete logic we built for desktop!
+  (window as any).handleDelete(currentMobileActionItem.name, currentMobileActionItem.isFolder);
+};
+// 4. Close Modal Helper
+(window as any).closeRenameModal = () => {
+  const modal = document.getElementById('renameModal');
+  if (modal) modal.style.display = 'none';
+  editingItemState = { oldName: '', isFolder: false }; // clear state
 };
 ready(() => {
   // 1. Overwrite the default rootFolder with the saved data

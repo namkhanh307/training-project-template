@@ -59,10 +59,10 @@ const renderGrid = (data: Row[]): void => {
           ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
           ${nameDisplay}
         </div>
-        <div class="m-text-secondary"> ${file.modified}</div>
+        <div class="m-text-secondary">${file.modified}</div>
         <div class="m-text-secondary">${file.modifiedBy}</div>
         <div class="d-flex gap-2 justify-content-center">
-         <svg class="m-icon-custom" >
+         <svg class="m-icon-custom" onclick="event.stopPropagation(); handleEdit('${item.name}', ${isFolder})">
             <use href="src/files/icons.svg#icon-edit"></use>
           </svg>
           <svg class="m-icon-custom" onclick="handleDelete('${item.name}', ${isFolder ? `true` : `false`} )">
@@ -84,7 +84,7 @@ const renderGrid = (data: Row[]): void => {
       <div class="m-card" ${isFolder ? `onclick="handleFolderClick('${item.name}')"` : `onclick="handleFileClick('${item.name}')"`}>
         <div class="m-card__row m-card__row--header">
           <div class="m-card__label">File Type</div>
-          <div class="me-2">
+          <div class="me-2" onclick="event.stopPropagation(); handleOptionDropdown('${item.name}', ${isFolder})">
             ${
               isFolder
                 ? `<i class="fas fa-folder m-icon-folder"></i>`
