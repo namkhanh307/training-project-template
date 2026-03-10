@@ -347,7 +347,8 @@ class FileExplorer {
         window.addEventListener('popstate', () => {
             const path = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)();
             this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, path);
-            () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+            _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+            _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
         });
     }
     // A handy helper to keep your code DRY (Don't Repeat Yourself)
@@ -392,8 +393,10 @@ class FileExplorer {
             const isFolder = target.dataset.type === 'folder';
             switch (action) {
                 case 'open-folder':
-                    if (itemName)
-                        (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.handleFolderClick)(this._navigationHistory, this._currentFolder, itemName);
+                    if (itemName) {
+                        // Overwrite the class state with the newly returned folder!
+                        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.handleFolderClick)(this._navigationHistory, this._currentFolder, itemName);
+                    }
                     break;
                 case 'open-file':
                     if (itemName)
@@ -500,8 +503,9 @@ class FileExplorer {
             this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, target.dataset.path);
             // 2. Update the URL visually
             (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.updateUrlPath)(this._currentFolder.path || '/');
-            // 3. Render
-            () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+            // 3. Render BOTH the grid and the breadcrumbs! (Removed arrow function)
+            _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+            _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
         });
     }
     initMobileMenuEvents() {
@@ -656,16 +660,19 @@ __webpack_require__.r(__webpack_exports__);
 
 function handleFolderClick(navigationHistory, currentFolder, folderName) {
     const targetFolder = currentFolder.subFolders.find((f) => f.name === folderName);
+    // If we don't find it, just return the current one so nothing breaks
     if (!targetFolder)
-        return;
+        return currentFolder;
     targetFolder.isNew = false;
-    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.saveAndRefresh(currentFolder);
-    // Push to history before moving
+    // (Assuming saveAndRefresh handles saving the root state properly)
+    // UIManager.saveAndRefresh(currentFolder); 
     navigationHistory.push(currentFolder);
-    currentFolder = targetFolder;
+    currentFolder = targetFolder; // This updates the local variable
     updateUrlPath(currentFolder.path || '/');
-    //UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
     _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.refreshUI(currentFolder);
+    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
+    // CRITICAL: Send the new folder back to the class!
+    return currentFolder;
 }
 function navigateFromBreadcrumb(rootFolder, targetPath) {
     if (targetPath === '/')

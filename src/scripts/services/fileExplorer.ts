@@ -56,7 +56,11 @@ export class FileExplorer {
         this._rootFolder,
         path,
       );
-      () => UIManager.refreshUI(this._currentFolder);
+      UIManager.refreshUI(this._currentFolder);
+      UIManager.updateBreadcrumbs(
+        'folder-path-display',
+        this._currentFolder,
+      );
     });
   }
 
@@ -126,12 +130,14 @@ export class FileExplorer {
 
       switch (action) {
         case 'open-folder':
-          if (itemName)
-            handleFolderClick(
+          if (itemName) {
+            // Overwrite the class state with the newly returned folder!
+            this._currentFolder = handleFolderClick(
               this._navigationHistory,
               this._currentFolder,
               itemName,
             );
+          }
           break;
         case 'open-file':
           if (itemName)
@@ -276,8 +282,12 @@ export class FileExplorer {
       // 2. Update the URL visually
       updateUrlPath(this._currentFolder.path || '/');
 
-      // 3. Render
-      () => UIManager.refreshUI(this._currentFolder);
+      // 3. Render BOTH the grid and the breadcrumbs! (Removed arrow function)
+      UIManager.refreshUI(this._currentFolder);
+      UIManager.updateBreadcrumbs(
+        'folder-path-display',
+        this._currentFolder,
+      );
     });
   }
   private initMobileMenuEvents() {
