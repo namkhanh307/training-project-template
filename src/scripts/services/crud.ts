@@ -2,7 +2,7 @@ import { File, Folder } from '../models/entity';
 import { EditingState } from '../models/model';
 import { closeModal, openModal } from '../utilities/_modal';
 import { saveToStorage } from '../utilities/_storageUtil';
-import { UIManager, UIManager } from '../utilities/uiManager';
+import { UIManager } from '../utilities/uiManager';
 
 export function triggerUpload() {
   // Mobile safety check (optional: remove 'show' class if triggered from mobile menu)
@@ -91,7 +91,7 @@ export function createNewFolderDesktop(
   };
 
   currentFolder.subFolders.unshift(newFolder);
-  UIManager.refreshUI(currentFolder);
+  refreshUI();
 
   const input = document.getElementById(
     'new-folder-input',

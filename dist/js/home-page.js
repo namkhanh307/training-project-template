@@ -93,7 +93,7 @@ function createNewFolderDesktop(currentFolder, refreshUI) {
         type: 'folder',
     };
     currentFolder.subFolders.unshift(newFolder);
-    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.refreshUI(currentFolder);
+    refreshUI();
     const input = document.getElementById('new-folder-input');
     if (input) {
         input.value = folderName;
@@ -723,7 +723,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _storageUtil__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
 
 class UIManager {
-    static refreshUI(currentFolder) {
+    static async refreshUI(currentFolder) {
+        UIManager.renderLoadingState();
+        await new Promise((resolve) => setTimeout(resolve, 400));
         UIManager.renderGrid([
             ...currentFolder.subFolders,
             ...currentFolder.files,
@@ -757,6 +759,12 @@ UIManager.renderGrid = (data) => {
     const mobileContainer = document.getElementById('mobile-card-container');
     if (!desktopContainer || !mobileContainer)
         return;
+    console.log('Rendering UI with data:', data);
+    if (!data || data.length === 0) {
+        desktopContainer.innerHTML = '<p class="mt-4 text-center">No items to display</p>';
+        mobileContainer.innerHTML = '<p class=" mt-4 text-center">No items to display</p>';
+        return;
+    }
     // 1. Desktop Rendering
     desktopContainer.innerHTML = data
         .map((item) => {
@@ -826,6 +834,21 @@ UIManager.renderGrid = (data) => {
       `;
     })
         .join('');
+};
+UIManager.renderLoadingState = () => {
+    const desktopContainer = document.getElementById('desktop-row-container');
+    const mobileContainer = document.getElementById('mobile-card-container');
+    const spinnerHTML = `
+      <div class="d-flex justify-content-center align-items-center w-100" style="height: 200px;">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    `;
+    if (desktopContainer)
+        desktopContainer.innerHTML = spinnerHTML;
+    if (mobileContainer)
+        mobileContainer.innerHTML = spinnerHTML;
 };
 
 
