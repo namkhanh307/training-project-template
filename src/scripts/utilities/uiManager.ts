@@ -1,14 +1,40 @@
 import { Row, File, Folder } from '../models/entity';
 import { saveToStorage } from './_storageUtil';
-
+import { getRelativeTime } from './_timeHelper'; 
 export class UIManager {
   static async refreshUI(currentFolder: Folder) {
     UIManager.renderLoadingState();
     await new Promise((resolve) => setTimeout(resolve, 400));
-    UIManager.renderGrid([
+
+    // 1. Combine folders and files
+    const allItems = [
       ...currentFolder.subFolders,
       ...currentFolder.files,
-    ]);
+    ];
+
+    // 2. Sort the array dynamically
+    allItems.sort((a, b) => {
+      // Rule A: Group Folders First
+      const isFolderA = 'subFolders' in a ? 1 : 0;
+      const isFolderB = 'subFolders' in b ? 1 : 0;
+      
+      if (isFolderA !== isFolderB) {
+        return isFolderB - isFolderA; // Puts folders (1) before files (0)
+      }
+
+      // Rule B: Sort by Newest Modified Date
+      const dateA = new Date(a.modified).getTime();
+      const dateB = new Date(b.modified).getTime();
+      
+      // Fallback for old data: treat invalid dates as '0' (oldest possible)
+      const validDateA = isNaN(dateA) ? 0 : dateA;
+      const validDateB = isNaN(dateB) ? 0 : dateB;
+
+      return validDateB - validDateA; // Descending order (Newest first)
+    });
+
+    // 3. Render the newly sorted array
+    UIManager.renderGrid(allItems);
   }
   static saveAndRefresh(currentFolder: Folder) {
     saveToStorage(currentFolder);
@@ -23,7 +49,6 @@ export class UIManager {
     );
 
     if (!desktopContainer || !mobileContainer) return;
-    console.log('Rendering UI with data:', data);   
     if(!data || data.length === 0) {
         desktopContainer.innerHTML = '<p class="mt-4 text-center">No items to display</p>';
         mobileContainer.innerHTML = '<p class=" mt-4 text-center">No items to display</p>';
@@ -55,7 +80,7 @@ export class UIManager {
             ${nameDisplay}
           </div>
           
-          <div class="m-text-secondary">${file.modified}</div>
+          <div class="m-text-secondary">${getRelativeTime(file.modified)}</div>
           <div class="m-text-secondary">${file.modifiedBy}</div>
           
           <div class="d-flex gap-2 justify-content-center">

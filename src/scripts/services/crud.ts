@@ -1,5 +1,5 @@
 import { File, Folder } from '../models/entity';
-import { EditingState } from '../models/model';
+import { EditingState, MobileActionItem } from '../models/model';
 import { closeModal, openModal } from '../utilities/_modal';
 import { saveToStorage } from '../utilities/_storageUtil';
 import { UIManager } from '../utilities/uiManager';
@@ -39,10 +39,13 @@ export async function processFileSelection(
         resolve({
           name: selectedFile.name,
           extension: fileExtension,
-          modified: 'Just now',
+          modified: new Date().toISOString(),
           modifiedBy: 'You',
           isNew: true,
-          path: '',
+          path:
+            currentFolder.path === '/'
+              ? `/${currentFolder.name}`
+              : `${currentFolder.path}/${currentFolder.name}`,
           data: e.target?.result as string,
           type: 'file',
         });
@@ -58,7 +61,7 @@ export async function processFileSelection(
 
   // Instead of calling global navigateToFolder, just refresh the UI
   // If you need path updates, trigger your UIManager.updatePath(...) here
-  UIManager.refreshUI(currentFolder);
+  refreshUI();
 
   target.value = ''; // Reset input
 }
@@ -86,7 +89,7 @@ export async function createNewFolderDesktop(
         : `${currentFolder.path}/${folderName}`,
     subFolders: [],
     files: [],
-    modified: 'Just now',
+    modified: new Date().toISOString(),
     modifiedBy: 'You',
     isNew: true,
     isEditing: true,
@@ -184,6 +187,7 @@ export function deleteItem(
   name: string,
   isFolder: boolean,
 ) {
+  console.log(`Attempting to delete ${currentFolder} ${isFolder ? 'folder' : 'file'}: ${name}`);
   if (
     !confirm(
       `Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`,
@@ -279,8 +283,9 @@ export function submitRename(
 export function openMobileOptionsSheet(
   name: string,
   isFolder: boolean,
+  mobileActionItem: MobileActionItem,
 ) {
-  this._mobileActionItem = { name, isFolder };
+  mobileActionItem = { name, isFolder };
   const title = document.getElementById('optionsModalTitle');
   if (title) title.innerText = name;
   openModal('mobileOptionsModal');
@@ -332,7 +337,7 @@ export function submitNewFolderMobile(currentFolder: Folder) {
         : `${currentFolder.path}/${newName}`,
     subFolders: [],
     files: [],
-    modified: 'Just now',
+    modified: new Date().toISOString(),
     modifiedBy: 'You',
     isNew: true,
     type: 'folder',
@@ -382,4 +387,53 @@ export function saveFolderName(
 
   delete folderBeingEdited.isEditing;
   UIManager.saveAndRefresh(currentFolder);
+}
+export function submitNewFile(currentFolder: Folder) {
+  const input = document.getElementById(
+    'newFileNameInput',
+  ) as HTMLInputElement;
+  let newName = input.value.trim();
+
+  // Default to a blank text file if they don't type anything
+  if (!newName) {
+    newName = 'New Document.txt';
+  }
+
+  // Check for duplicates
+  const isDuplicate = currentFolder.files.some(
+    (f) => f.name.toLowerCase() === newName.toLowerCase(),
+  );
+  if (isDuplicate) {
+    alert('A file with this name already exists.');
+    input.focus();
+    return;
+  }
+
+  // Extract the extension (e.g. from "data.xlsx" get "xlsx")
+  const lastDotIndex = newName.lastIndexOf('.');
+  const extension =
+    lastDotIndex > 0
+      ? newName.substring(lastDotIndex + 1).toLowerCase()
+      : 'doc';
+
+  // Create the dummy file object
+  const newFile: File = {
+    name: newName,
+    extension: extension,
+    modified: new Date().toISOString(),
+    modifiedBy: 'You',
+    isNew: true,
+    data: '', // Empty base64 data since it's a blank file
+    type: 'file',
+    path:
+      currentFolder.path === '/'
+        ? `/${currentFolder.name}`
+        : `${currentFolder.path}/${name}`,  };
+
+  // Push it to the top of the array
+  currentFolder.files.unshift(newFile);
+
+  // Save, Render, and Close!
+  UIManager.saveAndRefresh(currentFolder); // (Assuming this is your save helper)
+  closeModal('newFileModal');
 }

@@ -1,4 +1,4 @@
-import { File, Folder, Folder } from '../models/entity';
+import { File, Folder } from '../models/entity';
 export function openModal(id: string) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'flex';

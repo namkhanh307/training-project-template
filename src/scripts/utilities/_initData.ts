@@ -8,19 +8,8 @@ export let rootFolder: Folder = {
       name: 'CAS',
       path: '/CAS',
       subFolders: [],
-      files: [
-        {
-            name: 'Internal_Document.xlsx',
-            extension: 'xlsx',
-            modified: 'May 1',
-            modifiedBy: 'Megan Bowen',
-            isNew: false,
-            data: '',
-            type: 'file',
-            path: ""
-        },
-      ],
-      modified: 'A few seconds ago',
+      files: [],
+      modified: '2026-03-10T10:57:54.553Z',
       modifiedBy: 'Administrator MOD',
       isNew: false,
       type: 'file',
@@ -30,7 +19,7 @@ export let rootFolder: Folder = {
     {
         name: 'CoasterAndBargeLoading.xlsx',
         extension: 'xlsx',
-        modified: 'A few seconds ago',
+        modified: '2026-03-10T10:57:54.553Z',
         modifiedBy: 'Administrator MOD',
         isNew: true,
         data: '',
@@ -40,7 +29,7 @@ export let rootFolder: Folder = {
     {
         name: 'RevenueByServices.xlsx',
         extension: 'xlsx',
-        modified: 'A few seconds ago',
+        modified: '2026-03-10T10:57:54.553Z',
         modifiedBy: 'Administrator MOD',
         isNew: true,
         data: '',
@@ -48,7 +37,7 @@ export let rootFolder: Folder = {
         path: ""
     },
   ],
-  modified: 'A few seconds ago',
+  modified: '2026-03-10T10:57:54.553Z',
   modifiedBy: 'Administrator MOD',
   isNew: true,
   type: 'folder',

@@ -1,4 +1,5 @@
 import { Folder, File } from '../models/entity';
+import { EditingState, MobileActionItem } from '../models/model';
 import { rootFolder } from '../utilities/_initData';
 import { closeModal, openNewFileModal } from '../utilities/_modal';
 import {
@@ -20,6 +21,7 @@ import {
   openNewFolderMobile,
   openRenameModal,
   processFileSelection,
+  submitNewFile,
   submitNewFolderMobile,
   submitRename,
   triggerUpload,
@@ -31,8 +33,14 @@ export class FileExplorer {
   _currentFolder: Folder;
   _navigationHistory: Folder[] = [];
   //State for modals
-  private _editingItemState = { oldName: '', isFolder: false };
-  private _mobileActionItem = { name: '', isFolder: false };
+  private _editingItemState: EditingState = {
+    oldName: '',
+    isFolder: false,
+  };
+  private _mobileActionItem: MobileActionItem = {
+    name: '',
+    isFolder: false,
+  };
 
   constructor() {
     this._rootFolder = loadFromStorage(rootFolder); //load database
@@ -132,15 +140,14 @@ export class FileExplorer {
     });
 
     // 2. Listener for the Hidden File Input
-    fileInput?.addEventListener(
-      'change',
-      processFileSelection.bind(
-        this,
+    fileInput?.addEventListener('change', (event) => {
+      processFileSelection(
         this._rootFolder,
         this._currentFolder,
-        UIManager.refreshUI(this._currentFolder),
-      ),
-    );
+        () => UIManager.refreshUI(this._currentFolder), // ✅ Passed as a function!
+        event,
+      );
+    });
   }
   private initGridEvents() {
     // We attach one listener to the main container that holds both grids
@@ -186,7 +193,12 @@ export class FileExplorer {
             );
           break;
         case 'mobile-options':
-          if (itemName) openMobileOptionsSheet(itemName, isFolder);
+          if (itemName)
+            openMobileOptionsSheet(
+              itemName,
+              isFolder,
+              this._mobileActionItem,
+            );
           break;
       }
     });
@@ -273,9 +285,7 @@ export class FileExplorer {
           closeModal('newFolderModal');
           break;
         case 'submit-new-file':
-          createNewFolderDesktop(this._currentFolder, () =>
-            UIManager.refreshUI(this._currentFolder),
-          );
+          submitNewFile(this._currentFolder);
           break;
         case 'close-new-file':
           closeModal('newFileModal');
@@ -295,6 +305,9 @@ export class FileExplorer {
           } else if (target.id === 'newFolderNameInput') {
             event.preventDefault();
             submitNewFolderMobile(this._currentFolder); // Assuming you migrated your submitNewFolder logic!
+          } else if (target.id === 'newFileNameInput') {
+            event.preventDefault();
+            submitNewFile(this._currentFolder);
           }
         }
       },

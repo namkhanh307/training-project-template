@@ -19,6 +19,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   openRenameModal: function() { return /* binding */ openRenameModal; },
 /* harmony export */   processFileSelection: function() { return /* binding */ processFileSelection; },
 /* harmony export */   saveFolderName: function() { return /* binding */ saveFolderName; },
+/* harmony export */   submitNewFile: function() { return /* binding */ submitNewFile; },
 /* harmony export */   submitNewFolderMobile: function() { return /* binding */ submitNewFolderMobile; },
 /* harmony export */   submitRename: function() { return /* binding */ submitRename; },
 /* harmony export */   triggerUpload: function() { return /* binding */ triggerUpload; }
@@ -53,10 +54,12 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
                 resolve({
                     name: selectedFile.name,
                     extension: fileExtension,
-                    modified: 'Just now',
+                    modified: new Date().toISOString(),
                     modifiedBy: 'You',
                     isNew: true,
-                    path: '',
+                    path: currentFolder.path === '/'
+                        ? `/${currentFolder.name}`
+                        : `${currentFolder.path}/${currentFolder.name}`,
                     data: e.target?.result,
                     type: 'file',
                 });
@@ -69,7 +72,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
     (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__.saveToStorage)(rootFolder);
     // Instead of calling global navigateToFolder, just refresh the UI
     // If you need path updates, trigger your UIManager.updatePath(...) here
-    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.refreshUI(currentFolder);
+    refreshUI();
     target.value = ''; // Reset input
 }
 async function createNewFolderDesktop(currentFolder, refreshUI) {
@@ -88,7 +91,7 @@ async function createNewFolderDesktop(currentFolder, refreshUI) {
             : `${currentFolder.path}/${folderName}`,
         subFolders: [],
         files: [],
-        modified: 'Just now',
+        modified: new Date().toISOString(),
         modifiedBy: 'You',
         isNew: true,
         isEditing: true,
@@ -165,6 +168,7 @@ function downloadFile(currentFolder, fileName) {
     document.body.removeChild(link);
 }
 function deleteItem(currentFolder, name, isFolder) {
+    console.log(`Attempting to delete ${currentFolder} ${isFolder ? 'folder' : 'file'}: ${name}`);
     if (!confirm(`Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`))
         return;
     if (isFolder) {
@@ -229,8 +233,8 @@ function submitRename(stateRef, currentFolder) {
     _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
     (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('renameModal');
 }
-function openMobileOptionsSheet(name, isFolder) {
-    this._mobileActionItem = { name, isFolder };
+function openMobileOptionsSheet(name, isFolder, mobileActionItem) {
+    mobileActionItem = { name, isFolder };
     const title = document.getElementById('optionsModalTitle');
     if (title)
         title.innerText = name;
@@ -270,7 +274,7 @@ function submitNewFolderMobile(currentFolder) {
             : `${currentFolder.path}/${newName}`,
         subFolders: [],
         files: [],
-        modified: 'Just now',
+        modified: new Date().toISOString(),
         modifiedBy: 'You',
         isNew: true,
         type: 'folder',
@@ -305,6 +309,44 @@ function saveFolderName(currentFolder, inputElement) {
     delete folderBeingEdited.isEditing;
     _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
 }
+function submitNewFile(currentFolder) {
+    const input = document.getElementById('newFileNameInput');
+    let newName = input.value.trim();
+    // Default to a blank text file if they don't type anything
+    if (!newName) {
+        newName = 'New Document.txt';
+    }
+    // Check for duplicates
+    const isDuplicate = currentFolder.files.some((f) => f.name.toLowerCase() === newName.toLowerCase());
+    if (isDuplicate) {
+        alert('A file with this name already exists.');
+        input.focus();
+        return;
+    }
+    // Extract the extension (e.g. from "data.xlsx" get "xlsx")
+    const lastDotIndex = newName.lastIndexOf('.');
+    const extension = lastDotIndex > 0
+        ? newName.substring(lastDotIndex + 1).toLowerCase()
+        : 'doc';
+    // Create the dummy file object
+    const newFile = {
+        name: newName,
+        extension: extension,
+        modified: new Date().toISOString(),
+        modifiedBy: 'You',
+        isNew: true,
+        data: '', // Empty base64 data since it's a blank file
+        type: 'file',
+        path: currentFolder.path === '/'
+            ? `/${currentFolder.name}`
+            : `${currentFolder.path}/${name}`,
+    };
+    // Push it to the top of the array
+    currentFolder.files.unshift(newFile);
+    // Save, Render, and Close!
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder); // (Assuming this is your save helper)
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('newFileModal');
+}
 
 
 /***/ }),
@@ -336,8 +378,14 @@ class FileExplorer {
     constructor() {
         this._navigationHistory = [];
         //State for modals
-        this._editingItemState = { oldName: '', isFolder: false };
-        this._mobileActionItem = { name: '', isFolder: false };
+        this._editingItemState = {
+            oldName: '',
+            isFolder: false,
+        };
+        this._mobileActionItem = {
+            name: '',
+            isFolder: false,
+        };
         this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder); //load database
         const initialPath = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)(); //read url
         this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, initialPath); //locate current folder
@@ -410,7 +458,10 @@ class FileExplorer {
             });
         });
         // 2. Listener for the Hidden File Input
-        fileInput?.addEventListener('change', _crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder)));
+        fileInput?.addEventListener('change', (event) => {
+            (0,_crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection)(this._rootFolder, this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder), // ✅ Passed as a function!
+            event);
+        });
     }
     initGridEvents() {
         // We attach one listener to the main container that holds both grids
@@ -444,7 +495,7 @@ class FileExplorer {
                     break;
                 case 'mobile-options':
                     if (itemName)
-                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openMobileOptionsSheet)(itemName, isFolder);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openMobileOptionsSheet)(itemName, isFolder, this._mobileActionItem);
                     break;
             }
         });
@@ -509,7 +560,7 @@ class FileExplorer {
                     (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('newFolderModal');
                     break;
                 case 'submit-new-file':
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder));
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitNewFile)(this._currentFolder);
                     break;
                 case 'close-new-file':
                     (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('newFileModal');
@@ -527,6 +578,10 @@ class FileExplorer {
                 else if (target.id === 'newFolderNameInput') {
                     event.preventDefault();
                     (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitNewFolderMobile)(this._currentFolder); // Assuming you migrated your submitNewFolder logic!
+                }
+                else if (target.id === 'newFileNameInput') {
+                    event.preventDefault();
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitNewFile)(this._currentFolder);
                 }
             }
         });
@@ -607,19 +662,8 @@ let rootFolder = {
             name: 'CAS',
             path: '/CAS',
             subFolders: [],
-            files: [
-                {
-                    name: 'Internal_Document.xlsx',
-                    extension: 'xlsx',
-                    modified: 'May 1',
-                    modifiedBy: 'Megan Bowen',
-                    isNew: false,
-                    data: '',
-                    type: 'file',
-                    path: ""
-                },
-            ],
-            modified: 'A few seconds ago',
+            files: [],
+            modified: '2026-03-10T10:57:54.553Z',
             modifiedBy: 'Administrator MOD',
             isNew: false,
             type: 'file',
@@ -629,7 +673,7 @@ let rootFolder = {
         {
             name: 'CoasterAndBargeLoading.xlsx',
             extension: 'xlsx',
-            modified: 'A few seconds ago',
+            modified: '2026-03-10T10:57:54.553Z',
             modifiedBy: 'Administrator MOD',
             isNew: true,
             data: '',
@@ -639,7 +683,7 @@ let rootFolder = {
         {
             name: 'RevenueByServices.xlsx',
             extension: 'xlsx',
-            modified: 'A few seconds ago',
+            modified: '2026-03-10T10:57:54.553Z',
             modifiedBy: 'Administrator MOD',
             isNew: true,
             data: '',
@@ -647,7 +691,7 @@ let rootFolder = {
             path: ""
         },
     ],
-    modified: 'A few seconds ago',
+    modified: '2026-03-10T10:57:54.553Z',
     modifiedBy: 'Administrator MOD',
     isNew: true,
     type: 'folder',
@@ -783,6 +827,49 @@ const clearStorage = () => {
 
 /***/ }),
 
+/***/ "./src/scripts/utilities/_timeHelper.ts":
+/*!**********************************************!*\
+  !*** ./src/scripts/utilities/_timeHelper.ts ***!
+  \**********************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getRelativeTime: function() { return /* binding */ getRelativeTime; }
+/* harmony export */ });
+// utilities/timeHelpers.ts
+function getRelativeTime(dateString) {
+    const date = new Date(dateString);
+    // SAFETY FALLBACK: If the date is invalid (like your old 'Just now' strings), just return it
+    if (isNaN(date.getTime()))
+        return dateString;
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diffInSeconds < 60)
+        return 'A few seconds ago';
+    if (diffInSeconds < 3600) {
+        const mins = Math.floor(diffInSeconds / 60);
+        return mins === 1 ? '1 minute ago' : `${mins} minutes ago`;
+    }
+    if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+    }
+    if (diffInSeconds < 2592000) {
+        const days = Math.floor(diffInSeconds / 86400);
+        return days === 1 ? 'Yesterday' : `${days} days ago`;
+    }
+    if (diffInSeconds < 31536000) {
+        const months = Math.floor(diffInSeconds / 2592000);
+        return months === 1 ? '1 month ago' : `${months} months ago`;
+    }
+    const years = Math.floor(diffInSeconds / 31536000);
+    return years === 1 ? '1 year ago' : `${years} years ago`;
+}
+
+
+/***/ }),
+
 /***/ "./src/scripts/utilities/uiManager.ts":
 /*!********************************************!*\
   !*** ./src/scripts/utilities/uiManager.ts ***!
@@ -794,15 +881,36 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   UIManager: function() { return /* binding */ UIManager; }
 /* harmony export */ });
 /* harmony import */ var _storageUtil__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+/* harmony import */ var _timeHelper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_timeHelper */ "./src/scripts/utilities/_timeHelper.ts");
+
 
 class UIManager {
     static async refreshUI(currentFolder) {
         UIManager.renderLoadingState();
         await new Promise((resolve) => setTimeout(resolve, 400));
-        UIManager.renderGrid([
+        // 1. Combine folders and files
+        const allItems = [
             ...currentFolder.subFolders,
             ...currentFolder.files,
-        ]);
+        ];
+        // 2. Sort the array dynamically
+        allItems.sort((a, b) => {
+            // Rule A: Group Folders First
+            const isFolderA = 'subFolders' in a ? 1 : 0;
+            const isFolderB = 'subFolders' in b ? 1 : 0;
+            if (isFolderA !== isFolderB) {
+                return isFolderB - isFolderA; // Puts folders (1) before files (0)
+            }
+            // Rule B: Sort by Newest Modified Date
+            const dateA = new Date(a.modified).getTime();
+            const dateB = new Date(b.modified).getTime();
+            // Fallback for old data: treat invalid dates as '0' (oldest possible)
+            const validDateA = isNaN(dateA) ? 0 : dateA;
+            const validDateB = isNaN(dateB) ? 0 : dateB;
+            return validDateB - validDateA; // Descending order (Newest first)
+        });
+        // 3. Render the newly sorted array
+        UIManager.renderGrid(allItems);
     }
     static saveAndRefresh(currentFolder) {
         (0,_storageUtil__WEBPACK_IMPORTED_MODULE_0__.saveToStorage)(currentFolder);
@@ -832,7 +940,6 @@ UIManager.renderGrid = (data) => {
     const mobileContainer = document.getElementById('mobile-card-container');
     if (!desktopContainer || !mobileContainer)
         return;
-    console.log('Rendering UI with data:', data);
     if (!data || data.length === 0) {
         desktopContainer.innerHTML = '<p class="mt-4 text-center">No items to display</p>';
         mobileContainer.innerHTML = '<p class=" mt-4 text-center">No items to display</p>';
@@ -862,7 +969,7 @@ UIManager.renderGrid = (data) => {
             ${nameDisplay}
           </div>
           
-          <div class="m-text-secondary">${file.modified}</div>
+          <div class="m-text-secondary">${(0,_timeHelper__WEBPACK_IMPORTED_MODULE_1__.getRelativeTime)(file.modified)}</div>
           <div class="m-text-secondary">${file.modifiedBy}</div>
           
           <div class="d-flex gap-2 justify-content-center">
