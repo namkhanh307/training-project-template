@@ -34,6 +34,7 @@ export async function  processFileSelection(rootFolder: Folder, currentFolder: F
             modified: 'Just now',
             modifiedBy: 'You',
             isNew: true,
+            path:"",
             data: e.target?.result as string,
             type: 'file',
           });

@@ -42,6 +42,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
                     modified: 'Just now',
                     modifiedBy: 'You',
                     isNew: true,
+                    path: "",
                     data: e.target?.result,
                     type: 'file',
                 });
@@ -183,12 +184,17 @@ __webpack_require__.r(__webpack_exports__);
 
 class FileExplorer {
     constructor() {
+        this._navigationHistory = [];
+        //State for modals
+        this._editingItemState = { oldName: '', isFolder: false };
+        this._mobileActionItem = { name: '', isFolder: false };
         this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder);
         this._currentFolder = this._rootFolder;
         // Setup event listeners once when the app starts
         this.setupEventListeners();
         // Initial Render
         this.refreshUI();
+        this.updateBreadcrumbs();
     }
     // A handy helper to keep your code DRY (Don't Repeat Yourself)
     refreshUI() {
@@ -197,11 +203,17 @@ class FileExplorer {
             ...this._currentFolder.files,
         ]);
     }
+    saveAndRefresh() {
+        (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__.saveToStorage)(this._rootFolder);
+        this.refreshUI();
+    }
     // --- 1. THE ACTION METHOD ---
     // --- 2. THE EVENT ROUTER ---
     setupEventListeners() {
         this.initToolbarEvents();
         this.initGridEvents();
+        this.initModalEvents();
+        this.initBreadcrumbEvents();
     }
     initToolbarEvents() {
         const desktopToolbar = document.querySelector('.l-toolbar');
@@ -225,14 +237,267 @@ class FileExplorer {
         fileInput?.addEventListener('change', _crudFile__WEBPACK_IMPORTED_MODULE_3__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, this.refreshUI.bind(this)));
     }
     initGridEvents() {
-        const gridContainer = document.getElementById('desktop-row-container');
-        // Listener for the "Enter" key or "Blur" on the new folder input
-        gridContainer?.addEventListener('focusout', (event) => {
-            const target = event.target;
-            if (target.id === 'new-folder-input') {
-                (0,_crudFolder__WEBPACK_IMPORTED_MODULE_4__.saveFolderName)(this._rootFolder, this._currentFolder, this.refreshUI.bind(this), target);
+        // We attach one listener to the main container that holds both grids
+        const mainContainer = document.querySelector('.l-main-container');
+        mainContainer?.addEventListener('click', (event) => {
+            const target = event.target.closest('[data-action]');
+            if (!target)
+                return;
+            event.stopPropagation(); // Prevent clicks from bubbling up to parent rows
+            const action = target.dataset.action;
+            const itemName = target.dataset.name;
+            const isFolder = target.dataset.type === 'folder';
+            switch (action) {
+                case 'open-folder':
+                    if (itemName)
+                        this.handleFolderClick(itemName);
+                    break;
+                case 'open-file':
+                    if (itemName)
+                        this.handleFileClick(itemName);
+                    break;
+                case 'delete':
+                    if (itemName)
+                        this.deleteItem(itemName, isFolder);
+                    break;
+                case 'edit':
+                    if (itemName)
+                        this.openRenameModal(itemName, isFolder);
+                    break;
+                case 'mobile-options':
+                    if (itemName)
+                        this.openMobileOptionsSheet(itemName, isFolder);
+                    break;
             }
         });
+        // Handle pressing Enter to save folder
+        mainContainer?.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                const target = event.target;
+                if (target.id === 'new-folder-input') {
+                    target.blur(); // Triggers the focusout event below
+                }
+            }
+        });
+        // Handle input blur to save folder
+        mainContainer?.addEventListener('focusout', (event) => {
+            const target = event.target;
+            if (target.id === 'new-folder-input') {
+                this.saveFolderName(target);
+            }
+        });
+    }
+    initModalEvents() {
+        // A router specifically for clicks inside Modals
+        document.body.addEventListener('click', (event) => {
+            const target = event.target.closest('[data-modal-action]');
+            if (!target)
+                return;
+            switch (target.dataset.modalAction) {
+                // Rename Modal
+                case 'submit-rename':
+                    this.submitRename();
+                    break;
+                case 'close-rename':
+                    this.closeModal('renameModal');
+                    break;
+                // Mobile Options Action Sheet
+                case 'trigger-mobile-rename':
+                    this.closeModal('mobileOptionsModal');
+                    this.openRenameModal(this._mobileActionItem.name, this._mobileActionItem.isFolder);
+                    break;
+                case 'trigger-mobile-delete':
+                    this.closeModal('mobileOptionsModal');
+                    this.deleteItem(this._mobileActionItem.name, this._mobileActionItem.isFolder);
+                    break;
+                case 'close-mobile-options':
+                    this.closeModal('mobileOptionsModal');
+                    break;
+                // File Viewer Modal
+                case 'download-file':
+                    const fileName = document.getElementById('modalFileName')?.innerText;
+                    if (fileName)
+                        this.downloadFile(fileName);
+                    break;
+                case 'close-file-modal':
+                    this.closeModal('fileModal');
+                    break;
+            }
+        });
+    }
+    initBreadcrumbEvents() {
+        const pathDisplay = document.getElementById('folder-path-display');
+        pathDisplay?.addEventListener('click', (event) => {
+            const target = event.target.closest('[data-path]');
+            if (target && target.dataset.path) {
+                this.navigateFromBreadcrumb(target.dataset.path);
+            }
+        });
+    }
+    // --- ACTIONS: NAVIGATION & BREADCRUMBS ---
+    handleFolderClick(folderName) {
+        const targetFolder = this._currentFolder.subFolders.find((f) => f.name === folderName);
+        if (!targetFolder)
+            return;
+        targetFolder.isNew = false;
+        this.saveAndRefresh();
+        // Push to history before moving
+        this._navigationHistory.push(this._currentFolder);
+        this._currentFolder = targetFolder;
+        this.updateBreadcrumbs();
+        this.refreshUI();
+    }
+    navigateFromBreadcrumb(targetPath) {
+        if (targetPath === '/') {
+            this._currentFolder = this._rootFolder;
+            this._navigationHistory = []; // Clear history if returning to root
+        }
+        else {
+            const segments = targetPath.split('/').filter(s => s.length > 0);
+            let foundFolder = this._rootFolder;
+            for (const segment of segments) {
+                const nextFolder = foundFolder.subFolders.find(f => f.name === segment);
+                if (nextFolder)
+                    foundFolder = nextFolder;
+                else
+                    return; // Stop if path is invalid
+            }
+            this._currentFolder = foundFolder;
+        }
+        this.updateBreadcrumbs();
+        this.refreshUI();
+    }
+    updateBreadcrumbs() {
+        const pathDisplay = document.getElementById('folder-path-display');
+        if (!pathDisplay)
+            return;
+        let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" data-path="/">Documents</span>`;
+        if (this._currentFolder.path !== '/') {
+            const segments = this._currentFolder.path.split('/').filter(s => s.length > 0);
+            let buildPath = '';
+            segments.forEach((segment) => {
+                buildPath += `/${segment}`;
+                breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
+                breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" data-path="${buildPath}">${segment}</span>`;
+            });
+        }
+        pathDisplay.innerHTML = breadcrumbsHTML;
+    }
+    // --- ACTIONS: FILES ---
+    handleFileClick(fileName) {
+        const file = this._currentFolder.files.find((f) => f.name === fileName);
+        if (!file)
+            return;
+        file.isNew = false;
+        this.saveAndRefresh();
+        document.getElementById('modalFileName').innerText = file.name;
+        document.getElementById('modalFileExtension').innerText = file.extension;
+        document.getElementById('modalFileModified').innerText = file.modified;
+        document.getElementById('modalFileModifiedBy').innerText = file.modifiedBy;
+        this.openModal('fileModal');
+    }
+    downloadFile(fileName) {
+        const file = this._currentFolder.files.find((f) => f.name === fileName);
+        if (!file || !file.data)
+            return;
+        const link = document.createElement('a');
+        link.href = file.data;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    // --- ACTIONS: CRUD LOGIC ---
+    deleteItem(name, isFolder) {
+        if (!confirm(`Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`))
+            return;
+        if (isFolder) {
+            this._currentFolder.subFolders = this._currentFolder.subFolders.filter((f) => f.name !== name);
+        }
+        else {
+            this._currentFolder.files = this._currentFolder.files.filter((f) => f.name !== name);
+        }
+        this.saveAndRefresh();
+    }
+    saveFolderName(inputElement) {
+        const newName = inputElement.value.trim() || 'New folder';
+        const folderBeingEdited = this._currentFolder.subFolders.find((f) => f.isEditing);
+        if (!folderBeingEdited)
+            return;
+        const isDuplicate = this._currentFolder.subFolders.some((f) => f !== folderBeingEdited && f.name.toLowerCase() === newName.toLowerCase());
+        if (isDuplicate) {
+            alert(`This destination already contains a folder named '${newName}'.`);
+            setTimeout(() => { inputElement.focus(); inputElement.select(); }, 10);
+            return;
+        }
+        folderBeingEdited.name = newName;
+        folderBeingEdited.path = this._currentFolder.path === '/' ? `/${newName}` : `${this._currentFolder.path}/${newName}`;
+        delete folderBeingEdited.isEditing;
+        this.saveAndRefresh();
+    }
+    // --- ACTIONS: MODAL HANDLERS ---
+    openRenameModal(oldName, isFolder) {
+        this._editingItemState = { oldName, isFolder };
+        const input = document.getElementById('renameInput');
+        if (input) {
+            input.value = oldName;
+            this.openModal('renameModal');
+            setTimeout(() => {
+                input.focus();
+                if (!isFolder && oldName.includes('.')) {
+                    input.setSelectionRange(0, oldName.lastIndexOf('.'));
+                }
+                else {
+                    input.select();
+                }
+            }, 100);
+        }
+    }
+    submitRename() {
+        const input = document.getElementById('renameInput');
+        const newName = input.value.trim();
+        const { oldName, isFolder } = this._editingItemState;
+        if (!newName || newName === oldName) {
+            this.closeModal('renameModal');
+            return;
+        }
+        const itemArray = isFolder ? this._currentFolder.subFolders : this._currentFolder.files;
+        if (itemArray.some(f => f.name.toLowerCase() === newName.toLowerCase())) {
+            alert('An item with this name already exists.');
+            input.focus();
+            return;
+        }
+        const target = itemArray.find(f => f.name === oldName);
+        if (target) {
+            target.name = newName;
+            if (isFolder) {
+                target.path = this._currentFolder.path === '/' ? `/${newName}` : `${this._currentFolder.path}/${newName}`;
+            }
+            else {
+                const lastDot = newName.lastIndexOf('.');
+                target.extension = lastDot > 0 ? newName.substring(lastDot + 1).toLowerCase() : '';
+            }
+        }
+        this.saveAndRefresh();
+        this.closeModal('renameModal');
+    }
+    openMobileOptionsSheet(name, isFolder) {
+        this._mobileActionItem = { name, isFolder };
+        const title = document.getElementById('optionsModalTitle');
+        if (title)
+            title.innerText = name;
+        this.openModal('mobileOptionsModal');
+    }
+    // --- UTILS ---
+    openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal)
+            modal.style.display = 'flex';
+    }
+    closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal)
+            modal.style.display = 'none';
     }
 }
 
@@ -286,6 +551,7 @@ let rootFolder = {
                     isNew: false,
                     data: '',
                     type: 'file',
+                    path: ""
                 },
             ],
             modified: 'A few seconds ago',
@@ -303,6 +569,7 @@ let rootFolder = {
             isNew: true,
             data: '',
             type: 'file',
+            path: ""
         },
         {
             name: 'RevenueByServices.xlsx',
@@ -312,6 +579,7 @@ let rootFolder = {
             isNew: true,
             data: '',
             type: 'file',
+            path: ""
         },
     ],
     modified: 'A few seconds ago',
@@ -379,37 +647,32 @@ UIManager.renderGrid = (data) => {
         const isFolder = 'subFolders' in item;
         const file = item;
         const folderItem = item;
+        // Notice: Removed inline onblur/onkeyup. We handle this via Event Delegation now!
         const nameDisplay = folderItem.isEditing
-            ? `<input type="text" 
-              id="new-folder-input" 
-              class="m-input-rename" 
-              value="New folder" 
-              onblur="saveFolderName(event)" 
-              onkeyup="handleRenameKey(event)" />`
+            ? `<input type="text" id="new-folder-input" class="m-input-rename" value="${folderItem.name}" />`
             : item.name;
         return `
         <div class="m-table-row m-table-row--interactive" 
-             ${isFolder ? `onclick="handleFolderClick('${item.name}')"` : `onclick="handleFileClick('${item.name}')"`}>
+             data-action="${isFolder ? 'open-folder' : 'open-file'}" 
+             data-name="${item.name}">
+             
           <div>
-            ${isFolder
-            ? `<i class="fas fa-folder m-icon-folder"></i>`
-            : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${item.extension}"></use></svg>`}
+            ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${file.extension}"></use></svg>`}
           </div>
+          
           <div class="m-text-overlay">
             ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
             ${nameDisplay}
           </div>
+          
           <div class="m-text-secondary">${file.modified}</div>
           <div class="m-text-secondary">${file.modifiedBy}</div>
+          
           <div class="d-flex gap-2 justify-content-center">
-           <svg class="m-icon-custom" onclick="event.stopPropagation(); handleEdit('${item.name}', ${isFolder})">
+            <svg class="m-icon-custom is-clickable" data-action="edit" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
               <use href="src/files/icons.svg#icon-edit"></use>
             </svg>
-            <svg class="m-icon-custom is-clickable" 
-              data-action="delete" 
-              data-name="${item.name}" 
-              data-type="${isFolder ? 'folder' : 'file'}">
-            </svg>
+            <svg class="m-icon-custom is-clickable" data-action="delete" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
               <use href="src/files/icons.svg#icon-delete"></use>
             </svg>
           </div>
@@ -423,14 +686,14 @@ UIManager.renderGrid = (data) => {
         const isFolder = 'subFolders' in item;
         const file = item;
         return `
-        <div class="m-card" ${isFolder ? `onclick="handleFolderClick('${item.name}')"` : `onclick="handleFileClick('${item.name}')"`}>
+        <div class="m-card" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-name="${item.name}">
           <div class="m-card__row m-card__row--header">
-            <div class="m-card__label">File Type</div>
-            <div class="me-2" onclick="event.stopPropagation(); handleOptionDropdown('${item.name}', ${isFolder})">
-              ${isFolder
-            ? `<i class="fas fa-folder m-icon-folder"></i>`
-            : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${item.extension}"></use></svg>`}
+                <div class="m-card__label">File Type</div>
+              <div class="me-2" data-action="mobile-options" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+                ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${file.extension}"></use></svg>`}
+              </div>
             </div>
+            
           </div>
           <div class="m-card__row">
             <div class="m-card__label">Name</div>
@@ -441,14 +704,8 @@ UIManager.renderGrid = (data) => {
               </div>
             </div>
           </div>
-          <div class="m-card__row">
-            <div class="m-card__label">Modified</div>
-            <div class="m-card__value">${file.modified}</div>
-          </div>
-          <div class="m-card__row">
-            <div class="m-card__label">Modified By</div>
-            <div class="m-card__value">${file.modifiedBy}</div>
-          </div>
+          <div class="m-card__row"><div class="m-card__label">Modified</div><div class="m-card__value">${file.modified}</div></div>
+          <div class="m-card__row"><div class="m-card__label">Modified By</div><div class="m-card__value">${file.modifiedBy}</div></div>
         </div>
       `;
     })
@@ -535,12 +792,6 @@ __webpack_require__.r(__webpack_exports__);
 (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__["default"])(() => {
     const app = new _services_fileExplorer__WEBPACK_IMPORTED_MODULE_1__.FileExplorer();
 });
-// // 1. Overwrite the default rootFolder with the saved data
-// let initData = loadFromStorage(rootFolder);
-// // 2. Set currentFolder to point to the exact same memory reference
-// currentFolder = initData;
-// // 3. Render
-// navigateToFolder(currentFolder);
 
 }();
 // This entry needs to be wrapped in an IIFE because it needs to be isolated against other entry modules.
