@@ -1,6 +1,6 @@
 import { Folder, File } from '../models/entity';
 import { rootFolder } from '../utilities/_initData';
-import { closeModal } from '../utilities/_modal';
+import { closeModal, openNewFileModal } from '../utilities/_modal';
 import {
   getPathFromUrl,
   handleFolderClick,
@@ -35,12 +35,12 @@ export class FileExplorer {
   private _mobileActionItem = { name: '', isFolder: false };
 
   constructor() {
-    this._rootFolder = loadFromStorage(rootFolder); //load database 
+    this._rootFolder = loadFromStorage(rootFolder); //load database
     const initialPath = getPathFromUrl(); //read url
     this._currentFolder = navigateFromBreadcrumb(
       this._rootFolder,
       initialPath,
-    ); //locate current folder 
+    ); //locate current folder
     // Setup event listeners once when the app starts
     this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
 
@@ -88,7 +88,7 @@ export class FileExplorer {
       if (!target) return;
 
       const action = target.dataset.action;
-
+      const newMenu = document.getElementById('newOptionsMenu');
       switch (action) {
         case 'new-folder':
           await createNewFolderDesktop(this._currentFolder, () =>
@@ -98,7 +98,37 @@ export class FileExplorer {
         case 'upload-file':
           triggerUpload();
           break;
+        case 'toggle-new-menu':
+          // Toggle the dropdown visibility
+          if (newMenu) {
+            newMenu.style.display =
+              newMenu.style.display === 'block' ? 'none' : 'block';
+          }
+          break;
+
+        case 'trigger-new-folder':
+          // 1. Hide the menu
+          if (newMenu) newMenu.style.display = 'none';
+          // 2. Call your existing inline folder creation method!
+          createNewFolderDesktop(this._currentFolder, () =>
+            UIManager.refreshUI(this._currentFolder),
+          );
+          break;
+
+        case 'trigger-new-file':
+          // 1. Hide the menu
+          if (newMenu) newMenu.style.display = 'none';
+          // 2. Open the new file modal
+          openNewFileModal();
+          break;
       }
+      document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        if (!target.closest('[data-action="toggle-new-menu"]')) {
+          const menu = document.getElementById('newOptionsMenu');
+          if (menu) menu.style.display = 'none';
+        }
+      });
     });
 
     // 2. Listener for the Hidden File Input
@@ -187,7 +217,7 @@ export class FileExplorer {
   }
   private initModalEvents() {
     // We attach one listener to the body to catch ALL modal clicks
-    document.body.addEventListener('click', (event) => {
+    document.body.addEventListener('click', async (event) => {
       const target = (event.target as HTMLElement).closest(
         '[data-modal-action]',
       ) as HTMLElement;
@@ -241,6 +271,14 @@ export class FileExplorer {
           break;
         case 'close-new-folder':
           closeModal('newFolderModal');
+          break;
+        case 'submit-new-file':
+          createNewFolderDesktop(this._currentFolder, () =>
+            UIManager.refreshUI(this._currentFolder),
+          );
+          break;
+        case 'close-new-file':
+          closeModal('newFileModal');
           break;
       }
     });

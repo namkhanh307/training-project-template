@@ -21,13 +21,39 @@
     <!-- Desktop tool bars -->
     <div class="l-toolbar d-none d-md-flex">
       <div
-        class="m-toolbar-item is-clickable"
-        data-action="new-folder"
+        class="m-toolbar-item is-clickable position-relative"
+        data-action="toggle-new-menu"
       >
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-new"></use>
         </svg>
         New <i class="fas fa-chevron-down ms-1 small"></i>
+
+        <div
+          id="newOptionsMenu"
+          class="dropdown-menu shadow-sm"
+          style="
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            min-width: 150px;
+          "
+        >
+          <div
+            class="dropdown-item is-clickable py-2"
+            data-action="trigger-new-folder"
+          >
+            <i class="fas fa-folder text-warning me-2"></i> Folder
+          </div>
+          <div
+            class="dropdown-item is-clickable py-2"
+            data-action="trigger-new-file"
+          >
+            <i class="fas fa-file-alt text-primary me-2"></i> File
+          </div>
+        </div>
       </div>
 
       <input
@@ -333,6 +359,49 @@
               class="list-group-item list-group-item-action py-3 border-0 text-danger"
             >
               <i class="fas fa-trash-alt me-3"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- New file modal -->
+    <div id="newFileModal" class="m-modal" style="display: none">
+      <div class="m-modal-content">
+        <div class="m-modal-header">
+          <h3 class="mb-0">Create New File</h3>
+          <button
+            data-modal-action="close-new-file"
+            class="btn-close"
+          >
+            <i class="fa-solid fa-x"></i>
+          </button>
+        </div>
+        <div class="m-modal-body">
+          <div class="mb-4">
+            <label
+              for="newFileNameInput"
+              class="form-label text-secondary mb-1"
+              >File Name</label
+            >
+            <input
+              type="text"
+              id="newFileNameInput"
+              class="form-control"
+              placeholder="e.g. Report.txt or Data.xlsx"
+            />
+          </div>
+          <div class="d-flex gap-2 justify-content-end">
+            <button
+              data-modal-action="close-new-file"
+              class="btn btn-light"
+            >
+              Cancel
+            </button>
+            <button
+              data-modal-action="submit-new-file"
+              class="btn btn-primary"
+            >
+              Create
             </button>
           </div>
         </div>

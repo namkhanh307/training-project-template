@@ -338,9 +338,9 @@ class FileExplorer {
         //State for modals
         this._editingItemState = { oldName: '', isFolder: false };
         this._mobileActionItem = { name: '', isFolder: false };
-        this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder); //load database 
+        this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder); //load database
         const initialPath = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)(); //read url
-        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, initialPath); //locate current folder 
+        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, initialPath); //locate current folder
         // Setup event listeners once when the app starts
         this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
         // Initial Render
@@ -370,6 +370,7 @@ class FileExplorer {
             if (!target)
                 return;
             const action = target.dataset.action;
+            const newMenu = document.getElementById('newOptionsMenu');
             switch (action) {
                 case 'new-folder':
                     await (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder));
@@ -377,7 +378,36 @@ class FileExplorer {
                 case 'upload-file':
                     (0,_crud__WEBPACK_IMPORTED_MODULE_5__.triggerUpload)();
                     break;
+                case 'toggle-new-menu':
+                    // Toggle the dropdown visibility
+                    if (newMenu) {
+                        newMenu.style.display =
+                            newMenu.style.display === 'block' ? 'none' : 'block';
+                    }
+                    break;
+                case 'trigger-new-folder':
+                    // 1. Hide the menu
+                    if (newMenu)
+                        newMenu.style.display = 'none';
+                    // 2. Call your existing inline folder creation method!
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder));
+                    break;
+                case 'trigger-new-file':
+                    // 1. Hide the menu
+                    if (newMenu)
+                        newMenu.style.display = 'none';
+                    // 2. Open the new file modal
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.openNewFileModal)();
+                    break;
             }
+            document.addEventListener('click', (event) => {
+                const target = event.target;
+                if (!target.closest('[data-action="toggle-new-menu"]')) {
+                    const menu = document.getElementById('newOptionsMenu');
+                    if (menu)
+                        menu.style.display = 'none';
+                }
+            });
         });
         // 2. Listener for the Hidden File Input
         fileInput?.addEventListener('change', _crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder)));
@@ -437,7 +467,7 @@ class FileExplorer {
     }
     initModalEvents() {
         // We attach one listener to the body to catch ALL modal clicks
-        document.body.addEventListener('click', (event) => {
+        document.body.addEventListener('click', async (event) => {
             const target = event.target.closest('[data-modal-action]');
             if (!target)
                 return;
@@ -477,6 +507,12 @@ class FileExplorer {
                     break;
                 case 'close-new-folder':
                     (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('newFolderModal');
+                    break;
+                case 'submit-new-file':
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder));
+                    break;
+                case 'close-new-file':
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('newFileModal');
                     break;
             }
         });
@@ -629,7 +665,8 @@ let rootFolder = {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   closeModal: function() { return /* binding */ closeModal; },
-/* harmony export */   openModal: function() { return /* binding */ openModal; }
+/* harmony export */   openModal: function() { return /* binding */ openModal; },
+/* harmony export */   openNewFileModal: function() { return /* binding */ openNewFileModal; }
 /* harmony export */ });
 function openModal(id) {
     const modal = document.getElementById(id);
@@ -640,6 +677,14 @@ function closeModal(id) {
     const modal = document.getElementById(id);
     if (modal)
         modal.style.display = 'none';
+}
+function openNewFileModal() {
+    const input = document.getElementById('newFileNameInput');
+    if (input)
+        input.value = ''; // Reset input
+    openModal('newFileModal');
+    // Auto-focus the input
+    setTimeout(() => input?.focus(), 100);
 }
 
 
