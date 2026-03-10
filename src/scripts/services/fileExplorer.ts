@@ -1,5 +1,6 @@
 import { Folder, File } from '../models/entity';
 import { rootFolder } from '../utilities/_initData';
+import { handleFolderClick, navigateFromBreadcrumb } from '../utilities/_navigate';
 import {
   loadFromStorage,
   saveToStorage,
@@ -25,7 +26,7 @@ export class FileExplorer {
 
     // Initial Render
     this.refreshUI();
-    this.updateBreadcrumbs();
+    UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
   }
 
   // A handy helper to keep your code DRY (Don't Repeat Yourself)
@@ -48,6 +49,7 @@ export class FileExplorer {
     this.initGridEvents();
     this.initModalEvents();
     this.initBreadcrumbEvents();
+    this.initMobileMenuEvents();
   }
 
   private initToolbarEvents() {
@@ -66,7 +68,7 @@ export class FileExplorer {
       const action = target.dataset.action;
 
       switch (action) {
-        case 'new-folder-desktop':
+        case 'new-folder':
           createNewFolderDesktop(
             this._currentFolder,
             this.refreshUI.bind(this),
@@ -107,7 +109,7 @@ export class FileExplorer {
 
       switch (action) {
         case 'open-folder':
-          if (itemName) this.handleFolderClick(itemName);
+          if (itemName) handleFolderClick(this._currentFolder,itemName);
           break;
         case 'open-file':
           if (itemName) this.handleFileClick(itemName);
@@ -230,75 +232,32 @@ export class FileExplorer {
         '[data-path]',
       ) as HTMLElement;
       if (target && target.dataset.path) {
-        this.navigateFromBreadcrumb(target.dataset.path);
+        navigateFromBreadcrumb(this._rootFolder, this._currentFolder, this.refreshUI.bind(this), target.dataset.path);
+      }
+    });
+  }
+  private initMobileMenuEvents() {
+    const mobileMenuList = document.querySelector('.m-mobile-list');
+
+    mobileMenuList?.addEventListener('click', (event) => {
+      const target = (event.target as HTMLElement).closest('[data-action]') as HTMLElement;
+      if (!target) return;
+
+      const action = target.dataset.action;
+
+      switch (action) {
+        case 'new-folder':
+          this.openNewFolderMobile(); 
+          break;
+        case 'upload-file':
+          triggerUpload(); // Reuses the exact same method as desktop!
+          break;
+        // You can easily wire up sync/export here later
       }
     });
   }
 
   // --- ACTIONS: NAVIGATION & BREADCRUMBS ---
-  private handleFolderClick(folderName: string) {
-    const targetFolder = this._currentFolder.subFolders.find(
-      (f) => f.name === folderName,
-    );
-    if (!targetFolder) return;
-
-    targetFolder.isNew = false;
-    this.saveAndRefresh();
-
-    // Push to history before moving
-    this._navigationHistory.push(this._currentFolder);
-    this._currentFolder = targetFolder;
-
-    this.updateBreadcrumbs();
-    this.refreshUI();
-  }
-
-  private navigateFromBreadcrumb(targetPath: string) {
-    if (targetPath === '/') {
-      this._currentFolder = this._rootFolder;
-      this._navigationHistory = []; // Clear history if returning to root
-    } else {
-      const segments = targetPath
-        .split('/')
-        .filter((s) => s.length > 0);
-      let foundFolder = this._rootFolder;
-
-      for (const segment of segments) {
-        const nextFolder = foundFolder.subFolders.find(
-          (f) => f.name === segment,
-        );
-        if (nextFolder) foundFolder = nextFolder;
-        else return; // Stop if path is invalid
-      }
-      this._currentFolder = foundFolder;
-    }
-
-    this.updateBreadcrumbs();
-    this.refreshUI();
-  }
-
-  private updateBreadcrumbs() {
-    const pathDisplay = document.getElementById(
-      'folder-path-display',
-    );
-    if (!pathDisplay) return;
-
-    let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" data-path="/">Documents</span>`;
-
-    if (this._currentFolder.path !== '/') {
-      const segments = this._currentFolder.path
-        .split('/')
-        .filter((s) => s.length > 0);
-      let buildPath = '';
-
-      segments.forEach((segment) => {
-        buildPath += `/${segment}`;
-        breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
-        breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" data-path="${buildPath}">${segment}</span>`;
-      });
-    }
-    pathDisplay.innerHTML = breadcrumbsHTML;
-  }
 
   // --- ACTIONS: FILES ---
   private handleFileClick(fileName: string) {

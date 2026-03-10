@@ -1,46 +1,43 @@
-// import renderGrid from "../components/_grid";
-// import { Folder, Row } from "../models/entity";
+import { Folder } from "../models/entity";
+import { UIManager } from "./uiManager";
 
-// export const navigateToFolder = (
-//   folder: Folder,
-//   isBack: boolean = false,
-//   currentFolder: Folder | null = null,
-//   navigationHistory: Folder[] = [],
-// ): void => {
-//   if (!isBack && currentFolder && currentFolder !== folder) {
-//     navigationHistory.push(currentFolder);
-//   }
+  export function handleFolderClick(currentFolder: Folder, folderName: string) {
+    const targetFolder = currentFolder.subFolders.find(
+      (f) => f.name === folderName,
+    );
+    if (!targetFolder) return;
 
-//   currentFolder = folder;
+    targetFolder.isNew = false;
+    this.saveAndRefresh();
 
-//   // --- NEW: Interactive Breadcrumb Generator ---
-//   const pathDisplay = document.getElementById('folder-path-display');
-//   if (pathDisplay) {
-//     // 1. Always start with the Root (Documents)
-//     let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('/')">Documents</span>`;
+    // Push to history before moving
+    this._navigationHistory.push(currentFolder);
+    currentFolder = targetFolder;
 
-//     // 2. If we are deep in a folder, split the path and build the links
-//     if (folder.path !== '/') {
-//       const segments = folder.path
-//         .split('/')
-//         .filter((s: string) => s.length > 0);
-//       let buildPath = '';
+    UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
+    this.refreshUI();
+  }
 
-//       segments.forEach((segment: string) => {
-//         buildPath += `/${segment}`; // Reconstruct the path step-by-step (e.g., /CAS, then /CAS/Finance)
-//         breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
-//         breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('${buildPath}')">${segment}</span>`;
-//       });
-//     }
+    export function navigateFromBreadcrumb(rootFolder: Folder, currentFolder: Folder, refreshUI : () => void, targetPath: string) {
+    if (targetPath === '/') {
+      currentFolder = rootFolder;
+      this._navigationHistory = []; // Clear history if returning to root
+    } else {
+      const segments = targetPath
+        .split('/')
+        .filter((s) => s.length > 0);
+      let foundFolder = rootFolder;
 
-//     pathDisplay.innerHTML = breadcrumbsHTML;
-//   }
-//   // ---------------------------------------------
+      for (const segment of segments) {
+        const nextFolder = foundFolder.subFolders.find(
+          (f) => f.name === segment,
+        );
+        if (nextFolder) foundFolder = nextFolder;
+        else return; // Stop if path is invalid
+      }
+      currentFolder = foundFolder;
+    }
 
-//   const combinedItems: Row[] = [
-//     ...folder.subFolders,
-//     ...folder.files,
-//   ];
-
-//   renderGrid(combinedItems);
-// };
+    UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
+    refreshUI();
+  }

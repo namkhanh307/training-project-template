@@ -22,7 +22,7 @@
     <div class="l-toolbar d-none d-md-flex">
       <div
         class="m-toolbar-item is-clickable"
-        data-action="new-folder-desktop"
+        data-action="new-folder"
       >
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-new"></use>
@@ -89,17 +89,14 @@
       <!-- Collapse menu content -->
       <div class="collapse m-mobile-collapse" id="mobileMenu">
         <div class="m-mobile-list">
-          <div
-            class="m-mobile-item"
-            onclick="handleAddFolderMobile()"
-          >
+          <div class="m-mobile-item" data-action="new-folder">
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-new"></use>
             </svg>
             New
             <i class="fas fa-chevron-down small"></i>
           </div>
-          <div class="m-mobile-item" onclick="handleUploadFile(true)">
+          <div class="m-mobile-item" data-action="upload-file">
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-upload"></use>
             </svg>

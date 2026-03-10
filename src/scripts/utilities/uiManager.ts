@@ -85,6 +85,25 @@ export class UIManager {
       })
       .join('');
   };
-  static showModal(modalId: string) {}
-  static updateBreadcrumbs(path: string) {}
+  static updateBreadcrumbs(modalId: string, currentFolder: Folder) {
+    const pathDisplay = document.getElementById(modalId);
+    if (!pathDisplay) return;
+
+    let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" data-path="/">Documents</span>`;
+
+    if (currentFolder.path !== '/') {
+      const segments = currentFolder.path
+        .split('/')
+        .filter((s) => s.length > 0);
+      let buildPath = '';
+
+      segments.forEach((segment) => {
+        buildPath += `/${segment}`;
+        breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
+        breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" data-path="${buildPath}">${segment}</span>`;
+      });
+    }
+    pathDisplay.innerHTML = breadcrumbsHTML;
+  }
+  static showModal (path: string) {}
 }

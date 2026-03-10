@@ -173,10 +173,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   FileExplorer: function() { return /* binding */ FileExplorer; }
 /* harmony export */ });
 /* harmony import */ var _utilities_initData__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_initData */ "./src/scripts/utilities/_initData.ts");
-/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
-/* harmony import */ var _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilities/uiManager */ "./src/scripts/utilities/uiManager.ts");
-/* harmony import */ var _crudFile__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./crudFile */ "./src/scripts/services/crudFile.ts");
-/* harmony import */ var _crudFolder__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./crudFolder */ "./src/scripts/services/crudFolder.ts");
+/* harmony import */ var _utilities_navigate__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utilities/_navigate */ "./src/scripts/utilities/_navigate.ts");
+/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+/* harmony import */ var _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilities/uiManager */ "./src/scripts/utilities/uiManager.ts");
+/* harmony import */ var _crudFile__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./crudFile */ "./src/scripts/services/crudFile.ts");
+/* harmony import */ var _crudFolder__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./crudFolder */ "./src/scripts/services/crudFolder.ts");
+
 
 
 
@@ -188,23 +190,23 @@ class FileExplorer {
         //State for modals
         this._editingItemState = { oldName: '', isFolder: false };
         this._mobileActionItem = { name: '', isFolder: false };
-        this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder);
+        this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder);
         this._currentFolder = this._rootFolder;
         // Setup event listeners once when the app starts
         this.setupEventListeners();
         // Initial Render
         this.refreshUI();
-        this.updateBreadcrumbs();
+        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
     }
     // A handy helper to keep your code DRY (Don't Repeat Yourself)
     refreshUI() {
-        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.renderGrid([
+        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.renderGrid([
             ...this._currentFolder.subFolders,
             ...this._currentFolder.files,
         ]);
     }
     saveAndRefresh() {
-        (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__.saveToStorage)(this._rootFolder);
+        (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(this._rootFolder);
         this.refreshUI();
     }
     // --- 1. THE ACTION METHOD ---
@@ -214,6 +216,7 @@ class FileExplorer {
         this.initGridEvents();
         this.initModalEvents();
         this.initBreadcrumbEvents();
+        this.initMobileMenuEvents();
     }
     initToolbarEvents() {
         const desktopToolbar = document.querySelector('.l-toolbar');
@@ -225,16 +228,16 @@ class FileExplorer {
                 return;
             const action = target.dataset.action;
             switch (action) {
-                case 'new-folder-desktop':
-                    (0,_crudFolder__WEBPACK_IMPORTED_MODULE_4__.createNewFolderDesktop)(this._currentFolder, this.refreshUI.bind(this));
+                case 'new-folder':
+                    (0,_crudFolder__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, this.refreshUI.bind(this));
                     break;
                 case 'upload-file':
-                    (0,_crudFile__WEBPACK_IMPORTED_MODULE_3__.triggerUpload)();
+                    (0,_crudFile__WEBPACK_IMPORTED_MODULE_4__.triggerUpload)();
                     break;
             }
         });
         // 2. Listener for the Hidden File Input
-        fileInput?.addEventListener('change', _crudFile__WEBPACK_IMPORTED_MODULE_3__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, this.refreshUI.bind(this)));
+        fileInput?.addEventListener('change', _crudFile__WEBPACK_IMPORTED_MODULE_4__.processFileSelection.bind(this, this._rootFolder, this._currentFolder, this.refreshUI.bind(this)));
     }
     initGridEvents() {
         // We attach one listener to the main container that holds both grids
@@ -250,7 +253,7 @@ class FileExplorer {
             switch (action) {
                 case 'open-folder':
                     if (itemName)
-                        this.handleFolderClick(itemName);
+                        (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_1__.handleFolderClick)(this._currentFolder, itemName);
                     break;
                 case 'open-file':
                     if (itemName)
@@ -352,63 +355,29 @@ class FileExplorer {
         pathDisplay?.addEventListener('click', (event) => {
             const target = event.target.closest('[data-path]');
             if (target && target.dataset.path) {
-                this.navigateFromBreadcrumb(target.dataset.path);
+                (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_1__.navigateFromBreadcrumb)(this._rootFolder, this._currentFolder, this.refreshUI.bind(this), target.dataset.path);
+            }
+        });
+    }
+    initMobileMenuEvents() {
+        const mobileMenuList = document.querySelector('.m-mobile-list');
+        mobileMenuList?.addEventListener('click', (event) => {
+            const target = event.target.closest('[data-action]');
+            if (!target)
+                return;
+            const action = target.dataset.action;
+            switch (action) {
+                case 'new-folder':
+                    this.openNewFolderMobile();
+                    break;
+                case 'upload-file':
+                    (0,_crudFile__WEBPACK_IMPORTED_MODULE_4__.triggerUpload)(); // Reuses the exact same method as desktop!
+                    break;
+                // You can easily wire up sync/export here later
             }
         });
     }
     // --- ACTIONS: NAVIGATION & BREADCRUMBS ---
-    handleFolderClick(folderName) {
-        const targetFolder = this._currentFolder.subFolders.find((f) => f.name === folderName);
-        if (!targetFolder)
-            return;
-        targetFolder.isNew = false;
-        this.saveAndRefresh();
-        // Push to history before moving
-        this._navigationHistory.push(this._currentFolder);
-        this._currentFolder = targetFolder;
-        this.updateBreadcrumbs();
-        this.refreshUI();
-    }
-    navigateFromBreadcrumb(targetPath) {
-        if (targetPath === '/') {
-            this._currentFolder = this._rootFolder;
-            this._navigationHistory = []; // Clear history if returning to root
-        }
-        else {
-            const segments = targetPath
-                .split('/')
-                .filter((s) => s.length > 0);
-            let foundFolder = this._rootFolder;
-            for (const segment of segments) {
-                const nextFolder = foundFolder.subFolders.find((f) => f.name === segment);
-                if (nextFolder)
-                    foundFolder = nextFolder;
-                else
-                    return; // Stop if path is invalid
-            }
-            this._currentFolder = foundFolder;
-        }
-        this.updateBreadcrumbs();
-        this.refreshUI();
-    }
-    updateBreadcrumbs() {
-        const pathDisplay = document.getElementById('folder-path-display');
-        if (!pathDisplay)
-            return;
-        let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" data-path="/">Documents</span>`;
-        if (this._currentFolder.path !== '/') {
-            const segments = this._currentFolder.path
-                .split('/')
-                .filter((s) => s.length > 0);
-            let buildPath = '';
-            segments.forEach((segment) => {
-                buildPath += `/${segment}`;
-                breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
-                breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" data-path="${buildPath}">${segment}</span>`;
-            });
-        }
-        pathDisplay.innerHTML = breadcrumbsHTML;
-    }
     // --- ACTIONS: FILES ---
     handleFileClick(fileName) {
         const file = this._currentFolder.files.find((f) => f.name === fileName);
@@ -683,6 +652,57 @@ let rootFolder = {
 
 /***/ }),
 
+/***/ "./src/scripts/utilities/_navigate.ts":
+/*!********************************************!*\
+  !*** ./src/scripts/utilities/_navigate.ts ***!
+  \********************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   handleFolderClick: function() { return /* binding */ handleFolderClick; },
+/* harmony export */   navigateFromBreadcrumb: function() { return /* binding */ navigateFromBreadcrumb; }
+/* harmony export */ });
+/* harmony import */ var _uiManager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./uiManager */ "./src/scripts/utilities/uiManager.ts");
+
+function handleFolderClick(currentFolder, folderName) {
+    const targetFolder = currentFolder.subFolders.find((f) => f.name === folderName);
+    if (!targetFolder)
+        return;
+    targetFolder.isNew = false;
+    this.saveAndRefresh();
+    // Push to history before moving
+    this._navigationHistory.push(currentFolder);
+    currentFolder = targetFolder;
+    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
+    this.refreshUI();
+}
+function navigateFromBreadcrumb(rootFolder, currentFolder, refreshUI, targetPath) {
+    if (targetPath === '/') {
+        currentFolder = rootFolder;
+        this._navigationHistory = []; // Clear history if returning to root
+    }
+    else {
+        const segments = targetPath
+            .split('/')
+            .filter((s) => s.length > 0);
+        let foundFolder = rootFolder;
+        for (const segment of segments) {
+            const nextFolder = foundFolder.subFolders.find((f) => f.name === segment);
+            if (nextFolder)
+                foundFolder = nextFolder;
+            else
+                return; // Stop if path is invalid
+        }
+        currentFolder = foundFolder;
+    }
+    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
+    refreshUI();
+}
+
+
+/***/ }),
+
 /***/ "./src/scripts/utilities/_storageUtil.ts":
 /*!***********************************************!*\
   !*** ./src/scripts/utilities/_storageUtil.ts ***!
@@ -725,8 +745,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   UIManager: function() { return /* binding */ UIManager; }
 /* harmony export */ });
 class UIManager {
-    static showModal(modalId) { }
-    static updateBreadcrumbs(path) { }
+    static updateBreadcrumbs(modalId, currentFolder) {
+        const pathDisplay = document.getElementById(modalId);
+        if (!pathDisplay)
+            return;
+        let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" data-path="/">Documents</span>`;
+        if (currentFolder.path !== '/') {
+            const segments = currentFolder.path
+                .split('/')
+                .filter((s) => s.length > 0);
+            let buildPath = '';
+            segments.forEach((segment) => {
+                buildPath += `/${segment}`;
+                breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
+                breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" data-path="${buildPath}">${segment}</span>`;
+            });
+        }
+        pathDisplay.innerHTML = breadcrumbsHTML;
+    }
+    static showModal(path) { }
 }
 UIManager.renderGrid = (data) => {
     const desktopContainer = document.getElementById('desktop-row-container');
