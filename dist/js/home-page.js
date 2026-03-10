@@ -288,20 +288,21 @@ class FileExplorer {
         });
     }
     initModalEvents() {
-        // A router specifically for clicks inside Modals
+        // We attach one listener to the body to catch ALL modal clicks
         document.body.addEventListener('click', (event) => {
             const target = event.target.closest('[data-modal-action]');
             if (!target)
                 return;
-            switch (target.dataset.modalAction) {
-                // Rename Modal
+            const action = target.dataset.modalAction;
+            switch (action) {
+                // --- Rename Modal ---
                 case 'submit-rename':
                     this.submitRename();
                     break;
                 case 'close-rename':
                     this.closeModal('renameModal');
                     break;
-                // Mobile Options Action Sheet
+                // --- Mobile Options Sheet ---
                 case 'trigger-mobile-rename':
                     this.closeModal('mobileOptionsModal');
                     this.openRenameModal(this._mobileActionItem.name, this._mobileActionItem.isFolder);
@@ -313,7 +314,7 @@ class FileExplorer {
                 case 'close-mobile-options':
                     this.closeModal('mobileOptionsModal');
                     break;
-                // File Viewer Modal
+                // --- File Viewer Modal ---
                 case 'download-file':
                     const fileName = document.getElementById('modalFileName')?.innerText;
                     if (fileName)
@@ -322,6 +323,27 @@ class FileExplorer {
                 case 'close-file-modal':
                     this.closeModal('fileModal');
                     break;
+                // --- New Folder Modal (Mobile) ---
+                case 'submit-new-folder':
+                    this.submitNewFolderMobile();
+                    break;
+                case 'close-new-folder':
+                    this.closeModal('newFolderModal');
+                    break;
+            }
+        });
+        // Optional: Pressing "Enter" in the Rename or New Folder inputs
+        document.body.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                const target = event.target;
+                if (target.id === 'renameInput') {
+                    event.preventDefault();
+                    this.submitRename();
+                }
+                else if (target.id === 'newFolderNameInput') {
+                    event.preventDefault();
+                    this.submitNewFolderMobile(); // Assuming you migrated your submitNewFolder logic!
+                }
             }
         });
     }
@@ -353,10 +375,12 @@ class FileExplorer {
             this._navigationHistory = []; // Clear history if returning to root
         }
         else {
-            const segments = targetPath.split('/').filter(s => s.length > 0);
+            const segments = targetPath
+                .split('/')
+                .filter((s) => s.length > 0);
             let foundFolder = this._rootFolder;
             for (const segment of segments) {
-                const nextFolder = foundFolder.subFolders.find(f => f.name === segment);
+                const nextFolder = foundFolder.subFolders.find((f) => f.name === segment);
                 if (nextFolder)
                     foundFolder = nextFolder;
                 else
@@ -373,7 +397,9 @@ class FileExplorer {
             return;
         let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" data-path="/">Documents</span>`;
         if (this._currentFolder.path !== '/') {
-            const segments = this._currentFolder.path.split('/').filter(s => s.length > 0);
+            const segments = this._currentFolder.path
+                .split('/')
+                .filter((s) => s.length > 0);
             let buildPath = '';
             segments.forEach((segment) => {
                 buildPath += `/${segment}`;
@@ -391,9 +417,12 @@ class FileExplorer {
         file.isNew = false;
         this.saveAndRefresh();
         document.getElementById('modalFileName').innerText = file.name;
-        document.getElementById('modalFileExtension').innerText = file.extension;
-        document.getElementById('modalFileModified').innerText = file.modified;
-        document.getElementById('modalFileModifiedBy').innerText = file.modifiedBy;
+        document.getElementById('modalFileExtension').innerText =
+            file.extension;
+        document.getElementById('modalFileModified').innerText =
+            file.modified;
+        document.getElementById('modalFileModifiedBy').innerText =
+            file.modifiedBy;
         this.openModal('fileModal');
     }
     downloadFile(fileName) {
@@ -412,7 +441,8 @@ class FileExplorer {
         if (!confirm(`Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`))
             return;
         if (isFolder) {
-            this._currentFolder.subFolders = this._currentFolder.subFolders.filter((f) => f.name !== name);
+            this._currentFolder.subFolders =
+                this._currentFolder.subFolders.filter((f) => f.name !== name);
         }
         else {
             this._currentFolder.files = this._currentFolder.files.filter((f) => f.name !== name);
@@ -424,14 +454,21 @@ class FileExplorer {
         const folderBeingEdited = this._currentFolder.subFolders.find((f) => f.isEditing);
         if (!folderBeingEdited)
             return;
-        const isDuplicate = this._currentFolder.subFolders.some((f) => f !== folderBeingEdited && f.name.toLowerCase() === newName.toLowerCase());
+        const isDuplicate = this._currentFolder.subFolders.some((f) => f !== folderBeingEdited &&
+            f.name.toLowerCase() === newName.toLowerCase());
         if (isDuplicate) {
             alert(`This destination already contains a folder named '${newName}'.`);
-            setTimeout(() => { inputElement.focus(); inputElement.select(); }, 10);
+            setTimeout(() => {
+                inputElement.focus();
+                inputElement.select();
+            }, 10);
             return;
         }
         folderBeingEdited.name = newName;
-        folderBeingEdited.path = this._currentFolder.path === '/' ? `/${newName}` : `${this._currentFolder.path}/${newName}`;
+        folderBeingEdited.path =
+            this._currentFolder.path === '/'
+                ? `/${newName}`
+                : `${this._currentFolder.path}/${newName}`;
         delete folderBeingEdited.isEditing;
         this.saveAndRefresh();
     }
@@ -461,21 +498,29 @@ class FileExplorer {
             this.closeModal('renameModal');
             return;
         }
-        const itemArray = isFolder ? this._currentFolder.subFolders : this._currentFolder.files;
-        if (itemArray.some(f => f.name.toLowerCase() === newName.toLowerCase())) {
+        const itemArray = isFolder
+            ? this._currentFolder.subFolders
+            : this._currentFolder.files;
+        if (itemArray.some((f) => f.name.toLowerCase() === newName.toLowerCase())) {
             alert('An item with this name already exists.');
             input.focus();
             return;
         }
-        const target = itemArray.find(f => f.name === oldName);
+        const target = itemArray.find((f) => f.name === oldName);
         if (target) {
             target.name = newName;
             if (isFolder) {
-                target.path = this._currentFolder.path === '/' ? `/${newName}` : `${this._currentFolder.path}/${newName}`;
+                target.path =
+                    this._currentFolder.path === '/'
+                        ? `/${newName}`
+                        : `${this._currentFolder.path}/${newName}`;
             }
             else {
                 const lastDot = newName.lastIndexOf('.');
-                target.extension = lastDot > 0 ? newName.substring(lastDot + 1).toLowerCase() : '';
+                target.extension =
+                    lastDot > 0
+                        ? newName.substring(lastDot + 1).toLowerCase()
+                        : '';
             }
         }
         this.saveAndRefresh();
@@ -487,6 +532,53 @@ class FileExplorer {
         if (title)
             title.innerText = name;
         this.openModal('mobileOptionsModal');
+    }
+    // --- ACTIONS: MOBILE NEW FOLDER ---
+    openNewFolderMobile() {
+        // 1. Hide the Bootstrap mobile menu (if it's open)
+        document.getElementById('mobileMenu')?.classList.remove('show');
+        // 2. Clear the input from the last time it was used
+        const input = document.getElementById('newFolderNameInput');
+        if (input)
+            input.value = '';
+        // 3. Open the modal
+        this.openModal('newFolderModal');
+        // 4. Try to focus the input automatically for the user
+        setTimeout(() => input?.focus(), 100);
+    }
+    submitNewFolderMobile() {
+        const input = document.getElementById('newFolderNameInput');
+        let newName = input.value.trim();
+        // If they left it blank, default to "New folder"
+        if (!newName) {
+            newName = 'New folder';
+        }
+        // Check if a folder with this name already exists
+        const isDuplicate = this._currentFolder.subFolders.some((f) => f.name.toLowerCase() === newName.toLowerCase());
+        if (isDuplicate) {
+            alert('A folder with this name already exists.');
+            input.focus();
+            return; // Stop the function early
+        }
+        // Create the new folder object
+        const newFolder = {
+            name: newName,
+            path: this._currentFolder.path === '/'
+                ? `/${newName}`
+                : `${this._currentFolder.path}/${newName}`,
+            subFolders: [],
+            files: [],
+            modified: 'Just now',
+            modifiedBy: 'Administrator MOD',
+            isNew: true,
+            type: 'folder',
+            // Notice: NO 'isEditing: true' here! Mobile doesn't use the inline grid input.
+        };
+        // Add it to the top of the list
+        this._currentFolder.subFolders.unshift(newFolder);
+        // Save state, redraw the grid, and close the modal
+        this.saveAndRefresh();
+        this.closeModal('newFolderModal');
     }
     // --- UTILS ---
     openModal(id) {

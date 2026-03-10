@@ -173,12 +173,15 @@
         <div id="mobile-card-container"></div>
       </div>
     </div>
-    <!-- File details modal -->
+    <!-- File detail modal -->
     <div id="fileModal" class="m-modal" style="display: none">
       <div class="m-modal-content">
         <div class="m-modal-header">
           <h3 id="modalFileName">File Details</h3>
-          <button onclick="closeModal()" class="btn-close">
+          <button
+            data-modal-action="close-file-modal"
+            class="btn-close"
+          >
             <i class="fa-solid fa-x"></i>
           </button>
         </div>
@@ -197,22 +200,25 @@
           </p>
           <hr />
           <div class="d-flex gap-2 justify-content-end">
-            <!-- <button id="modalDeleteBtn" class="btn btn-danger">
-              <i class="fa-solid fa-trash"></i> Delete
-            </button> -->
-            <button id="modalDownloadBtn" class="btn btn-primary">
+            <button
+              data-modal-action="download-file"
+              class="btn btn-primary"
+            >
               <i class="fas fa-download me-2"></i> Download
             </button>
           </div>
         </div>
       </div>
     </div>
-    <!-- New folder modal -->
+
     <div id="newFolderModal" class="m-modal" style="display: none">
       <div class="m-modal-content">
         <div class="m-modal-header">
           <h3 class="mb-0">Create New Folder</h3>
-          <button onclick="closeNewFolderModal()" class="btn-close">
+          <button
+            data-modal-action="close-new-folder"
+            class="btn-close"
+          >
             <i class="fa-solid fa-x"></i>
           </button>
         </div>
@@ -232,14 +238,14 @@
           </div>
           <div class="d-flex gap-2 justify-content-end">
             <button
+              data-modal-action="close-new-folder"
               class="btn btn-light"
-              onclick="closeNewFolderModal()"
             >
               Cancel
             </button>
             <button
+              data-modal-action="submit-new-folder"
               class="btn btn-primary"
-              onclick="submitNewFolder()"
             >
               Create
             </button>
@@ -247,13 +253,13 @@
         </div>
       </div>
     </div>
-    <!-- Rename modal -->
+
     <div id="renameModal" class="m-modal" style="display: none">
       <div class="m-modal-content">
         <div class="m-modal-header">
           <h3 class="mb-0">Rename</h3>
-          <button onclick="closeRenameModal()" class="btn-close">
-            &times;
+          <button data-modal-action="close-rename" class="btn-close">
+            <i class="fa-solid fa-x"></i>
           </button>
         </div>
         <div class="m-modal-body">
@@ -271,19 +277,22 @@
           </div>
           <div class="d-flex gap-2 justify-content-end">
             <button
+              data-modal-action="close-rename"
               class="btn btn-light"
-              onclick="closeRenameModal()"
             >
               Cancel
             </button>
-            <button class="btn btn-primary" onclick="submitRename()">
+            <button
+              data-modal-action="submit-rename"
+              class="btn btn-primary"
+            >
               Save
             </button>
           </div>
         </div>
       </div>
     </div>
-    <!-- Mobile options modal (for rename/delete on mobile) -->
+
     <div
       id="mobileOptionsModal"
       class="m-modal"
@@ -307,22 +316,24 @@
           >
             Options
           </h4>
-          <button onclick="closeOptionsModal()" class="btn-close">
-            &times;
+          <button
+            data-modal-action="close-mobile-options"
+            class="btn-close"
+          >
+            <i class="fa-solid fa-x"></i>
           </button>
         </div>
-
         <div class="m-modal-body mt-3">
           <div class="list-group list-group-flush">
             <button
+              data-modal-action="trigger-mobile-rename"
               class="list-group-item list-group-item-action py-3 border-0"
-              onclick="triggerMobileRename()"
             >
               <i class="fas fa-edit text-primary me-3"></i> Rename
             </button>
             <button
+              data-modal-action="trigger-mobile-delete"
               class="list-group-item list-group-item-action py-3 border-0 text-danger"
-              onclick="triggerMobileDelete()"
             >
               <i class="fas fa-trash-alt me-3"></i> Delete
             </button>
