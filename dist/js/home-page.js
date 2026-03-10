@@ -104,8 +104,10 @@ const renderGrid = (data) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   updateBackButtonVisibility: function() { return /* binding */ updateBackButtonVisibility; }
+/* harmony export */   navigateToFolder: function() { return /* binding */ navigateToFolder; }
 /* harmony export */ });
+/* harmony import */ var _components_grid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../components/_grid */ "./src/scripts/components/_grid.ts");
+
 const ready = (fn) => {
     if (document.readyState !== 'loading') {
         fn();
@@ -115,16 +117,100 @@ const ready = (fn) => {
     }
 };
 /* harmony default export */ __webpack_exports__["default"] = (ready);
-const updateBackButtonVisibility = (navigationHistory) => {
-    const backBtn = document.getElementById('back-btn');
-    if (!backBtn)
-        return;
-    if (navigationHistory.length > 0) {
-        backBtn.classList.remove('d-none');
+const navigateToFolder = (folder, isBack = false, currentFolder = null, navigationHistory = []) => {
+    if (!isBack && currentFolder && currentFolder !== folder) {
+        navigationHistory.push(currentFolder);
     }
-    else {
-        backBtn.classList.add('d-none');
+    currentFolder = folder;
+    // --- NEW: Interactive Breadcrumb Generator ---
+    const pathDisplay = document.getElementById('folder-path-display');
+    if (pathDisplay) {
+        // 1. Always start with the Root (Documents)
+        let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('/')">Documents</span>`;
+        // 2. If we are deep in a folder, split the path and build the links
+        if (folder.path !== '/') {
+            const segments = folder.path
+                .split('/')
+                .filter((s) => s.length > 0);
+            let buildPath = '';
+            segments.forEach((segment) => {
+                buildPath += `/${segment}`; // Reconstruct the path step-by-step (e.g., /CAS, then /CAS/Finance)
+                breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
+                breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('${buildPath}')">${segment}</span>`;
+            });
+        }
+        pathDisplay.innerHTML = breadcrumbsHTML;
     }
+    // ---------------------------------------------
+    const combinedItems = [
+        ...folder.subFolders,
+        ...folder.files,
+    ];
+    (0,_components_grid__WEBPACK_IMPORTED_MODULE_0__["default"])(combinedItems);
+};
+
+
+/***/ }),
+
+/***/ "./src/scripts/utilities/_initData.ts":
+/*!********************************************!*\
+  !*** ./src/scripts/utilities/_initData.ts ***!
+  \********************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   rootFolder: function() { return /* binding */ rootFolder; }
+/* harmony export */ });
+let rootFolder = {
+    name: 'Root',
+    path: '/',
+    subFolders: [
+        {
+            name: 'CAS',
+            path: '/CAS',
+            subFolders: [],
+            files: [
+                {
+                    name: 'Internal_Document.xlsx',
+                    extension: 'xlsx',
+                    modified: 'May 1',
+                    modifiedBy: 'Megan Bowen',
+                    isNew: false,
+                    data: '',
+                    type: 'file',
+                },
+            ],
+            modified: 'A few seconds ago',
+            modifiedBy: 'Administrator MOD',
+            isNew: false,
+            type: 'file',
+        },
+    ],
+    files: [
+        {
+            name: 'CoasterAndBargeLoading.xlsx',
+            extension: 'xlsx',
+            modified: 'A few seconds ago',
+            modifiedBy: 'Administrator MOD',
+            isNew: true,
+            data: '',
+            type: 'file',
+        },
+        {
+            name: 'RevenueByServices.xlsx',
+            extension: 'xlsx',
+            modified: 'A few seconds ago',
+            modifiedBy: 'Administrator MOD',
+            isNew: true,
+            data: '',
+            type: 'file',
+        },
+    ],
+    modified: 'A few seconds ago',
+    modifiedBy: 'Administrator MOD',
+    isNew: true,
+    type: 'folder',
 };
 
 
@@ -234,124 +320,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utilities_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_helper */ "./src/scripts/utilities/_helper.ts");
 /* harmony import */ var _components_grid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/_grid */ "./src/scripts/components/_grid.ts");
 /* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+/* harmony import */ var _utilities_initData__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilities/_initData */ "./src/scripts/utilities/_initData.ts");
+
 
 
 
 // Define your root data structure
-let rootFolder = {
-    name: 'Root',
-    path: '/',
-    subFolders: [
-        {
-            name: 'CAS',
-            path: '/CAS',
-            subFolders: [],
-            files: [
-                {
-                    name: 'Internal_Document.xlsx',
-                    extension: 'xlsx',
-                    modified: 'May 1',
-                    modifiedBy: 'Megan Bowen',
-                    isNew: false,
-                    data: '',
-                    type: 'file',
-                },
-            ],
-            modified: 'A few seconds ago',
-            modifiedBy: 'Administrator MOD',
-            isNew: false,
-            type: 'file',
-        },
-    ],
-    files: [
-        {
-            name: 'CoasterAndBargeLoading.xlsx',
-            extension: 'xlsx',
-            modified: 'A few seconds ago',
-            modifiedBy: 'Administrator MOD',
-            isNew: true,
-            data: '',
-            type: 'file',
-        },
-        {
-            name: 'RevenueByServices.xlsx',
-            extension: 'xlsx',
-            modified: 'A few seconds ago',
-            modifiedBy: 'Administrator MOD',
-            isNew: true,
-            data: '',
-            type: 'file',
-        },
-    ],
-    modified: 'A few seconds ago',
-    modifiedBy: 'Administrator MOD',
-    isNew: true,
-    type: 'folder',
-};
 // Keep track of the folder history (the stack)
 let navigationHistory = [];
-let currentFolder = rootFolder;
-/**
- * Navigates into a folder and saves the previous one to history
- */
-const navigateToFolder = (folder, isBack = false) => {
-    if (!isBack && currentFolder && currentFolder !== folder) {
-        navigationHistory.push(currentFolder);
-    }
-    currentFolder = folder;
-    // --- NEW: Interactive Breadcrumb Generator ---
-    const pathDisplay = document.getElementById('folder-path-display');
-    if (pathDisplay) {
-        // 1. Always start with the Root (Documents)
-        let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('/')">Documents</span>`;
-        // 2. If we are deep in a folder, split the path and build the links
-        if (folder.path !== '/') {
-            const segments = folder.path
-                .split('/')
-                .filter((s) => s.length > 0);
-            let buildPath = '';
-            segments.forEach((segment) => {
-                buildPath += `/${segment}`; // Reconstruct the path step-by-step (e.g., /CAS, then /CAS/Finance)
-                breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
-                breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('${buildPath}')">${segment}</span>`;
-            });
-        }
-        pathDisplay.innerHTML = breadcrumbsHTML;
-    }
-    // ---------------------------------------------
-    const combinedItems = [
-        ...folder.subFolders,
-        ...folder.files,
-    ];
-    (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])(combinedItems);
-    (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.updateBackButtonVisibility)(navigationHistory);
-};
-/**
- * The "Back -1" Logic
- */
-const goBack = () => {
-    if (navigationHistory.length > 0) {
-        const previousFolder = navigationHistory.pop();
-        if (previousFolder) {
-            navigateToFolder(previousFolder, true);
-        }
-    }
-};
-// Expose to window for the button click
-window.goBack = goBack;
-/**
- * Global handler for the onclick events generated in your grid
- */
+let currentFolder = _utilities_initData__WEBPACK_IMPORTED_MODULE_3__.rootFolder;
 window.navigateFromBreadcrumb = (targetPath) => {
     // If they clicked the root "Documents" link
     if (targetPath === '/') {
-        navigateToFolder(rootFolder);
+        (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.navigateToFolder)(_utilities_initData__WEBPACK_IMPORTED_MODULE_3__.rootFolder, false, currentFolder, navigationHistory);
         return;
     }
     // Split the target path into folder names (e.g., ['CAS', 'Finance'])
     const segments = targetPath.split('/').filter((s) => s.length > 0);
     // Start searching from the top of the tree
-    let foundFolder = rootFolder;
+    let foundFolder = _utilities_initData__WEBPACK_IMPORTED_MODULE_3__.rootFolder;
     // Walk down the tree folder by folder
     for (const segment of segments) {
         const nextFolder = foundFolder.subFolders.find((f) => f.name === segment);
@@ -364,13 +351,13 @@ window.navigateFromBreadcrumb = (targetPath) => {
         }
     }
     // Once we've found the final folder, navigate to it!
-    navigateToFolder(foundFolder);
+    (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.navigateToFolder)(foundFolder);
 };
 window.handleFolderClick = (folderName) => {
     const target = currentFolder.subFolders.find((f) => f.name === folderName);
     target.isNew = false; // Mark as read when clicked
     if (target) {
-        navigateToFolder(target);
+        (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.navigateToFolder)(target);
     }
 };
 window.handleFileClick = (fileName) => {
@@ -439,8 +426,8 @@ window.onFileSelected = (event) => {
             // Add to current folder
             currentFolder.files.push(newFile);
             // Save to localStorage & Refresh UI
-            (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder);
-            navigateToFolder(currentFolder, true);
+            (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_3__.rootFolder);
+            (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.navigateToFolder)(currentFolder, true);
         };
         reader.readAsDataURL(selectedFile);
         target.value = ''; // Reset input
@@ -495,7 +482,7 @@ window.saveFolderName = (event) => {
             ? `/${newName}`
             : `${currentFolder.path}/${newName}`;
     delete folderBeingEdited.isEditing;
-    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder); // ALWAYS save rootFolder!
+    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_3__.rootFolder); // ALWAYS save rootFolder!
     (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])([...currentFolder.subFolders, ...currentFolder.files]);
 };
 window.handleAddFolderMobile = () => {
@@ -546,7 +533,7 @@ window.submitNewFolder = () => {
     // Add it to the top of the list
     currentFolder.subFolders.unshift(newFolder);
     // Save and Re-render
-    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder);
+    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_3__.rootFolder);
     (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])([...currentFolder.subFolders, ...currentFolder.files]);
     // Close the modal
     window.closeNewFolderModal();
@@ -607,7 +594,7 @@ window.handleDownloadFile = (fileName) => {
     }
     // Re-render to update the "isNew" sparkle
     (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])([...currentFolder.subFolders, ...currentFolder.files]);
-    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder);
+    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_3__.rootFolder);
 };
 window.handleDelete = (name, isFolder) => {
     if (confirm(`Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`)) {
@@ -618,7 +605,7 @@ window.handleDelete = (name, isFolder) => {
             currentFolder.files = currentFolder.files.filter((f) => f.name !== name);
         }
         // CRITICAL: Save the root, hide modal, then re-render
-        (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder);
+        (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_3__.rootFolder);
         const modal = document.getElementById('fileModal');
         if (modal)
             modal.style.display = 'none';
@@ -702,7 +689,7 @@ window.submitRename = () => {
         }
     }
     // Save & Refresh
-    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder);
+    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_3__.rootFolder);
     (0,_components_grid__WEBPACK_IMPORTED_MODULE_1__["default"])([...currentFolder.subFolders, ...currentFolder.files]);
     window.closeRenameModal();
 };
@@ -745,11 +732,11 @@ window.closeRenameModal = () => {
 };
 (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__["default"])(() => {
     // 1. Overwrite the default rootFolder with the saved data
-    rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.loadFromStorage)(rootFolder);
+    let initData = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_3__.rootFolder);
     // 2. Set currentFolder to point to the exact same memory reference
-    currentFolder = rootFolder;
+    currentFolder = initData;
     // 3. Render
-    navigateToFolder(currentFolder);
+    (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.navigateToFolder)(currentFolder);
 });
 
 }();

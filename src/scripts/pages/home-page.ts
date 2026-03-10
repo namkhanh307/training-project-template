@@ -1,136 +1,22 @@
-import ready, {
-  updateBackButtonVisibility,
-} from '../utilities/_helper';
-import renderGrid, { File, Folder, Row } from '../components/_grid';
+import ready, { navigateToFolder } from '../utilities/_helper';
+import renderGrid from '../components/_grid';
 import {
   loadFromStorage,
   saveToStorage,
 } from '../utilities/_storageUtil';
+import { rootFolder } from '../utilities/_initData';
+import { Folder, File } from '../models/entity';
 
 // Define your root data structure
-let rootFolder: Folder = {
-  name: 'Root',
-  path: '/',
-  subFolders: [
-    {
-      name: 'CAS',
-      path: '/CAS',
-      subFolders: [],
-      files: [
-        {
-          name: 'Internal_Document.xlsx',
-          extension: 'xlsx',
-          modified: 'May 1',
-          modifiedBy: 'Megan Bowen',
-          isNew: false,
-          data: '',
-          type: 'file',
-        },
-      ],
-      modified: 'A few seconds ago',
-      modifiedBy: 'Administrator MOD',
-      isNew: false,
-      type: 'file',
-    },
-  ],
-  files: [
-    {
-      name: 'CoasterAndBargeLoading.xlsx',
-      extension: 'xlsx',
-      modified: 'A few seconds ago',
-      modifiedBy: 'Administrator MOD',
-      isNew: true,
-      data: '',
-      type: 'file',
-    },
-    {
-      name: 'RevenueByServices.xlsx',
-      extension: 'xlsx',
-      modified: 'A few seconds ago',
-      modifiedBy: 'Administrator MOD',
-      isNew: true,
-      data: '',
-      type: 'file',
-    },
-  ],
-  modified: 'A few seconds ago',
-  modifiedBy: 'Administrator MOD',
-  isNew: true,
-  type: 'folder',
-};
 
 // Keep track of the folder history (the stack)
 let navigationHistory: Folder[] = [];
 let currentFolder: Folder = rootFolder;
 
-/**
- * Navigates into a folder and saves the previous one to history
- */
-const navigateToFolder = (
-  folder: Folder,
-  isBack: boolean = false,
-): void => {
-  if (!isBack && currentFolder && currentFolder !== folder) {
-    navigationHistory.push(currentFolder);
-  }
-
-  currentFolder = folder;
-
-  // --- NEW: Interactive Breadcrumb Generator ---
-  const pathDisplay = document.getElementById('folder-path-display');
-  if (pathDisplay) {
-    // 1. Always start with the Root (Documents)
-    let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('/')">Documents</span>`;
-
-    // 2. If we are deep in a folder, split the path and build the links
-    if (folder.path !== '/') {
-      const segments = folder.path
-        .split('/')
-        .filter((s) => s.length > 0);
-      let buildPath = '';
-
-      segments.forEach((segment) => {
-        buildPath += `/${segment}`; // Reconstruct the path step-by-step (e.g., /CAS, then /CAS/Finance)
-        breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
-        breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" onclick="navigateFromBreadcrumb('${buildPath}')">${segment}</span>`;
-      });
-    }
-
-    pathDisplay.innerHTML = breadcrumbsHTML;
-  }
-  // ---------------------------------------------
-
-  const combinedItems: Row[] = [
-    ...folder.subFolders,
-    ...folder.files,
-  ];
-
-  renderGrid(combinedItems);
-  updateBackButtonVisibility(navigationHistory);
-};
-
-/**
- * The "Back -1" Logic
- */
-const goBack = (): void => {
-  if (navigationHistory.length > 0) {
-    const previousFolder = navigationHistory.pop();
-    if (previousFolder) {
-      navigateToFolder(previousFolder, true);
-    }
-  }
-};
-
-// Expose to window for the button click
-(window as any).goBack = goBack;
-
-/**
- * Global handler for the onclick events generated in your grid
- */
 (window as any).navigateFromBreadcrumb = (targetPath: string) => {
   // If they clicked the root "Documents" link
   if (targetPath === '/') {
-    navigateToFolder(rootFolder);
+    navigateToFolder(rootFolder, false, currentFolder, navigationHistory);
     return;
   }
 
@@ -588,12 +474,15 @@ let editingItemState = { oldName: '', isFolder: false };
 let currentMobileActionItem = { name: '', isFolder: false };
 
 // 2. Open the Action Sheet
-(window as any).handleOptionDropdown = (name: string, isFolder: boolean) => {
+(window as any).handleOptionDropdown = (
+  name: string,
+  isFolder: boolean,
+) => {
   currentMobileActionItem = { name, isFolder };
-  
+
   const modal = document.getElementById('mobileOptionsModal');
   const title = document.getElementById('optionsModalTitle');
-  
+
   if (title) title.innerText = name; // Show the file/folder name as the title
   if (modal) modal.style.display = 'flex';
 };
@@ -608,14 +497,20 @@ let currentMobileActionItem = { name: '', isFolder: false };
 (window as any).triggerMobileRename = () => {
   (window as any).closeOptionsModal();
   // Fire the exact same rename modal logic we built for desktop!
-  (window as any).handleEdit(currentMobileActionItem.name, currentMobileActionItem.isFolder);
+  (window as any).handleEdit(
+    currentMobileActionItem.name,
+    currentMobileActionItem.isFolder,
+  );
 };
 
 // 5. Trigger Delete
 (window as any).triggerMobileDelete = () => {
   (window as any).closeOptionsModal();
   // Fire the exact same delete logic we built for desktop!
-  (window as any).handleDelete(currentMobileActionItem.name, currentMobileActionItem.isFolder);
+  (window as any).handleDelete(
+    currentMobileActionItem.name,
+    currentMobileActionItem.isFolder,
+  );
 };
 // 4. Close Modal Helper
 (window as any).closeRenameModal = () => {
@@ -625,10 +520,10 @@ let currentMobileActionItem = { name: '', isFolder: false };
 };
 ready(() => {
   // 1. Overwrite the default rootFolder with the saved data
-  rootFolder = loadFromStorage(rootFolder);
+  let initData = loadFromStorage(rootFolder);
 
   // 2. Set currentFolder to point to the exact same memory reference
-  currentFolder = rootFolder;
+  currentFolder = initData;
 
   // 3. Render
   navigateToFolder(currentFolder);

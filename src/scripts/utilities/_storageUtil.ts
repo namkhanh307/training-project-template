@@ -1,4 +1,4 @@
-import { Folder } from "../components/_grid";
+import { Folder } from "../models/entity";
 
 const STORAGE_KEY = 'my_file_explorer_data';
 
