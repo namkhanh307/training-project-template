@@ -1,6 +1,7 @@
 import { Row, File, Folder } from '../models/entity';
+import { getFileIconHTML } from './_helper';
 import { saveToStorage } from './_storageUtil';
-import { getRelativeTime } from './_timeHelper';
+import { getRelativeTime } from './_helper';
 export class UIManager {
   static async refreshUI(currentFolder: Folder) {
     UIManager.renderLoadingState();
@@ -74,7 +75,7 @@ export class UIManager {
              data-name="${item.name}">
              
           <div>
-            ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${file.extension}"></use></svg>`}
+            ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : getFileIconHTML(file.extension)}          
           </div>
           
           <div class="m-text-overlay">
@@ -112,10 +113,9 @@ export class UIManager {
                   data-action="mobile-options" 
                   data-name="${item.name}" 
                   data-type="${isFolder ? 'folder' : 'file'}">
-                ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${file.extension}"></use></svg>`}
+                    ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : getFileIconHTML(file.extension)}
               </div>
             </div>
-            
           </div>
           <div class="m-card__row">
             <div class="m-card__label">Name</div>

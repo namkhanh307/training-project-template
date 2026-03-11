@@ -1,5 +1,6 @@
 import { File, Folder } from '../models/entity';
 import { EditingState, MobileActionItem } from '../models/model';
+import { generateID } from '../utilities/_helper';
 import { closeModal, openModal } from '../utilities/_modal';
 import { saveToStorage } from '../utilities/_storageUtil';
 import { UIManager } from '../utilities/uiManager';
@@ -48,6 +49,7 @@ export async function processFileSelection(
               : `${currentFolder.path}/${currentFolder.name}`,
           data: e.target?.result as string,
           type: 'file',
+          id: generateID()
         });
       };
       reader.readAsDataURL(selectedFile);
@@ -83,10 +85,9 @@ export async function createNewFolderDesktop(
 
   const newFolder: Folder = {
     name: folderName,
-    path:
-      currentFolder.path === '/'
-        ? `/${folderName}`
-        : `${currentFolder.path}/${folderName}`,
+    path: currentFolder.path === '/'
+      ? `/${folderName}`
+      : `${currentFolder.path}/${folderName}`,
     subFolders: [],
     files: [],
     modified: new Date().toISOString(),
@@ -94,6 +95,7 @@ export async function createNewFolderDesktop(
     isNew: true,
     isEditing: true,
     type: 'folder',
+    id: generateID()
   };
 
   currentFolder.subFolders.unshift(newFolder);
@@ -334,17 +336,16 @@ export function submitNewFolderMobile(currentFolder: Folder) {
   // Create the new folder object
   const newFolder: Folder = {
     name: newName,
-    path:
-      currentFolder.path === '/'
-        ? `/${newName}`
-        : `${currentFolder.path}/${newName}`,
+    path: currentFolder.path === '/'
+      ? `/${newName}`
+      : `${currentFolder.path}/${newName}`,
     subFolders: [],
     files: [],
     modified: new Date().toISOString(),
     modifiedBy: 'You',
     isNew: true,
     type: 'folder',
-    // Notice: NO 'isEditing: true' here! Mobile doesn't use the inline grid input.
+    id: generateID()
   };
 
   // Add it to the top of the list
@@ -428,10 +429,10 @@ export function submitNewFile(currentFolder: Folder) {
     isNew: true,
     data: '', // Empty base64 data since it's a blank file
     type: 'file',
-    path:
-      currentFolder.path === '/'
-        ? `/${currentFolder.name}`
-        : `${currentFolder.path}/${name}`,
+    path: currentFolder.path === '/'
+      ? `/${currentFolder.name}`
+      : `${currentFolder.path}/${name}`,
+    id: generateID()
   };
 
   // Push it to the top of the array

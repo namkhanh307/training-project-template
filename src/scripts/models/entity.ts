@@ -1,4 +1,3 @@
-// Define the structure of your file data
 export interface BaseEntity {
   id: string;
   modified: string;
@@ -10,7 +9,7 @@ export interface BaseEntity {
 export interface File extends BaseEntity {
   name: string;
   extension: string;
-  data: string; // Base64 or URL for the file content
+  data: string; // Base64 
 }
 
 export interface Folder extends BaseEntity {

@@ -24,9 +24,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   submitRename: function() { return /* binding */ submitRename; },
 /* harmony export */   triggerUpload: function() { return /* binding */ triggerUpload; }
 /* harmony export */ });
-/* harmony import */ var _utilities_modal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_modal */ "./src/scripts/utilities/_modal.ts");
-/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
-/* harmony import */ var _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilities/uiManager */ "./src/scripts/utilities/uiManager.ts");
+/* harmony import */ var _utilities_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_helper */ "./src/scripts/utilities/_helper.ts");
+/* harmony import */ var _utilities_modal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utilities/_modal */ "./src/scripts/utilities/_modal.ts");
+/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+/* harmony import */ var _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilities/uiManager */ "./src/scripts/utilities/uiManager.ts");
+
 
 
 
@@ -62,6 +64,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
                         : `${currentFolder.path}/${currentFolder.name}`,
                     data: e.target?.result,
                     type: 'file',
+                    id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)()
                 });
             };
             reader.readAsDataURL(selectedFile);
@@ -69,7 +72,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
     });
     const processedFiles = await Promise.all(filePromises);
     currentFolder.files.push(...processedFiles);
-    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_1__.saveToStorage)(rootFolder);
+    (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder);
     // Instead of calling global navigateToFolder, just refresh the UI
     // If you need path updates, trigger your UIManager.updatePath(...) here
     refreshUI();
@@ -96,6 +99,7 @@ async function createNewFolderDesktop(currentFolder, refreshUI) {
         isNew: true,
         isEditing: true,
         type: 'folder',
+        id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)()
     };
     currentFolder.subFolders.unshift(newFolder);
     await refreshUI();
@@ -146,7 +150,7 @@ function handleFileClick(currentFolder, fileName) {
     if (!file)
         return;
     file.isNew = false;
-    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.saveAndRefresh(currentFolder);
     document.getElementById('modalFileName').innerText = file.name;
     document.getElementById('modalFileExtension').innerText =
         file.extension;
@@ -154,7 +158,7 @@ function handleFileClick(currentFolder, fileName) {
         file.modified;
     document.getElementById('modalFileModifiedBy').innerText =
         file.modifiedBy;
-    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.openModal)('fileModal');
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.openModal)('fileModal');
 }
 function downloadFile(currentFolder, fileName) {
     const file = currentFolder.files.find((f) => f.name === fileName);
@@ -177,7 +181,7 @@ function deleteItem(currentFolder, name, isFolder) {
     else {
         currentFolder.files = currentFolder.files.filter((f) => f.name !== name);
     }
-    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.saveAndRefresh(currentFolder);
 }
 function openRenameModal(stateRef, oldName, isFolder) {
     stateRef.oldName = oldName;
@@ -185,7 +189,7 @@ function openRenameModal(stateRef, oldName, isFolder) {
     const input = document.getElementById('renameInput');
     if (input) {
         input.value = oldName;
-        (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.openModal)('renameModal');
+        (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.openModal)('renameModal');
         setTimeout(() => {
             input.focus();
             if (!isFolder && oldName.includes('.')) {
@@ -202,7 +206,7 @@ function submitRename(stateRef, currentFolder) {
     const newName = input.value.trim();
     const { oldName, isFolder } = stateRef;
     if (!newName || newName === oldName) {
-        (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('renameModal');
+        (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('renameModal');
         return;
     }
     const itemArray = isFolder
@@ -230,8 +234,8 @@ function submitRename(stateRef, currentFolder) {
                     : '';
         }
     }
-    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
-    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('renameModal');
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.saveAndRefresh(currentFolder);
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('renameModal');
 }
 function openMobileOptionsSheet(name, isFolder, mobileActionItem) {
     mobileActionItem.name = name;
@@ -239,7 +243,7 @@ function openMobileOptionsSheet(name, isFolder, mobileActionItem) {
     const title = document.getElementById('optionsModalTitle');
     if (title)
         title.innerText = name;
-    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.openModal)('mobileOptionsModal');
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.openModal)('mobileOptionsModal');
 }
 function openNewFolderMobile() {
     // 1. Hide the Bootstrap mobile menu (if it's open)
@@ -249,7 +253,7 @@ function openNewFolderMobile() {
     if (input)
         input.value = '';
     // 3. Open the modal
-    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.openModal)('newFolderModal');
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.openModal)('newFolderModal');
     // 4. Try to focus the input automatically for the user
     setTimeout(() => input?.focus(), 100);
 }
@@ -279,13 +283,13 @@ function submitNewFolderMobile(currentFolder) {
         modifiedBy: 'You',
         isNew: true,
         type: 'folder',
-        // Notice: NO 'isEditing: true' here! Mobile doesn't use the inline grid input.
+        id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)()
     };
     // Add it to the top of the list
     currentFolder.subFolders.unshift(newFolder);
     // Save state, redraw the grid, and close the modal
-    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
-    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('newFolderModal');
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.saveAndRefresh(currentFolder);
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('newFolderModal');
 }
 function saveFolderName(currentFolder, inputElement) {
     const newName = inputElement.value.trim() || 'New folder';
@@ -308,7 +312,7 @@ function saveFolderName(currentFolder, inputElement) {
             ? `/${newName}`
             : `${currentFolder.path}/${newName}`;
     delete folderBeingEdited.isEditing;
-    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder);
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.saveAndRefresh(currentFolder);
 }
 function submitNewFile(currentFolder) {
     const input = document.getElementById('newFileNameInput');
@@ -341,12 +345,13 @@ function submitNewFile(currentFolder) {
         path: currentFolder.path === '/'
             ? `/${currentFolder.name}`
             : `${currentFolder.path}/${name}`,
+        id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)()
     };
     // Push it to the top of the array
     currentFolder.files.unshift(newFile);
     // Save, Render, and Close!
-    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_2__.UIManager.saveAndRefresh(currentFolder); // (Assuming this is your save helper)
-    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('newFileModal');
+    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.saveAndRefresh(currentFolder); // (Assuming this is your save helper)
+    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('newFileModal');
 }
 
 
@@ -655,6 +660,11 @@ class FileExplorer {
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   generateID: function() { return /* binding */ generateID; },
+/* harmony export */   getFileIconHTML: function() { return /* binding */ getFileIconHTML; },
+/* harmony export */   getRelativeTime: function() { return /* binding */ getRelativeTime; }
+/* harmony export */ });
 const ready = (fn) => {
     if (document.readyState !== 'loading') {
         fn();
@@ -664,6 +674,51 @@ const ready = (fn) => {
     }
 };
 /* harmony default export */ __webpack_exports__["default"] = (ready);
+// Icon Helper
+const SUPPORTED_ICONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
+function getFileIconHTML(extension) {
+    const safeExt = extension.toLowerCase();
+    // 1. If have the custom SVG
+    if (SUPPORTED_ICONS.includes(safeExt)) {
+        return `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${safeExt}"></use></svg>`;
+    }
+    // 2. Fallback
+    return `<i class="fas fa-file-alt text-secondary" style="font-size: 1.25rem;"></i>`;
+}
+// Time Helper
+function getRelativeTime(dateString) {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime()))
+        return dateString;
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diffInSeconds < 60)
+        return 'A few seconds ago';
+    if (diffInSeconds < 3600) {
+        const mins = Math.floor(diffInSeconds / 60);
+        return mins === 1 ? '1 minute ago' : `${mins} minutes ago`;
+    }
+    if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+    }
+    if (diffInSeconds < 2592000) {
+        const days = Math.floor(diffInSeconds / 86400);
+        return days === 1 ? 'Yesterday' : `${days} days ago`;
+    }
+    if (diffInSeconds < 31536000) {
+        const months = Math.floor(diffInSeconds / 2592000);
+        return months === 1 ? '1 month ago' : `${months} months ago`;
+    }
+    const years = Math.floor(diffInSeconds / 31536000);
+    return years === 1 ? '1 year ago' : `${years} years ago`;
+}
+//ID Helper
+function generateID() {
+    return window.crypto && crypto.randomUUID
+        ? crypto.randomUUID()
+        : Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
 
 
 /***/ }),
@@ -691,6 +746,7 @@ let rootFolder = {
             modifiedBy: 'Administrator MOD',
             isNew: false,
             type: 'file',
+            id: "19d500847ecc4b5380717625f022e568"
         },
     ],
     files: [
@@ -702,7 +758,8 @@ let rootFolder = {
             isNew: true,
             data: '',
             type: 'file',
-            path: ""
+            path: "",
+            id: "db3d4c7c70664b7ca78ad096e8b6e438"
         },
         {
             name: 'RevenueByServices.xlsx',
@@ -712,13 +769,15 @@ let rootFolder = {
             isNew: true,
             data: '',
             type: 'file',
-            path: ""
+            path: "",
+            id: "18b614c9a0d04404a5320e67c632230e"
         },
     ],
     modified: '2026-03-10T10:57:54.553Z',
     modifiedBy: 'Administrator MOD',
     isNew: true,
     type: 'folder',
+    id: "ea7e1286db2f4b60b058caffb87f1572"
 };
 
 
@@ -851,48 +910,6 @@ const clearStorage = () => {
 
 /***/ }),
 
-/***/ "./src/scripts/utilities/_timeHelper.ts":
-/*!**********************************************!*\
-  !*** ./src/scripts/utilities/_timeHelper.ts ***!
-  \**********************************************/
-/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   getRelativeTime: function() { return /* binding */ getRelativeTime; }
-/* harmony export */ });
-// utilities/timeHelpers.ts
-function getRelativeTime(dateString) {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime()))
-        return dateString;
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    if (diffInSeconds < 60)
-        return 'A few seconds ago';
-    if (diffInSeconds < 3600) {
-        const mins = Math.floor(diffInSeconds / 60);
-        return mins === 1 ? '1 minute ago' : `${mins} minutes ago`;
-    }
-    if (diffInSeconds < 86400) {
-        const hours = Math.floor(diffInSeconds / 3600);
-        return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
-    }
-    if (diffInSeconds < 2592000) {
-        const days = Math.floor(diffInSeconds / 86400);
-        return days === 1 ? 'Yesterday' : `${days} days ago`;
-    }
-    if (diffInSeconds < 31536000) {
-        const months = Math.floor(diffInSeconds / 2592000);
-        return months === 1 ? '1 month ago' : `${months} months ago`;
-    }
-    const years = Math.floor(diffInSeconds / 31536000);
-    return years === 1 ? '1 year ago' : `${years} years ago`;
-}
-
-
-/***/ }),
-
 /***/ "./src/scripts/utilities/uiManager.ts":
 /*!********************************************!*\
   !*** ./src/scripts/utilities/uiManager.ts ***!
@@ -903,8 +920,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   UIManager: function() { return /* binding */ UIManager; }
 /* harmony export */ });
-/* harmony import */ var _storageUtil__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
-/* harmony import */ var _timeHelper__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_timeHelper */ "./src/scripts/utilities/_timeHelper.ts");
+/* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_helper */ "./src/scripts/utilities/_helper.ts");
+/* harmony import */ var _storageUtil__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+
 
 
 class UIManager {
@@ -936,7 +954,7 @@ class UIManager {
         UIManager.renderGrid(allItems);
     }
     static saveAndRefresh(currentFolder) {
-        (0,_storageUtil__WEBPACK_IMPORTED_MODULE_0__.saveToStorage)(currentFolder);
+        (0,_storageUtil__WEBPACK_IMPORTED_MODULE_1__.saveToStorage)(currentFolder);
         this.refreshUI(currentFolder);
     }
     static updateBreadcrumbs(modalId, currentFolder) {
@@ -986,7 +1004,7 @@ UIManager.renderGrid = (data) => {
              data-name="${item.name}">
              
           <div>
-            ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${file.extension}"></use></svg>`}
+            ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : (0,_helper__WEBPACK_IMPORTED_MODULE_0__.getFileIconHTML)(file.extension)}          
           </div>
           
           <div class="m-text-overlay">
@@ -994,7 +1012,7 @@ UIManager.renderGrid = (data) => {
             ${nameDisplay}
           </div>
           
-          <div class="m-text-secondary">${(0,_timeHelper__WEBPACK_IMPORTED_MODULE_1__.getRelativeTime)(file.modified)}</div>
+          <div class="m-text-secondary">${(0,_helper__WEBPACK_IMPORTED_MODULE_0__.getRelativeTime)(file.modified)}</div>
           <div class="m-text-secondary">${file.modifiedBy}</div>
           
           <div class="d-flex gap-2 justify-content-center">
@@ -1022,10 +1040,9 @@ UIManager.renderGrid = (data) => {
                   data-action="mobile-options" 
                   data-name="${item.name}" 
                   data-type="${isFolder ? 'folder' : 'file'}">
-                ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${file.extension}"></use></svg>`}
+                    ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : (0,_helper__WEBPACK_IMPORTED_MODULE_0__.getFileIconHTML)(file.extension)}
               </div>
             </div>
-            
           </div>
           <div class="m-card__row">
             <div class="m-card__label">Name</div>
@@ -1036,7 +1053,7 @@ UIManager.renderGrid = (data) => {
               </div>
             </div>
           </div>
-          <div class="m-card__row"><div class="m-card__label">Modified</div><div class="m-card__value">${(0,_timeHelper__WEBPACK_IMPORTED_MODULE_1__.getRelativeTime)(file.modified)}</div></div>
+          <div class="m-card__row"><div class="m-card__label">Modified</div><div class="m-card__value">${(0,_helper__WEBPACK_IMPORTED_MODULE_0__.getRelativeTime)(file.modified)}</div></div>
           <div class="m-card__row"><div class="m-card__label">Modified By</div><div class="m-card__value">${file.modifiedBy}</div></div>
         </div>
       `;
