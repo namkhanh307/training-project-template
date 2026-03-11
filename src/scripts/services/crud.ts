@@ -67,7 +67,7 @@ export async function processFileSelection(
   });
 
   const processedFiles = await Promise.all(filePromises);
-  currentFolder.files.push(...processedFiles);
+  currentFolder.files.unshift(...processedFiles);
 
   saveToStorage(rootFolder);
 
@@ -178,7 +178,10 @@ export function downloadFile(
   fileName: string,
 ) {
   const file = currentFolder.files.find((f) => f.name === fileName);
-  if (!file || !file.data) return;
+  if (!file || !file.data){
+    alert('Sorry, this file cannot be downloaded because it has no data.');
+    return;
+  }
 
   const link = document.createElement('a');
   link.href = file.data;

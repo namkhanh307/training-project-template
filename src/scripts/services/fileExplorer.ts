@@ -363,10 +363,13 @@ export class FileExplorer {
         // --- NEW DROPDOWN TOGGLE ---
         case 'toggle-new-menu-mobile':
           if (mobileNewMenu) {
-            mobileNewMenu.style.display =
-              mobileNewMenu.style.display === 'block'
-                ? 'none'
-                : 'block';
+            // Check if it's currently showing block, if so, hide it. Otherwise, show it.
+            const isShowing =
+              window.getComputedStyle(mobileNewMenu).display ===
+              'block';
+            mobileNewMenu.style.display = isShowing
+              ? 'none'
+              : 'block';
           }
           break;
 

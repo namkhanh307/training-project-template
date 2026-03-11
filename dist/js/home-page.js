@@ -72,7 +72,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
         });
     });
     const processedFiles = await Promise.all(filePromises);
-    currentFolder.files.push(...processedFiles);
+    currentFolder.files.unshift(...processedFiles);
     (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_2__.saveToStorage)(rootFolder);
     // Instead of calling global navigateToFolder, just refresh the UI
     // If you need path updates, trigger your UIManager.updatePath(...) here
@@ -156,8 +156,10 @@ function handleFileClick(currentFolder, fileId) {
 }
 function downloadFile(currentFolder, fileName) {
     const file = currentFolder.files.find((f) => f.name === fileName);
-    if (!file || !file.data)
+    if (!file || !file.data) {
+        alert('Sorry, this file cannot be downloaded because it has no data.');
         return;
+    }
     const link = document.createElement('a');
     link.href = file.data;
     link.download = file.name;
@@ -649,10 +651,12 @@ class FileExplorer {
                 // --- NEW DROPDOWN TOGGLE ---
                 case 'toggle-new-menu-mobile':
                     if (mobileNewMenu) {
-                        mobileNewMenu.style.display =
-                            mobileNewMenu.style.display === 'block'
-                                ? 'none'
-                                : 'block';
+                        // Check if it's currently showing block, if so, hide it. Otherwise, show it.
+                        const isShowing = window.getComputedStyle(mobileNewMenu).display ===
+                            'block';
+                        mobileNewMenu.style.display = isShowing
+                            ? 'none'
+                            : 'block';
                     }
                     break;
                 // --- OPTION 1: NEW FOLDER ---
@@ -1109,7 +1113,6 @@ UIManager.renderGrid = (data) => {
         const isFolder = 'subFolders' in item;
         const file = item;
         const folderItem = item;
-        // Notice: Removed inline onblur/onkeyup. We handle this via Event Delegation now!
         const nameDisplay = folderItem.isEditing
             ? `<input type="text" id="new-folder-input" class="m-input-rename" value="${folderItem.name}" />`
             : item.name;

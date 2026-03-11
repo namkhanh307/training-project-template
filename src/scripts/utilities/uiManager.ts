@@ -64,7 +64,6 @@ export class UIManager {
         const file = item as File;
         const folderItem = item as Folder;
 
-        // Notice: Removed inline onblur/onkeyup. We handle this via Event Delegation now!
         const nameDisplay = folderItem.isEditing
           ? `<input type="text" id="new-folder-input" class="m-input-rename" value="${folderItem.name}" />`
           : item.name;

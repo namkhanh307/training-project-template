@@ -88,7 +88,6 @@ export function isNameDuplicate(
     return item.name.toLowerCase() === formattedNewName;
   });
 }
-
 /**
  * Generates a unique name by appending (1), (2), etc., if the base name already exists.
  * @param baseName The default name you want to use (e.g., "New folder")
@@ -113,7 +112,6 @@ export function generateUniqueName(
 
   return uniqueName;
 }
-
 /**
  * Checks if a file or folder name contains forbidden special characters.
  * Forbidden characters: < > : " / \ | ? *
