@@ -20,6 +20,9 @@ export class UIManager {
 
     // 1. FILTER: Search the dictionaries for items belonging to this folder
     // Object.values() turns our flat dictionary into an array we can filter
+    console.log('Refreshing UI for folderId:', currentFolderId);
+    console.log('All Folders:', allFolders);
+    console.log('All Files:', allFiles);
     const currentSubFolders = Object.values(allFolders).filter(
       (folder) => folder.parentId === currentFolderId,
     );
@@ -51,6 +54,7 @@ export class UIManager {
 
       return validDateB - validDateA; // Descending order (Newest first)
     });
+    console.log('All allItems AFTER SORTING:', allItems);
 
     // 4. Render the newly sorted array
     UIManager.renderGrid(allItems);
@@ -74,10 +78,13 @@ export class UIManager {
         '<p class="mt-4 text-center">No items to display</p>';
       return;
     }
-
     container.innerHTML = data
       .map((item) => {
-        const isFolder = 'subFolders' in item;
+        // 1. THE FIX: Look at the exact 'type' string instead of guessing!
+        const isFolder = item.type === 'folder';
+
+        // 2. We keep these for TypeScript autocomplete, but remember
+        // they are just the same 'item' object under the hood!
         const file = item as File;
         const folderItem = item as Folder;
 

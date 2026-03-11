@@ -1,13 +1,12 @@
 import { Folder, File } from '../models/entity';
 import { EditingState, MobileActionItem } from '../models/model';
-import {
-  initFiles,
-  initFolders,
-} from '../utilities/_initData';
+import { ROOT_FOLDER_ID } from '../utilities/_const';
+import { initFiles, initFolders } from '../utilities/_initData';
 import { closeModal, openNewFileModal } from '../utilities/_modal';
 import {
   getIdFromUrl,
   handleFolderClick,
+  updateUrlWithId,
 } from '../utilities/_navigate';
 import {
   loadFromStorage,
@@ -32,6 +31,7 @@ import { createNewFolderDesktop, saveFolderName } from './crud';
 export class FileExplorer {
   private _allFolders: Record<string, Folder> = initFolders;
   private _allFiles: Record<string, File> = initFiles;
+  private _currentFolderId: string;
   _rootFolder: Folder;
   _currentFolder: Folder;
   _navigationHistory: Folder[] = [];
@@ -55,39 +55,51 @@ export class FileExplorer {
     this._allFolders = savedData.folders;
     this._allFiles = savedData.files;
 
-    this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
+    // 2. ROUTING: Figure out where we are starting!
+    const idFromUrl = getIdFromUrl(); // e.g., returns 'fin-456' or null
 
-    // Initial Render
+    // If the URL has an ID AND that folder actually exists in our database...
+    if (idFromUrl && this._allFolders[idFromUrl]) {
+      this._currentFolderId = idFromUrl;
+    } else {
+      // Otherwise, fallback to the Root folder!
+      // (Make sure 'ROOT_FOLDER_ID' matches the actual ID you gave your Root folder)
+      this._currentFolderId = ROOT_FOLDER_ID;
+      updateUrlWithId(this._currentFolderId); // Fix the URL bar
+    }
+
+    // 3. LISTENERS: Attach your UI click events
+    this.setupEventListeners();
+
+    // 4. THE BACK BUTTON: Listen for browser navigation (popstate)
+    window.addEventListener('popstate', () => {
+      // When the user clicks Back, the URL changes. Read the new ID!
+      const poppedId = getIdFromUrl() || ROOT_FOLDER_ID;
+
+      if (this._allFolders[poppedId]) {
+        this._currentFolderId = poppedId;
+        this.renderCurrentView(); // Redraw everything!
+      }
+    });
+
+    // 5. INITIAL RENDER: Draw the screen for the first time
+    this.renderCurrentView();
+  }
+  private renderCurrentView() {
+    // 1. Draw the Grid
     UIManager.refreshUI(
-      this._currentFolder.id,
+      this._currentFolderId,
       this._allFolders,
       this._allFiles,
     );
-    UIManager.updateBreadcrumbs(
-      'folder-path-display',
-      this._currentFolder.id,
-      this._allFolders,
-    );
 
-    // window.addEventListener('popstate', () => {
-    //   const folderId = getIdFromUrl();
-    //   this._currentFolder = navigateFromBreadcrumb(
-    //     this._rootFolder,
-    //     folderId,
-    //   );
-    //   UIManager.refreshUI(
-    //     this._currentFolder.id,
-    //     this._allFolders,
-    //     this._allFiles,
-    //   );
-    //   UIManager.updateBreadcrumbs(
-    //     'folder-path-display',
-    //     this._currentFolder.id,
-    //     this._allFolders,
-    //   );
-    // });
+    // // 2. Draw the Breadcrumbs
+    // updateBreadcrumbs(
+    //   'folder-path-display',
+    //   this._currentFolderId,
+    //   this._allFolders,
+    // );
   }
-
   private setupEventListeners() {
     this.initToolbarEvents();
     this.initGridEvents();

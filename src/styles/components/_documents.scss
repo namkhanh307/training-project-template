@@ -13,21 +13,7 @@ body {
   gap: 35px;
   background-color: $color-grey;
 }
-.l-page-header {
-  min-height: 50px;
-}
-.l-header-mobile {
-  position: relative;
-  background-color: $color-grey;
-  border-bottom: 1px solid #ddd;
-  width: 100%;
 
-  .l-header-content {
-    display: flex;
-    justify-content: flex-end; //align hamburger to the right(end of main axis)
-    padding: 10px 15px; //padding top/bottom 10px, left/right 15px
-  }
-}
 .l-main-container {
   padding-left: 1.5rem;
   padding-right: 1.5rem; //roor em
@@ -48,9 +34,7 @@ body {
   height: 18px;
   flex-shrink: 0; // no shrink, maintain size
 }
-.m-icon-folder {
-  color: #797775;
-}
+
 // Hamburger Component
 .m-btn-hamburger {
   border: 1px solid #ccc;
@@ -65,61 +49,7 @@ body {
   font-size: 28px;
   font-weight: 300; //smaller than normal(400)
 }
-// Table/Grid Module
-.m-table-row {
-  display: grid; //make it a grid container
-  grid-template-columns: 5% 35% 15% 10% 10% 30%;
-  padding: 10px 0;
-  border-bottom: 1px solid $color-border;
-  align-items: start;
-  cursor: pointer;
-  &--header {
-    border-bottom: 1px solid black;
-  }
-  &--interactive:hover {
-    background-color: $color-hover-bg;
-  }
-}
-.m-text-secondary {
-  color: $color-text-secondary;
-}
-// Mobile Menu Module
-.m-mobile-collapse {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 9999;
-  background-color: $mobile-menu-bg;
-  border-bottom: 1px solid #ddd;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 
-  .m-mobile-list {
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    margin: 0;
-  }
-
-  .m-mobile-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 1px solid #eee;
-    gap: 8px;
-    background-color: $color-grey;
-
-    &:hover {
-      background-color: $mobile-item-hover;
-      cursor: pointer;
-    }
-
-    i:first-child {
-      width: 25px;
-    }
-  }
-}
 // Sparkle/Overlay Module
 .m-text-overlay {
   position: relative;
@@ -141,47 +71,7 @@ body {
     pointer-events: none; // allows user to click the text "through" the icon
   }
 }
-// Card Module (Mobile)
-.m-card {
-  margin-bottom: 5px;
-  border: 1px solid #e0e0e0;
-  background-color: #fff;
 
-  &__row {
-    display: flex;
-    border-bottom: 1px solid #eee;
-    align-items: center;
-
-    &--header {
-      background-color: $color-grey;
-      justify-content: space-between;
-
-      .m-card__value {
-        flex-grow: 1;
-        padding: 10px 10px 10px 24px; //increase left padding (e.g., 24px) for ALL values
-        text-align: left;
-      }
-    }
-  }
-
-  &__label {
-    width: 120px;
-    min-width: 120px;
-    flex-shrink: 0;
-    padding: 10px;
-    font-weight: bold;
-    font-style: italic;
-    color: black;
-  }
-
-  &__value {
-    flex-grow: 1;
-    padding: 10px;
-    display: flex; /// align the sparkle container
-    align-items: center;
-    text-align: left; // ensure content stays left
-  }
-}
 // --- 5. State Rules ---
 .is-clickable {
   cursor: pointer;

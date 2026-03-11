@@ -358,12 +358,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   FileExplorer: function() { return /* binding */ FileExplorer; }
 /* harmony export */ });
-/* harmony import */ var _utilities_initData__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_initData */ "./src/scripts/utilities/_initData.ts");
-/* harmony import */ var _utilities_modal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utilities/_modal */ "./src/scripts/utilities/_modal.ts");
-/* harmony import */ var _utilities_navigate__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilities/_navigate */ "./src/scripts/utilities/_navigate.ts");
-/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
-/* harmony import */ var _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utilities/uiManager */ "./src/scripts/utilities/uiManager.ts");
-/* harmony import */ var _crud__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./crud */ "./src/scripts/services/crud.ts");
+/* harmony import */ var _utilities_const__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_const */ "./src/scripts/utilities/_const.ts");
+/* harmony import */ var _utilities_initData__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utilities/_initData */ "./src/scripts/utilities/_initData.ts");
+/* harmony import */ var _utilities_modal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utilities/_modal */ "./src/scripts/utilities/_modal.ts");
+/* harmony import */ var _utilities_navigate__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilities/_navigate */ "./src/scripts/utilities/_navigate.ts");
+/* harmony import */ var _utilities_storageUtil__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utilities/_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+/* harmony import */ var _utilities_uiManager__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../utilities/uiManager */ "./src/scripts/utilities/uiManager.ts");
+/* harmony import */ var _crud__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./crud */ "./src/scripts/services/crud.ts");
+
 
 
 
@@ -373,8 +375,8 @@ __webpack_require__.r(__webpack_exports__);
 
 class FileExplorer {
     constructor() {
-        this._allFolders = _utilities_initData__WEBPACK_IMPORTED_MODULE_0__.initFolders;
-        this._allFiles = _utilities_initData__WEBPACK_IMPORTED_MODULE_0__.initFiles;
+        this._allFolders = _utilities_initData__WEBPACK_IMPORTED_MODULE_1__.initFolders;
+        this._allFiles = _utilities_initData__WEBPACK_IMPORTED_MODULE_1__.initFiles;
         this._navigationHistory = [];
         //State for modals
         this._editingItemState = {
@@ -388,31 +390,45 @@ class FileExplorer {
             isFolder: false,
         };
         // 1. Load the flat hashmaps from the hard drive
-        const savedData = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)();
+        const savedData = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_4__.loadFromStorage)();
         // 2. Assign them to your class properties
         this._allFolders = savedData.folders;
         this._allFiles = savedData.files;
-        this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
-        // Initial Render
-        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles);
-        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder.id, this._allFolders);
-        // window.addEventListener('popstate', () => {
-        //   const folderId = getIdFromUrl();
-        //   this._currentFolder = navigateFromBreadcrumb(
-        //     this._rootFolder,
-        //     folderId,
-        //   );
-        //   UIManager.refreshUI(
-        //     this._currentFolder.id,
-        //     this._allFolders,
-        //     this._allFiles,
-        //   );
-        //   UIManager.updateBreadcrumbs(
-        //     'folder-path-display',
-        //     this._currentFolder.id,
-        //     this._allFolders,
-        //   );
-        // });
+        // 2. ROUTING: Figure out where we are starting!
+        const idFromUrl = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_3__.getIdFromUrl)(); // e.g., returns 'fin-456' or null
+        // If the URL has an ID AND that folder actually exists in our database...
+        if (idFromUrl && this._allFolders[idFromUrl]) {
+            this._currentFolderId = idFromUrl;
+        }
+        else {
+            // Otherwise, fallback to the Root folder!
+            // (Make sure 'ROOT_FOLDER_ID' matches the actual ID you gave your Root folder)
+            this._currentFolderId = _utilities_const__WEBPACK_IMPORTED_MODULE_0__.ROOT_FOLDER_ID;
+            (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_3__.updateUrlWithId)(this._currentFolderId); // Fix the URL bar
+        }
+        // 3. LISTENERS: Attach your UI click events
+        this.setupEventListeners();
+        // 4. THE BACK BUTTON: Listen for browser navigation (popstate)
+        window.addEventListener('popstate', () => {
+            // When the user clicks Back, the URL changes. Read the new ID!
+            const poppedId = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_3__.getIdFromUrl)() || _utilities_const__WEBPACK_IMPORTED_MODULE_0__.ROOT_FOLDER_ID;
+            if (this._allFolders[poppedId]) {
+                this._currentFolderId = poppedId;
+                this.renderCurrentView(); // Redraw everything!
+            }
+        });
+        // 5. INITIAL RENDER: Draw the screen for the first time
+        this.renderCurrentView();
+    }
+    renderCurrentView() {
+        // 1. Draw the Grid
+        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_5__.UIManager.refreshUI(this._currentFolderId, this._allFolders, this._allFiles);
+        // // 2. Draw the Breadcrumbs
+        // updateBreadcrumbs(
+        //   'folder-path-display',
+        //   this._currentFolderId,
+        //   this._allFolders,
+        // );
     }
     setupEventListeners() {
         this.initToolbarEvents();
@@ -433,7 +449,7 @@ class FileExplorer {
             const newMenu = document.getElementById('newOptionsMenu');
             switch (action) {
                 case 'upload-file':
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.triggerUpload)();
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.triggerUpload)();
                     break;
                 case 'toggle-new-menu':
                     // Toggle the dropdown visibility
@@ -447,14 +463,14 @@ class FileExplorer {
                     if (newMenu)
                         newMenu.style.display = 'none';
                     // 2. Call your existing inline folder creation method!
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles));
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.createNewFolderDesktop)(this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_5__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles));
                     break;
                 case 'trigger-new-file':
                     // 1. Hide the menu
                     if (newMenu)
                         newMenu.style.display = 'none';
                     // 2. Open the new file modal
-                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.openNewFileModal)();
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_2__.openNewFileModal)();
                     break;
             }
         });
@@ -468,7 +484,7 @@ class FileExplorer {
         });
         // 2. Listener for the Hidden File Input
         fileInput?.addEventListener('change', (event) => {
-            (0,_crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection)(this._rootFolder, this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles), event);
+            (0,_crud__WEBPACK_IMPORTED_MODULE_6__.processFileSelection)(this._rootFolder, this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_5__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles), event);
         });
     }
     initGridEvents() {
@@ -486,24 +502,24 @@ class FileExplorer {
                 case 'open-folder':
                     if (itemName) {
                         // Overwrite the class state with the newly returned folder!
-                        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.handleFolderClick)(itemId, this._allFolders);
+                        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_3__.handleFolderClick)(itemId, this._allFolders);
                     }
                     break;
                 case 'open-file':
                     if (itemId)
-                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.handleFileClick)(this._currentFolder, itemId);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_6__.handleFileClick)(this._currentFolder, itemId);
                     break;
                 case 'delete':
                     if (itemId)
-                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.deleteItem)(this._currentFolder, itemId, isFolder);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_6__.deleteItem)(this._currentFolder, itemId, isFolder);
                     break;
                 case 'edit':
                     if (itemName)
-                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openRenameModal)(this._editingItemState, itemName, isFolder);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_6__.openRenameModal)(this._editingItemState, itemName, isFolder);
                     break;
                 case 'mobile-options':
                     if (itemName)
-                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openMobileOptionsSheet)(itemId, itemName, isFolder, this._mobileActionItem);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_6__.openMobileOptionsSheet)(itemId, itemName, isFolder, this._mobileActionItem);
                     break;
             }
         });
@@ -513,7 +529,7 @@ class FileExplorer {
             if (target.id === 'new-folder-input') {
                 if (event.key === 'Enter') {
                     event.preventDefault(); // Stop the enter key from doing anything else
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.saveFolderName)(this._currentFolder, target);
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.saveFolderName)(this._currentFolder, target);
                 }
                 // Bonus UX: Let them hit Escape to cancel!
                 if (event.key === 'Escape') {
@@ -522,7 +538,7 @@ class FileExplorer {
                     //   this._currentFolder.subFolders.filter(
                     //     (f) => !f.isEditing,
                     //   );
-                    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles);
+                    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_5__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles);
                 }
             }
         });
@@ -537,44 +553,44 @@ class FileExplorer {
             switch (action) {
                 // --- Rename Modal ---
                 case 'submit-rename':
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitRename)(this._editingItemState, this._currentFolder);
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.submitRename)(this._editingItemState, this._currentFolder);
                     break;
                 case 'close-rename':
-                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('renameModal');
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_2__.closeModal)('renameModal');
                     break;
                 // --- Mobile Options Sheet ---
                 case 'trigger-mobile-rename':
-                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('mobileOptionsModal');
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openRenameModal)(this._editingItemState, this._mobileActionItem.name, this._mobileActionItem.isFolder);
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_2__.closeModal)('mobileOptionsModal');
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.openRenameModal)(this._editingItemState, this._mobileActionItem.name, this._mobileActionItem.isFolder);
                     break;
                 case 'trigger-mobile-delete':
-                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('mobileOptionsModal');
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.deleteItem)(this._currentFolder, this._mobileActionItem.id, this._mobileActionItem.isFolder);
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_2__.closeModal)('mobileOptionsModal');
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.deleteItem)(this._currentFolder, this._mobileActionItem.id, this._mobileActionItem.isFolder);
                     break;
                 case 'close-mobile-options':
-                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('mobileOptionsModal');
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_2__.closeModal)('mobileOptionsModal');
                     break;
                 // --- File Viewer Modal ---
                 case 'download-file':
                     const fileName = document.getElementById('modalFileName')?.innerText;
                     if (fileName)
-                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.downloadFile)(this._currentFolder, fileName);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_6__.downloadFile)(this._currentFolder, fileName);
                     break;
                 case 'close-file-modal':
-                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('fileModal');
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_2__.closeModal)('fileModal');
                     break;
                 // --- New Folder Modal (Mobile) ---
                 case 'submit-new-folder':
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitNewFolderMobile)(this._currentFolder);
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.submitNewFolderMobile)(this._currentFolder);
                     break;
                 case 'close-new-folder':
-                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('newFolderModal');
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_2__.closeModal)('newFolderModal');
                     break;
                 case 'submit-new-file':
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitNewFile)(this._currentFolder);
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.submitNewFile)(this._currentFolder);
                     break;
                 case 'close-new-file':
-                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('newFileModal');
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_2__.closeModal)('newFileModal');
                     break;
             }
         });
@@ -584,15 +600,15 @@ class FileExplorer {
                 const target = event.target;
                 if (target.id === 'renameInput') {
                     event.preventDefault();
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitRename)(this._editingItemState, this._currentFolder);
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.submitRename)(this._editingItemState, this._currentFolder);
                 }
                 else if (target.id === 'newFolderNameInput') {
                     event.preventDefault();
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitNewFolderMobile)(this._currentFolder); // Assuming you migrated your submitNewFolder logic!
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.submitNewFolderMobile)(this._currentFolder); // Assuming you migrated your submitNewFolder logic!
                 }
                 else if (target.id === 'newFileNameInput') {
                     event.preventDefault();
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.submitNewFile)(this._currentFolder);
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.submitNewFile)(this._currentFolder);
                 }
             }
         });
@@ -648,7 +664,7 @@ class FileExplorer {
                 case 'trigger-new-folder-mobile':
                     if (mobileNewMenu)
                         mobileNewMenu.style.display = 'none'; // Hide dropdown
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openNewFolderMobile)(); // Trigger your existing function
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.openNewFolderMobile)(); // Trigger your existing function
                     break;
                 // --- OPTION 2: NEW FILE ---
                 case 'trigger-new-file-mobile':
@@ -659,11 +675,11 @@ class FileExplorer {
                         .getElementById('mobileMenu')
                         ?.classList.remove('show');
                     // 2. Open the file modal (Assuming this is inside FileExplorer.ts)
-                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.openNewFileModal)();
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_2__.openNewFileModal)();
                     break;
                 // --- UPLOAD ---
                 case 'upload-file':
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.triggerUpload)();
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_6__.triggerUpload)();
                     break;
             }
         });
@@ -716,6 +732,7 @@ const ready = (fn) => {
 // Icon Helper
 const SUPPORTED_ICONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
 function getFileIconHTML(extension) {
+    console.log('Getting icon for extension:', extension);
     const safeExt = extension.toLowerCase();
     // 1. If have the custom SVG
     if (SUPPORTED_ICONS.includes(safeExt)) {
@@ -1109,6 +1126,9 @@ class UIManager {
         await new Promise((resolve) => setTimeout(resolve, 400));
         // 1. FILTER: Search the dictionaries for items belonging to this folder
         // Object.values() turns our flat dictionary into an array we can filter
+        console.log('Refreshing UI for folderId:', currentFolderId);
+        console.log('All Folders:', allFolders);
+        console.log('All Files:', allFiles);
         const currentSubFolders = Object.values(allFolders).filter((folder) => folder.parentId === currentFolderId);
         const currentSubFiles = Object.values(allFiles).filter((file) => file.parentId === currentFolderId);
         // 2. Combine folders and files into one array for the grid
@@ -1129,6 +1149,7 @@ class UIManager {
             const validDateB = isNaN(dateB) ? 0 : dateB;
             return validDateB - validDateA; // Descending order (Newest first)
         });
+        console.log('All allItems AFTER SORTING:', allItems);
         // 4. Render the newly sorted array
         UIManager.renderGrid(allItems);
     }
@@ -1177,7 +1198,10 @@ UIManager.renderGrid = (data) => {
     }
     container.innerHTML = data
         .map((item) => {
-        const isFolder = 'subFolders' in item;
+        // 1. THE FIX: Look at the exact 'type' string instead of guessing!
+        const isFolder = item.type === 'folder';
+        // 2. We keep these for TypeScript autocomplete, but remember
+        // they are just the same 'item' object under the hood!
         const file = item;
         const folderItem = item;
         const nameDisplay = folderItem.isEditing

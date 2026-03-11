@@ -14,22 +14,6 @@ body {
   background-color: #ededed;
 }
 
-.l-page-header {
-  min-height: 50px;
-}
-
-.l-header-mobile {
-  position: relative;
-  background-color: #ededed;
-  border-bottom: 1px solid #ddd;
-  width: 100%;
-}
-.l-header-mobile .l-header-content {
-  display: flex;
-  justify-content: flex-end;
-  padding: 10px 15px;
-}
-
 .l-main-container {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
@@ -50,10 +34,6 @@ body {
   flex-shrink: 0;
 }
 
-.m-icon-folder {
-  color: #797775;
-}
-
 .m-btn-hamburger {
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -66,58 +46,6 @@ body {
   padding: 24px 0 10px 0;
   font-size: 28px;
   font-weight: 300;
-}
-
-.m-table-row {
-  display: grid;
-  grid-template-columns: 5% 35% 15% 10% 10% 30%;
-  padding: 10px 0;
-  border-bottom: 1px solid #edebe9;
-  align-items: start;
-  cursor: pointer;
-}
-.m-table-row--header {
-  border-bottom: 1px solid black;
-}
-.m-table-row--interactive:hover {
-  background-color: #f3f2f1;
-}
-
-.m-text-secondary {
-  color: #9d9b99;
-}
-
-.m-mobile-collapse {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 9999;
-  background-color: #fdfdfd;
-  border-bottom: 1px solid #ddd;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-.m-mobile-collapse .m-mobile-list {
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  margin: 0;
-}
-.m-mobile-collapse .m-mobile-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-  border-bottom: 1px solid #eee;
-  gap: 8px;
-  background-color: #ededed;
-}
-.m-mobile-collapse .m-mobile-item:hover {
-  background-color: #c2c1c1;
-  cursor: pointer;
-}
-.m-mobile-collapse .m-mobile-item i:first-child {
-  width: 25px;
 }
 
 .m-text-overlay {
@@ -136,42 +64,6 @@ body {
   stroke-width: 2;
   stroke-linecap: round;
   pointer-events: none;
-}
-
-.m-card {
-  margin-bottom: 5px;
-  border: 1px solid #e0e0e0;
-  background-color: #fff;
-}
-.m-card__row {
-  display: flex;
-  border-bottom: 1px solid #eee;
-  align-items: center;
-}
-.m-card__row--header {
-  background-color: #ededed;
-  justify-content: space-between;
-}
-.m-card__row--header .m-card__value {
-  flex-grow: 1;
-  padding: 10px 10px 10px 24px;
-  text-align: left;
-}
-.m-card__label {
-  width: 120px;
-  min-width: 120px;
-  flex-shrink: 0;
-  padding: 10px;
-  font-weight: bold;
-  font-style: italic;
-  color: black;
-}
-.m-card__value {
-  flex-grow: 1;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  text-align: left;
 }
 
 .is-clickable {
