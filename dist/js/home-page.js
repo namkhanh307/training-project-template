@@ -234,7 +234,8 @@ function submitRename(stateRef, currentFolder) {
     (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_0__.closeModal)('renameModal');
 }
 function openMobileOptionsSheet(name, isFolder, mobileActionItem) {
-    mobileActionItem = { name, isFolder };
+    mobileActionItem.name = name;
+    mobileActionItem.isFolder = isFolder;
     const title = document.getElementById('optionsModalTitle');
     if (title)
         title.innerText = name;
@@ -840,7 +841,6 @@ __webpack_require__.r(__webpack_exports__);
 // utilities/timeHelpers.ts
 function getRelativeTime(dateString) {
     const date = new Date(dateString);
-    // SAFETY FALLBACK: If the date is invalid (like your old 'Just now' strings), just return it
     if (isNaN(date.getTime()))
         return dateString;
     const now = new Date();
@@ -941,8 +941,10 @@ UIManager.renderGrid = (data) => {
     if (!desktopContainer || !mobileContainer)
         return;
     if (!data || data.length === 0) {
-        desktopContainer.innerHTML = '<p class="mt-4 text-center">No items to display</p>';
-        mobileContainer.innerHTML = '<p class=" mt-4 text-center">No items to display</p>';
+        desktopContainer.innerHTML =
+            '<p class="mt-4 text-center">No items to display</p>';
+        mobileContainer.innerHTML =
+            '<p class=" mt-4 text-center">No items to display</p>';
         return;
     }
     // 1. Desktop Rendering
@@ -993,7 +995,10 @@ UIManager.renderGrid = (data) => {
         <div class="m-card" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-name="${item.name}">
           <div class="m-card__row m-card__row--header">
                 <div class="m-card__label">File Type</div>
-              <div class="me-2" data-action="mobile-options" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+              <div class="me-2" 
+                  data-action="mobile-options" 
+                  data-name="${item.name}" 
+                  data-type="${isFolder ? 'folder' : 'file'}">
                 ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${file.extension}"></use></svg>`}
               </div>
             </div>
@@ -1008,7 +1013,7 @@ UIManager.renderGrid = (data) => {
               </div>
             </div>
           </div>
-          <div class="m-card__row"><div class="m-card__label">Modified</div><div class="m-card__value">${file.modified}</div></div>
+          <div class="m-card__row"><div class="m-card__label">Modified</div><div class="m-card__value">${(0,_timeHelper__WEBPACK_IMPORTED_MODULE_1__.getRelativeTime)(file.modified)}</div></div>
           <div class="m-card__row"><div class="m-card__label">Modified By</div><div class="m-card__value">${file.modifiedBy}</div></div>
         </div>
       `;

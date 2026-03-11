@@ -1,6 +1,6 @@
 import { Row, File, Folder } from '../models/entity';
 import { saveToStorage } from './_storageUtil';
-import { getRelativeTime } from './_timeHelper'; 
+import { getRelativeTime } from './_timeHelper';
 export class UIManager {
   static async refreshUI(currentFolder: Folder) {
     UIManager.renderLoadingState();
@@ -17,7 +17,7 @@ export class UIManager {
       // Rule A: Group Folders First
       const isFolderA = 'subFolders' in a ? 1 : 0;
       const isFolderB = 'subFolders' in b ? 1 : 0;
-      
+
       if (isFolderA !== isFolderB) {
         return isFolderB - isFolderA; // Puts folders (1) before files (0)
       }
@@ -25,7 +25,7 @@ export class UIManager {
       // Rule B: Sort by Newest Modified Date
       const dateA = new Date(a.modified).getTime();
       const dateB = new Date(b.modified).getTime();
-      
+
       // Fallback for old data: treat invalid dates as '0' (oldest possible)
       const validDateA = isNaN(dateA) ? 0 : dateA;
       const validDateB = isNaN(dateB) ? 0 : dateB;
@@ -49,10 +49,12 @@ export class UIManager {
     );
 
     if (!desktopContainer || !mobileContainer) return;
-    if(!data || data.length === 0) {
-        desktopContainer.innerHTML = '<p class="mt-4 text-center">No items to display</p>';
-        mobileContainer.innerHTML = '<p class=" mt-4 text-center">No items to display</p>';
-        return;
+    if (!data || data.length === 0) {
+      desktopContainer.innerHTML =
+        '<p class="mt-4 text-center">No items to display</p>';
+      mobileContainer.innerHTML =
+        '<p class=" mt-4 text-center">No items to display</p>';
+      return;
     }
     // 1. Desktop Rendering
     desktopContainer.innerHTML = data
@@ -106,7 +108,10 @@ export class UIManager {
         <div class="m-card" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-name="${item.name}">
           <div class="m-card__row m-card__row--header">
                 <div class="m-card__label">File Type</div>
-              <div class="me-2" data-action="mobile-options" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+              <div class="me-2" 
+                  data-action="mobile-options" 
+                  data-name="${item.name}" 
+                  data-type="${isFolder ? 'folder' : 'file'}">
                 ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : `<svg class="m-icon-custom"><use href="src/files/icons.svg#icon-${file.extension}"></use></svg>`}
               </div>
             </div>
@@ -121,7 +126,7 @@ export class UIManager {
               </div>
             </div>
           </div>
-          <div class="m-card__row"><div class="m-card__label">Modified</div><div class="m-card__value">${file.modified}</div></div>
+          <div class="m-card__row"><div class="m-card__label">Modified</div><div class="m-card__value">${getRelativeTime(file.modified)}</div></div>
           <div class="m-card__row"><div class="m-card__label">Modified By</div><div class="m-card__value">${file.modifiedBy}</div></div>
         </div>
       `;
@@ -149,8 +154,12 @@ export class UIManager {
     pathDisplay.innerHTML = breadcrumbsHTML;
   }
   static renderLoadingState = (): void => {
-    const desktopContainer = document.getElementById('desktop-row-container');
-    const mobileContainer = document.getElementById('mobile-card-container');
+    const desktopContainer = document.getElementById(
+      'desktop-row-container',
+    );
+    const mobileContainer = document.getElementById(
+      'mobile-card-container',
+    );
 
     const spinnerHTML = `
       <div class="d-flex justify-content-center align-items-center w-100" style="height: 200px;">

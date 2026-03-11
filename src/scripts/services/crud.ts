@@ -187,7 +187,9 @@ export function deleteItem(
   name: string,
   isFolder: boolean,
 ) {
-  console.log(`Attempting to delete ${currentFolder} ${isFolder ? 'folder' : 'file'}: ${name}`);
+  console.log(
+    `Attempting to delete ${currentFolder} ${isFolder ? 'folder' : 'file'}: ${name}`,
+  );
   if (
     !confirm(
       `Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`,
@@ -285,7 +287,8 @@ export function openMobileOptionsSheet(
   isFolder: boolean,
   mobileActionItem: MobileActionItem,
 ) {
-  mobileActionItem = { name, isFolder };
+  mobileActionItem.name = name;
+  mobileActionItem.isFolder = isFolder;
   const title = document.getElementById('optionsModalTitle');
   if (title) title.innerText = name;
   openModal('mobileOptionsModal');
@@ -428,7 +431,8 @@ export function submitNewFile(currentFolder: Folder) {
     path:
       currentFolder.path === '/'
         ? `/${currentFolder.name}`
-        : `${currentFolder.path}/${name}`,  };
+        : `${currentFolder.path}/${name}`,
+  };
 
   // Push it to the top of the array
   currentFolder.files.unshift(newFile);

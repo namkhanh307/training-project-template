@@ -3,7 +3,6 @@
 export function getRelativeTime(dateString: string): string {
   const date = new Date(dateString);
   
-  // SAFETY FALLBACK: If the date is invalid (like your old 'Just now' strings), just return it
   if (isNaN(date.getTime())) return dateString; 
 
   const now = new Date();

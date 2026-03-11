@@ -1,5 +1,6 @@
 // Define the structure of your file data
 export interface BaseEntity {
+  id: string;
   modified: string;
   modifiedBy: string;
   isNew: boolean;
