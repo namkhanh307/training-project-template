@@ -460,8 +460,7 @@ class FileExplorer {
         });
         // 2. Listener for the Hidden File Input
         fileInput?.addEventListener('change', (event) => {
-            (0,_crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection)(this._rootFolder, this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder), // ✅ Passed as a function!
-            event);
+            (0,_crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection)(this._rootFolder, this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder), event);
         });
     }
     initGridEvents() {
@@ -609,14 +608,38 @@ class FileExplorer {
             if (!target)
                 return;
             const action = target.dataset.action;
+            const mobileNewMenu = document.getElementById('newOptionsMenuMobile');
             switch (action) {
-                case 'new-folder':
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openNewFolderMobile)();
+                // --- NEW DROPDOWN TOGGLE ---
+                case 'toggle-new-menu-mobile':
+                    if (mobileNewMenu) {
+                        mobileNewMenu.style.display =
+                            mobileNewMenu.style.display === 'block'
+                                ? 'none'
+                                : 'block';
+                    }
                     break;
+                // --- OPTION 1: NEW FOLDER ---
+                case 'trigger-new-folder-mobile':
+                    if (mobileNewMenu)
+                        mobileNewMenu.style.display = 'none'; // Hide dropdown
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openNewFolderMobile)(); // Trigger your existing function
+                    break;
+                // --- OPTION 2: NEW FILE ---
+                case 'trigger-new-file-mobile':
+                    if (mobileNewMenu)
+                        mobileNewMenu.style.display = 'none'; // Hide dropdown
+                    // 1. Hide the Bootstrap mobile sidebar drawer
+                    document
+                        .getElementById('mobileMenu')
+                        ?.classList.remove('show');
+                    // 2. Open the file modal (Assuming this is inside FileExplorer.ts)
+                    (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.openNewFileModal)();
+                    break;
+                // --- UPLOAD ---
                 case 'upload-file':
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.triggerUpload)(); // Reuses the exact same method as desktop!
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.triggerUpload)();
                     break;
-                // You can easily wire up sync/export here later
             }
         });
     }

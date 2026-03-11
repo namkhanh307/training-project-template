@@ -144,7 +144,7 @@ export class FileExplorer {
       processFileSelection(
         this._rootFolder,
         this._currentFolder,
-        () => UIManager.refreshUI(this._currentFolder), // ✅ Passed as a function!
+        () => UIManager.refreshUI(this._currentFolder),
         event,
       );
     });
@@ -351,15 +351,44 @@ export class FileExplorer {
       if (!target) return;
 
       const action = target.dataset.action;
+      const mobileNewMenu = document.getElementById(
+        'newOptionsMenuMobile',
+      );
 
       switch (action) {
-        case 'new-folder':
-          openNewFolderMobile();
+        // --- NEW DROPDOWN TOGGLE ---
+        case 'toggle-new-menu-mobile':
+          if (mobileNewMenu) {
+            mobileNewMenu.style.display =
+              mobileNewMenu.style.display === 'block'
+                ? 'none'
+                : 'block';
+          }
           break;
+
+        // --- OPTION 1: NEW FOLDER ---
+        case 'trigger-new-folder-mobile':
+          if (mobileNewMenu) mobileNewMenu.style.display = 'none'; // Hide dropdown
+          openNewFolderMobile(); // Trigger your existing function
+          break;
+
+        // --- OPTION 2: NEW FILE ---
+        case 'trigger-new-file-mobile':
+          if (mobileNewMenu) mobileNewMenu.style.display = 'none'; // Hide dropdown
+
+          // 1. Hide the Bootstrap mobile sidebar drawer
+          document
+            .getElementById('mobileMenu')
+            ?.classList.remove('show');
+
+          // 2. Open the file modal (Assuming this is inside FileExplorer.ts)
+          openNewFileModal();
+          break;
+
+        // --- UPLOAD ---
         case 'upload-file':
-          triggerUpload(); // Reuses the exact same method as desktop!
+          triggerUpload();
           break;
-        // You can easily wire up sync/export here later
       }
     });
   }

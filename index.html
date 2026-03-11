@@ -115,12 +115,37 @@
       <!-- Collapse menu content -->
       <div class="collapse m-mobile-collapse" id="mobileMenu">
         <div class="m-mobile-list">
-          <div class="m-mobile-item" data-action="new-folder">
+          <div class="m-mobile-item" data-action="toggle-new-menu-mobile">
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-new"></use>
             </svg>
             New
             <i class="fas fa-chevron-down small"></i>
+            <div
+              id="newOptionsMenuMobile"
+              class="dropdown-menu shadow-sm"
+              style="
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                z-index: 1000;
+                min-width: 150px;
+              "
+            >
+              <div
+                class="dropdown-item is-clickable py-2"
+                data-action="trigger-new-folder-mobile"
+              >
+                <i class="fas fa-folder text-warning me-2"></i> Folder
+              </div>
+              <div
+                class="dropdown-item is-clickable py-2"
+                data-action="trigger-new-file-mobile"
+              >
+                <i class="fas fa-file-alt text-primary me-2"></i> File
+              </div>
+            </div>
           </div>
           <div class="m-mobile-item" data-action="upload-file">
             <svg class="m-icon-custom">
@@ -233,7 +258,7 @@
         </div>
       </div>
     </div>
-
+    <!-- New folder modal -->
     <div id="newFolderModal" class="m-modal" style="display: none">
       <div class="m-modal-content">
         <div class="m-modal-header">
