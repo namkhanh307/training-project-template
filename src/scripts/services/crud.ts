@@ -78,31 +78,41 @@ export async function processFileSelection(
   target.value = ''; // Reset input
 }
 export async function createNewFolderDesktop(
-  currentFolder: Folder,
-  refreshUI: () => Promise<void>,
+  currentFolderId: string, // 🔴 Pass the ID instead of the whole nested object
+  allFolders: Record<string, Folder>, // 🔴 Pass the global dictionary
+  refreshUI: () => Promise<void>
 ) {
-  const folderName = generateUniqueName(
-    'New folder',
-    currentFolder.subFolders,
+  // 1. Gather siblings to check for duplicate names
+  // We grab all folders and only keep the ones inside the current folder
+  const siblingFolders = Object.values(allFolders).filter(
+    (folder) => folder.parentId === currentFolderId
   );
+
+  // 2. Generate a safe name using the siblings
+  const folderName = generateUniqueName('New folder', siblingFolders);
+  const newId = generateID();
+
+  // 3. Create the perfect flat object
   const newFolder: Folder = {
+    id: newId,
+    parentId: currentFolderId, // 🔴 The magic link to where it lives!
     name: folderName,
     modified: new Date().toISOString(),
     modifiedBy: 'You',
     isNew: true,
     isEditing: true,
     type: 'folder',
-    id: generateID(),
     maxSize: 0,
-    parentId: ''
   };
 
-  currentFolder.subFolders.unshift(newFolder);
+  // 4. INSTANT INSERT: Add it straight to the dictionary
+  allFolders[newId] = newFolder;
+
+  // 5. Redraw the screen
   await refreshUI();
 
-  const input = document.getElementById(
-    'new-folder-input',
-  ) as HTMLInputElement;
+  // 6. Handle the inline input focus
+  const input = document.getElementById('new-folder-input') as HTMLInputElement;
   if (input) {
     input.value = folderName;
     input.focus();
