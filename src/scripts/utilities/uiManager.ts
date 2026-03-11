@@ -1,0 +1,176 @@
+import { Row, File, Folder } from '../models/entity';
+import { getFileIconHTML } from './_helper';
+import { saveToStorage } from './_storageUtil';
+import { getRelativeTime } from './_helper';
+export class UIManager {
+  static async refreshUI(currentFolder: Folder) {
+    UIManager.renderLoadingState();
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    // 1. Combine folders and files
+    const allItems = [
+      ...currentFolder.subFolders,
+      ...currentFolder.files,
+    ];
+
+    // 2. Sort the array dynamically
+    allItems.sort((a, b) => {
+      // Rule A: Group Folders First
+      const isFolderA = 'subFolders' in a ? 1 : 0;
+      const isFolderB = 'subFolders' in b ? 1 : 0;
+
+      if (isFolderA !== isFolderB) {
+        return isFolderB - isFolderA; // Puts folders (1) before files (0)
+      }
+
+      // Rule B: Sort by Newest Modified Date
+      const dateA = new Date(a.modified).getTime();
+      const dateB = new Date(b.modified).getTime();
+
+      // Fallback for old data: treat invalid dates as '0' (oldest possible)
+      const validDateA = isNaN(dateA) ? 0 : dateA;
+      const validDateB = isNaN(dateB) ? 0 : dateB;
+
+      return validDateB - validDateA; // Descending order (Newest first)
+    });
+
+    // 3. Render the newly sorted array
+    UIManager.renderGrid(allItems);
+  }
+  static saveAndRefresh(currentFolder: Folder) {
+    saveToStorage(currentFolder);
+    this.refreshUI(currentFolder);
+  }
+  static renderGrid = (data: Row[]): void => {
+    const desktopContainer = document.getElementById(
+      'desktop-row-container',
+    );
+    const mobileContainer = document.getElementById(
+      'mobile-card-container',
+    );
+
+    if (!desktopContainer || !mobileContainer) return;
+    if (!data || data.length === 0) {
+      desktopContainer.innerHTML =
+        '<p class="mt-4 text-center">No items to display</p>';
+      mobileContainer.innerHTML =
+        '<p class=" mt-4 text-center">No items to display</p>';
+      return;
+    }
+    // 1. Desktop Rendering
+    desktopContainer.innerHTML = data
+      .map((item) => {
+        const isFolder = 'subFolders' in item;
+        const file = item as File;
+        const folderItem = item as Folder;
+
+        const nameDisplay = folderItem.isEditing
+          ? `<input type="text" id="new-folder-input" class="m-input-rename" value="${folderItem.name}" />`
+          : item.name;
+
+        return `
+        <div class="m-table-row m-table-row--interactive" 
+             data-action="${isFolder ? 'open-folder' : 'open-file'}" 
+             data-id="${item.id}"
+             data-name="${item.name}">
+             
+          <div>
+            ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : getFileIconHTML(file.extension)}          
+          </div>
+          
+          <div class="m-text-overlay">
+            ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
+            ${nameDisplay}
+          </div>
+          
+          <div class="m-text-secondary">${getRelativeTime(file.modified)}</div>
+          <div class="m-text-secondary">${file.modifiedBy}</div>
+          
+          <div class="d-flex gap-2 justify-content-center">
+            <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+              <use href="src/files/icons.svg#icon-edit"></use>
+            </svg>
+            <svg class="m-icon-custom is-clickable" data-action="delete" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+              <use href="src/files/icons.svg#icon-delete"></use>
+            </svg>
+          </div>
+        </div>
+      `;
+      })
+      .join('');
+
+    // 2. Mobile Rendering
+    mobileContainer.innerHTML = data
+      .map((item) => {
+        const isFolder = 'subFolders' in item;
+        const file = item as File;
+
+        return `
+        <div class="m-card" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}" data-name="${item.name}">
+          <div class="m-card__row m-card__row--header">
+                <div class="m-card__label">File Type</div>
+              <div class="me-2" 
+                  data-action="mobile-options" 
+                  data-id="${item.id}" 
+                  data-name="${item.name}" 
+                  data-type="${isFolder ? 'folder' : 'file'}">
+                    ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : getFileIconHTML(file.extension)}
+              </div>
+            </div>
+          </div>
+          <div class="m-card__row">
+            <div class="m-card__label">Name</div>
+            <div class="m-card__value">
+              <div class="m-text-overlay">
+                ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
+                ${item.name}
+              </div>
+            </div>
+          </div>
+          <div class="m-card__row"><div class="m-card__label">Modified</div><div class="m-card__value">${getRelativeTime(file.modified)}</div></div>
+          <div class="m-card__row"><div class="m-card__label">Modified By</div><div class="m-card__value">${file.modifiedBy}</div></div>
+        </div>
+      `;
+      })
+      .join('');
+  };
+  static updateBreadcrumbs(modalId: string, currentFolder: Folder) {
+    const pathDisplay = document.getElementById(modalId);
+    if (!pathDisplay) return;
+
+    let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" data-path="/">Documents</span>`;
+
+    if (currentFolder.path !== '/') {
+      const segments = currentFolder.path
+        .split('/')
+        .filter((s) => s.length > 0);
+      let buildPath = '';
+
+      segments.forEach((segment) => {
+        buildPath += `/${segment}`;
+        breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
+        breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" data-path="${buildPath}">${segment}</span>`;
+      });
+    }
+    pathDisplay.innerHTML = breadcrumbsHTML;
+  }
+  static renderLoadingState = (): void => {
+    const desktopContainer = document.getElementById(
+      'desktop-row-container',
+    );
+    const mobileContainer = document.getElementById(
+      'mobile-card-container',
+    );
+
+    const spinnerHTML = `
+      <div class="d-flex justify-content-center align-items-center w-100" style="height: 200px;">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    `;
+
+    if (desktopContainer) desktopContainer.innerHTML = spinnerHTML;
+    if (mobileContainer) mobileContainer.innerHTML = spinnerHTML;
+  };
+}

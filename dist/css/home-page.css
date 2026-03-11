@@ -8,11 +8,14 @@ body {
 }
 
 .l-toolbar {
-  display: flex;
   padding: 8px 20px;
   border-bottom: 1px solid #edebe9;
   gap: 35px;
   background-color: #ededed;
+}
+
+.l-page-header {
+  min-height: 50px;
 }
 
 .l-header-mobile {
@@ -67,13 +70,21 @@ body {
 
 .m-table-row {
   display: grid;
-  grid-template-columns: 5% 35% 15% 15% 30%;
+  grid-template-columns: 5% 35% 15% 10% 10% 30%;
   padding: 10px 0;
   border-bottom: 1px solid #edebe9;
   align-items: start;
+  cursor: pointer;
+}
+.m-table-row--header {
+  border-bottom: 1px solid black;
 }
 .m-table-row--interactive:hover {
   background-color: #f3f2f1;
+}
+
+.m-text-secondary {
+  color: #9d9b99;
 }
 
 .m-mobile-collapse {
@@ -116,7 +127,7 @@ body {
 }
 .m-text-overlay .m-sparkle {
   position: absolute;
-  left: -14px;
+  left: -10px;
   top: -6px;
   width: 14px;
   height: 14px;
@@ -128,7 +139,7 @@ body {
 }
 
 .m-card {
-  margin-bottom: 20px;
+  margin-bottom: 5px;
   border: 1px solid #e0e0e0;
   background-color: #fff;
 }
@@ -153,7 +164,7 @@ body {
   padding: 10px;
   font-weight: bold;
   font-style: italic;
-  color: #605e5c;
+  color: black;
 }
 .m-card__value {
   flex-grow: 1;
@@ -171,6 +182,95 @@ body {
 }
 .is-clickable:hover {
   color: #0078d4;
+}
+
+.m-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw; /* Forces it to span the entire screen width */
+  height: 100vh; /* Forces it to span the entire screen height */
+  background: rgba(0, 0, 0, 0.5);
+  display: none; /* Controlled by JS */
+  align-items: center; /* Centers vertically */
+  justify-content: center; /* Centers horizontally */
+  z-index: 1000;
+}
+
+/* 1. Add a max/fixed width to the modal content */
+.m-modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px; /* Gives it a solid size on desktop */
+  max-width: 90vw; /* Keeps it responsive on mobile phones */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.m-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Vertically center the text and button */
+  border-bottom: 1px solid #eee;
+  margin-bottom: 15px;
+  padding-bottom: 10px; /* Give it a little breathing room */
+}
+
+/* 2. Target the h3 specifically for truncation */
+#modalFileName {
+  margin: 0; /* Reset default browser margins */
+  white-space: nowrap; /* Prevent text from wrapping to a second line */
+  overflow: hidden; /* Hide the text that spills over */
+  text-overflow: ellipsis; /* Add the '...' */
+  min-width: 0; /* CRITICAL: Tells flexbox it's allowed to shrink below its content size */
+  flex: 1; /* Take up remaining space */
+  padding-right: 15px; /* Keep the text from touching the close button */
+}
+
+/* 3. Make sure the close button never shrinks */
+.btn-close {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.m-input-rename {
+  border: 1px solid #0078d4;
+  outline: none;
+  padding: 2px 5px;
+  font-size: inherit;
+  font-family: inherit;
+  width: 80%;
+}
+
+.m-breadcrumb {
+  display: inline-block;
+  color: inherit; /* Inherits the h1 text color */
+  transition: color 0.2s;
+}
+
+.m-breadcrumb:hover {
+  color: #0078d4; /* Your primary theme color */
+  text-decoration: underline;
+}
+
+.m-breadcrumb-separator {
+  color: #888; /* Dim the separators so the folder names stand out */
+  margin: 0 6px;
+  font-size: 0.75rem; /* Make the arrow slightly smaller than the h1 text */
+  opacity: 0.6;
+}
+
+.option-menu-mobile {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 150px;
+  background-color: #ededed;
 }
 
 /*# sourceMappingURL=home-page.css.map*/

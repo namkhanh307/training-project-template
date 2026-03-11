@@ -1,76 +1,292 @@
 @import '../utilities/colors';
-@import '../utilities/fonts';
-
-// --- Base Rules ---
+// --- 2. Base Rules ---
 body {
-  font-family: $font-family-base;
-  font-size: $font-size-base;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  background-color: #fff;
 }
 
-// --- Layout Rules ---
+// --- 3. Layout Rules ---
 .l-toolbar {
+  padding: 8px 20px;
+  border-bottom: 1px solid $color-border;
   gap: 35px;
   background-color: $color-grey;
 }
+.l-page-header {
+  min-height: 50px;
+}
 
-// --- Module Rules ---
+.l-header-mobile {
+  position: relative;
+  background-color: $color-grey;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+
+  .l-header-content {
+    display: flex;
+    justify-content: flex-end; //align hamburger to the right(end of main axis)
+    padding: 10px 15px; //padding top/bottom 10px, left/right 15px
+  }
+}
+
+.l-main-container {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem; //roor em
+}
+
+// --- 4. Module Rules ---
+// Toolbar Items
+.m-toolbar-item {
+  display: flex;
+  align-items: center; //align icon and text vertically
+  gap: 6px; // space between icon and text
+
+  &:hover .m-icon-custom path {
+    fill: $color-primary;
+  }
+}
+
+// Icons
 .m-icon-custom {
   width: 18px;
   height: 18px;
-  flex-shrink: 0;
+  flex-shrink: 0; // no shrink, maintain size
 }
 
-// Typography - Using Bootstrap 5 standard for 28px/300 weight
+.m-icon-folder {
+  color: #797775;
+}
+
+// Hamburger Component
+.m-btn-hamburger {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px 12px;
+  color: #888;
+  background: transparent;
+}
+
+// Typography
 .m-title-primary {
-  padding: 1.5rem 0 0.5rem 0; 
-  font-size: $font-size-lg; // 28px
-  font-weight: 300; 
+  padding: 24px 0 10px 0; //top right bottom left
+  font-size: 28px;
+  font-weight: 300; //smaller than normal(400)
 }
 
-// Sparkle/Overlay Module (Unique Logic)
+// Table/Grid Module
+.m-table-row {
+  display: grid; //make it a grid container
+  grid-template-columns: 5% 35% 15% 10% 10% 30%;
+  padding: 10px 0;
+  border-bottom: 1px solid $color-border;
+  align-items: start;
+  cursor: pointer;
+  &--header {
+    border-bottom: 1px solid black;
+  }
+  &--interactive:hover {
+    background-color: $color-hover-bg;
+  }
+}
+.m-text-secondary {
+  color: $color-text-secondary;
+}
+
+// Mobile Menu Module
+.m-mobile-collapse {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 9999;
+  background-color: $mobile-menu-bg;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+
+  .m-mobile-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+  }
+
+  .m-mobile-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #eee;
+    gap: 8px;
+    background-color: $color-grey;
+
+    &:hover {
+      background-color: $mobile-item-hover;
+      cursor: pointer;
+    }
+
+    i:first-child {
+      width: 25px;
+    }
+  }
+}
+
+// Sparkle/Overlay Module
 .m-text-overlay {
   position: relative;
+  padding-left: 0;
   display: inline-block;
 
   .m-sparkle {
     position: absolute;
-    left: $sparkle-offset; 
+    left: -10px; // move the sparkle into the "margin/padding" area to the left
     top: -6px;
-    width: $sparkle-size;
-    height: $sparkle-size;
+    width: 14px;
+    height: 14px;
+
+    // SVG Styling
     fill: none;
     stroke: #ff3b30;
     stroke-width: 2;
     stroke-linecap: round;
-    pointer-events: none;
+    pointer-events: none; // allows user to click the text "through" the icon
   }
 }
 
 // Card Module (Mobile)
 .m-card {
+  margin-bottom: 5px;
   border: 1px solid #e0e0e0;
   background-color: #fff;
 
   &__row {
-    border-bottom: $border-light;
-    // Flex logic moved to HTML via Bootstrap classes
-    
+    display: flex;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+
     &--header {
       background-color: $color-grey;
+      justify-content: space-between;
+
+      .m-card__value {
+        flex-grow: 1;
+        padding: 10px 10px 10px 24px; //increase left padding (e.g., 24px) for ALL values
+        text-align: left;
+      }
     }
   }
 
   &__label {
-    width: $card-label-width;
-    min-width: $card-label-width;
+    width: 120px;
+    min-width: 120px;
     flex-shrink: 0;
-    padding: 10px; // Standardized
+    padding: 10px;
+    font-weight: bold;
     font-style: italic;
-    color: $color-text-secondary;
+    color: black;
   }
 
   &__value {
-    // Keep your specific alignment gutter
-    padding: 10px 10px 10px $value-padding-left; 
+    flex-grow: 1;
+    padding: 10px;
+    display: flex; /// align the sparkle container
+    align-items: center;
+    text-align: left; // ensure content stays left
   }
+}
+
+// --- 5. State Rules ---
+.is-clickable {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+.m-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw; /* Forces it to span the entire screen width */
+  height: 100vh; /* Forces it to span the entire screen height */
+  background: rgba(0, 0, 0, 0.5);
+  display: none; /* Controlled by JS */
+  align-items: center; /* Centers vertically */
+  justify-content: center; /* Centers horizontally */
+  z-index: 1000;
+}
+/* 1. Add a max/fixed width to the modal content */
+.m-modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px; /* Gives it a solid size on desktop */
+  max-width: 90vw; /* Keeps it responsive on mobile phones */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.m-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Vertically center the text and button */
+  border-bottom: 1px solid #eee;
+  margin-bottom: 15px;
+  padding-bottom: 10px; /* Give it a little breathing room */
+}
+
+/* 2. Target the h3 specifically for truncation */
+#modalFileName {
+  margin: 0; /* Reset default browser margins */
+  white-space: nowrap; /* Prevent text from wrapping to a second line */
+  overflow: hidden; /* Hide the text that spills over */
+  text-overflow: ellipsis; /* Add the '...' */
+  min-width: 0; /* CRITICAL: Tells flexbox it's allowed to shrink below its content size */
+  flex: 1; /* Take up remaining space */
+  padding-right: 15px; /* Keep the text from touching the close button */
+}
+
+/* 3. Make sure the close button never shrinks */
+.btn-close {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.m-input-rename {
+  border: 1px solid #0078d4;
+  outline: none;
+  padding: 2px 5px;
+  font-size: inherit;
+  font-family: inherit;
+  width: 80%;
+}
+.m-breadcrumb {
+  display: inline-block;
+  color: inherit; /* Inherits the h1 text color */
+  transition: color 0.2s;
+}
+
+.m-breadcrumb:hover {
+  color: #0078d4; /* Your primary theme color */
+  text-decoration: underline;
+}
+
+.m-breadcrumb-separator {
+  color: #888; /* Dim the separators so the folder names stand out */
+  margin: 0 6px;
+  font-size: 0.75rem; /* Make the arrow slightly smaller than the h1 text */
+  opacity: 0.6;
+}
+
+.option-menu-mobile {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 150px;
+  background-color: $color-grey;
 }

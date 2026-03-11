@@ -18,49 +18,82 @@
     <link rel="stylesheet" href="dist/css/home-page.css" />
   </head>
   <body>
-    <!-- Tool bar Desktop -->
+    <!-- Desktop tool bars -->
     <div class="l-toolbar d-none d-md-flex">
-      <div class="m-toolbar-item is-clickable">
+      <div
+        class="m-toolbar-item is-clickable position-relative"
+        data-action="toggle-new-menu"
+      >
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-new"></use>
         </svg>
-        New
-        <i class="fas fa-chevron-down ms-1 small"></i>
+        New <i class="fas fa-chevron-down ms-1 small"></i>
+
+        <div
+          id="newOptionsMenu"
+          class="option-menu-mobile dropdown-menu shadow-sm"   
+        >
+          <div
+            class="dropdown-item is-clickable py-2"
+            data-action="trigger-new-folder"
+          >
+            <i class="fas fa-folder text-warning me-2"></i> Folder
+          </div>
+          <div
+            class="dropdown-item is-clickable py-2"
+            data-action="trigger-new-file"
+          >
+            <i class="fas fa-file-alt text-primary me-2"></i> File
+          </div>
+        </div>
       </div>
-      <div class="m-toolbar-item is-clickable">
+
+      <input
+        type="file"
+        id="fileInput"
+        style="display: none"
+        accept=".xlsx,.xls,.doc,.docx,.pdf"
+        multiple
+      />
+
+      <div
+        class="m-toolbar-item is-clickable"
+        data-action="upload-file"
+      >
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-upload"></use>
         </svg>
-        Upload
-        <i class="fas fa-chevron-down ms-1 small"></i>
+        Upload <i class="fas fa-chevron-down ms-1 small"></i>
       </div>
-      <div class="m-toolbar-item is-clickable">
+
+      <div class="m-toolbar-item is-clickable" data-action="sync">
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-sync"></use>
         </svg>
         Sync
       </div>
-      <div class="m-toolbar-item is-clickable">
+      <div class="m-toolbar-item is-clickable" data-action="export">
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-excel"></use>
         </svg>
         Export to Excel
       </div>
-      <div class="m-toolbar-item is-clickable">
+      <div class="m-toolbar-item is-clickable" data-action="flow">
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-flow"></use>
         </svg>
         Flow
-        <i class="fas fa-chevron-down ms-1 small"></i>
       </div>
-      <div class="m-toolbar-item is-clickable">
+      <div class="m-toolbar-item is-clickable" data-action="more">
         <svg class="m-icon-custom">
           <use href="src/files/icons.svg#icon-more"></use>
         </svg>
       </div>
     </div>
-    <!-- Tool bar Mobile -->
+    <!-- Mobile tool bars and collapse menu -->
     <div class="l-header-mobile d-md-none">
+      <!--display flex on md and above -->
+      <!-- Hamburger button -->
       <div class="l-header-content">
         <button
           class="m-btn-hamburger"
@@ -71,16 +104,34 @@
           <i class="fas fa-bars"></i>
         </button>
       </div>
+      <!-- Collapse menu content -->
       <div class="collapse m-mobile-collapse" id="mobileMenu">
         <div class="m-mobile-list">
-          <div class="m-mobile-item">
+          <div class="m-mobile-item position-relative" data-action="toggle-new-menu-mobile">
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-new"></use>
             </svg>
             New
             <i class="fas fa-chevron-down small"></i>
+            <div
+              id="newOptionsMenuMobile"
+              class="option-menu-mobile dropdown-menu shadow-sm"
+            >
+              <div
+                class="dropdown-item is-clickable py-2"
+                data-action="trigger-new-folder-mobile"
+              >
+                <i class="fas fa-folder text-warning me-2"></i> Folder
+              </div>
+              <div
+                class="dropdown-item is-clickable py-2"
+                data-action="trigger-new-file-mobile"
+              >
+                <i class="fas fa-file-alt text-primary me-2"></i> File
+              </div>
+            </div>
           </div>
-          <div class="m-mobile-item">
+          <div class="m-mobile-item" data-action="upload-file">
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-upload"></use>
             </svg>
@@ -113,35 +164,256 @@
         </div>
       </div>
     </div>
-    <!-- Main Container -->
+    <!-- Main content container -->
     <div class="l-main-container container-fluid">
-      <h1 class="ms-3 m-title-primary">Documents</h1>
-      <!-- Desktop view content -->
+      <div class="d-flex align-items-center gap-2">
+        <h1 id="folder-path-display" class="m-title-primary mb-0">
+          Documents
+        </h1>
+      </div>
+      <!-- Desktop table container (hidden on mobile) -->
       <div class="ms-5 d-none d-md-block">
+        <!-- Header title -->
         <div class="m-table-row m-table-row--header">
-          <div class="header-cell">
+          <div>
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-folder"></use>
             </svg>
           </div>
-          <div class="header-cell is-clickable">
+          <div class="is-clickable">
             Name <i class="fas fa-chevron-down small"></i>
           </div>
-          <div class="header-cell is-clickable">
+          <div class="is-clickable">
             Modified <i class="fas fa-chevron-down small"></i>
           </div>
-          <div class="header-cell is-clickable">
+          <div class="is-clickable">
             Modified By <i class="fas fa-chevron-down small"></i>
           </div>
-          <div class="header-cell is-clickable">
+          <div class="is-clickable d-flex justify-content-center">
+            Action
+          </div>
+          <div class="is-clickable">
             <i class="fas fa-plus"></i> Add column
           </div>
         </div>
+        <!-- Desktop row container (rows will be added dynamically via JavaScript) -->
         <div id="desktop-row-container"></div>
       </div>
-      <!-- Mobile view content -->
+      <!-- Mobile card container (hidden on desktop) -->
       <div class="d-md-none">
+        <!-- Mobile card container (cards will be added dynamically via JavaScript) -->
         <div id="mobile-card-container"></div>
+      </div>
+    </div>
+    <!-- File detail modal -->
+    <div id="fileModal" class="m-modal" style="display: none">
+      <div class="m-modal-content">
+        <div class="m-modal-header">
+          <h3 id="modalFileName">File Details</h3>
+          <button
+            data-modal-action="close-file-modal"
+            class="btn-close"
+          >
+            <i class="fa-solid fa-x"></i>
+          </button>
+        </div>
+        <div class="m-modal-body">
+          <p>
+            <strong>Extension:</strong>
+            <span id="modalFileExtension"></span>
+          </p>
+          <p>
+            <strong>Modified:</strong>
+            <span id="modalFileModified"></span>
+          </p>
+          <p>
+            <strong>Modified By:</strong>
+            <span id="modalFileModifiedBy"></span>
+          </p>
+          <hr />
+          <div class="d-flex gap-2 justify-content-end">
+            <button
+              data-modal-action="download-file"
+              class="btn btn-primary"
+            >
+              <i class="fas fa-download me-2"></i> Download
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- New folder modal -->
+    <div id="newFolderModal" class="m-modal" style="display: none">
+      <div class="m-modal-content">
+        <div class="m-modal-header">
+          <h3 class="mb-0">Create New Folder</h3>
+          <button
+            data-modal-action="close-new-folder"
+            class="btn-close"
+          >
+            <i class="fa-solid fa-x"></i>
+          </button>
+        </div>
+        <div class="m-modal-body">
+          <div class="mb-4">
+            <label
+              for="newFolderNameInput"
+              class="form-label text-secondary mb-1"
+              >Folder Name</label
+            >
+            <input
+              type="text"
+              id="newFolderNameInput"
+              class="form-control"
+              placeholder="New folder"
+            />
+          </div>
+          <div class="d-flex gap-2 justify-content-end">
+            <button
+              data-modal-action="close-new-folder"
+              class="btn btn-light"
+            >
+              Cancel
+            </button>
+            <button
+              data-modal-action="submit-new-folder"
+              class="btn btn-primary"
+            >
+              Create
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Rename mobile modal (can be used for desktop as well) -->
+    <div id="renameModal" class="m-modal" style="display: none">
+      <div class="m-modal-content">
+        <div class="m-modal-header">
+          <h3 class="mb-0">Rename</h3>
+          <button data-modal-action="close-rename" class="btn-close">
+            <i class="fa-solid fa-x"></i>
+          </button>
+        </div>
+        <div class="m-modal-body">
+          <div class="mb-4">
+            <label
+              for="renameInput"
+              class="form-label text-secondary mb-1"
+              >New Name</label
+            >
+            <input
+              type="text"
+              id="renameInput"
+              class="form-control"
+            />
+          </div>
+          <div class="d-flex gap-2 justify-content-end">
+            <button
+              data-modal-action="close-rename"
+              class="btn btn-light"
+            >
+              Cancel
+            </button>
+            <button
+              data-modal-action="submit-rename"
+              class="btn btn-primary"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Edit option mobile -->
+    <div
+      id="mobileOptionsModal"
+      class="m-modal"
+      style="display: none; align-items: flex-end"
+    >
+      <div
+        class="m-modal-content"
+        style="
+          width: 100%;
+          max-width: 100%;
+          border-radius: 16px 16px 0 0;
+          margin: 0;
+          padding-bottom: 30px;
+        "
+      >
+        <div class="m-modal-header border-0 pb-0">
+          <h4
+            id="optionsModalTitle"
+            class="mb-0 text-truncate"
+            style="max-width: 85%"
+          >
+            Options
+          </h4>
+          <button
+            data-modal-action="close-mobile-options"
+            class="btn-close"
+          >
+            <i class="fa-solid fa-x"></i>
+          </button>
+        </div>
+        <div class="m-modal-body mt-3">
+          <div class="list-group list-group-flush">
+            <button
+              data-modal-action="trigger-mobile-rename"
+              class="list-group-item list-group-item-action py-3 border-0"
+            >
+              <i class="fas fa-edit text-primary me-3"></i> Rename
+            </button>
+            <button
+              data-modal-action="trigger-mobile-delete"
+              class="list-group-item list-group-item-action py-3 border-0 text-danger"
+            >
+              <i class="fas fa-trash-alt me-3"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- New file modal -->
+    <div id="newFileModal" class="m-modal" style="display: none">
+      <div class="m-modal-content">
+        <div class="m-modal-header">
+          <h3 class="mb-0">Create New File</h3>
+          <button
+            data-modal-action="close-new-file"
+            class="btn-close"
+          >
+            <i class="fa-solid fa-x"></i>
+          </button>
+        </div>
+        <div class="m-modal-body">
+          <div class="mb-4">
+            <label
+              for="newFileNameInput"
+              class="form-label text-secondary mb-1"
+              >File Name</label
+            >
+            <input
+              type="text"
+              id="newFileNameInput"
+              class="form-control"
+              placeholder="e.g. Report.txt or Data.xlsx"
+            />
+          </div>
+          <div class="d-flex gap-2 justify-content-end">
+            <button
+              data-modal-action="close-new-file"
+              class="btn btn-light"
+            >
+              Cancel
+            </button>
+            <button
+              data-modal-action="submit-new-file"
+              class="btn btn-primary"
+            >
+              Create
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     <script src="dist/js/home-page.js"></script>
