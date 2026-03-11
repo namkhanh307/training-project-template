@@ -424,14 +424,25 @@ class FileExplorer {
         this._allFiles = savedData.files;
         this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
         // Initial Render
-        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles);
         _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder.id, this._allFolders);
-        window.addEventListener('popstate', () => {
-            const path = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)();
-            this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, path);
-            _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
-            _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder.id, this._allFolders);
-        });
+        // window.addEventListener('popstate', () => {
+        //   const folderId = getIdFromUrl();
+        //   this._currentFolder = navigateFromBreadcrumb(
+        //     this._rootFolder,
+        //     folderId,
+        //   );
+        //   UIManager.refreshUI(
+        //     this._currentFolder.id,
+        //     this._allFolders,
+        //     this._allFiles,
+        //   );
+        //   UIManager.updateBreadcrumbs(
+        //     'folder-path-display',
+        //     this._currentFolder.id,
+        //     this._allFolders,
+        //   );
+        // });
     }
     setupEventListeners() {
         this.initToolbarEvents();
@@ -466,7 +477,7 @@ class FileExplorer {
                     if (newMenu)
                         newMenu.style.display = 'none';
                     // 2. Call your existing inline folder creation method!
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder));
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles));
                     break;
                 case 'trigger-new-file':
                     // 1. Hide the menu
@@ -487,7 +498,7 @@ class FileExplorer {
         });
         // 2. Listener for the Hidden File Input
         fileInput?.addEventListener('change', (event) => {
-            (0,_crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection)(this._rootFolder, this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder), event);
+            (0,_crud__WEBPACK_IMPORTED_MODULE_5__.processFileSelection)(this._rootFolder, this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles), event);
         });
     }
     initGridEvents() {
@@ -505,7 +516,7 @@ class FileExplorer {
                 case 'open-folder':
                     if (itemName) {
                         // Overwrite the class state with the newly returned folder!
-                        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.handleFolderClick)(this._navigationHistory, this._currentFolder, itemName);
+                        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.handleFolderClick)(itemId, this._allFolders);
                     }
                     break;
                 case 'open-file':
@@ -537,9 +548,11 @@ class FileExplorer {
                 // Bonus UX: Let them hit Escape to cancel!
                 if (event.key === 'Escape') {
                     // Revert the UI by just refreshing the grid (which wipes out the unsaved input)
-                    this._currentFolder.subFolders =
-                        this._currentFolder.subFolders.filter((f) => !f.isEditing);
-                    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+                    // this._currentFolder.subFolders =
+                    //   this._currentFolder.subFolders.filter(
+                    //     (f) => !f.isEditing,
+                    //   );
+                    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder.id, this._allFolders, this._allFiles);
                 }
             }
         });
@@ -616,18 +629,30 @@ class FileExplorer {
     }
     initBreadcrumbEvents() {
         const pathDisplay = document.getElementById('folder-path-display');
-        pathDisplay?.addEventListener('click', (event) => {
-            const target = event.target.closest('[data-path]');
-            if (!target || !target.dataset.path)
-                return;
-            // 1. Calculate the new folder
-            this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, target.dataset.path);
-            // 2. Update the URL visually
-            (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.updateUrlPath)(this._currentFolder.path || '/');
-            // 3. Render BOTH the grid and the breadcrumbs! (Removed arrow function)
-            _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
-            _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
-        });
+        // pathDisplay?.addEventListener('click', (event) => {
+        //   const target = (event.target as HTMLElement).closest(
+        //     '[data-path]',
+        //   ) as HTMLElement;
+        //   if (!target || !target.dataset.path) return;
+        //   // 1. Calculate the new folder
+        //   this._currentFolder = navigateFromBreadcrumb(
+        //     this._rootFolder,
+        //     target.dataset.path,
+        //   );
+        //   // 2. Update the URL visually
+        //   updateUrlPath(this._currentFolder.path || '/');
+        //   // 3. Render BOTH the grid and the breadcrumbs! (Removed arrow function)
+        //   UIManager.refreshUI(
+        //     this._currentFolder.id,
+        //     this._allFolders,
+        //     this._allFiles,
+        //   );
+        //   UIManager.updateBreadcrumbs(
+        //     'folder-path-display',
+        //     this._currentFolder.id,
+        //     this._allFolders,
+        //   );
+        // });
     }
     initMobileMenuEvents() {
         const mobileMenuList = document.querySelector('.m-mobile-list');
@@ -960,6 +985,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   updateUrlWithId: function() { return /* binding */ updateUrlWithId; }
 /* harmony export */ });
 /* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_const */ "./src/scripts/utilities/_const.ts");
+/* harmony import */ var _uiManager__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./uiManager */ "./src/scripts/utilities/uiManager.ts");
+
 
 function handleFolderClick(targetFolderId, allFolders) {
     const targetFolder = allFolders[targetFolderId];
@@ -1000,7 +1027,7 @@ function getIdFromUrl() {
     return urlParams.get('folderId'); // Returns 'fin-456' or null
 }
 // Run this on initial page load, and inside your 'popstate' event listener
-function handleNavigation(allFolders) {
+function handleNavigation(allFolders, allFiles) {
     // 1. Look at the URL
     const targetId = getIdFromUrl();
     // 2. Find it in the dictionary (Fallback to 'root' if ID is missing or bad)
@@ -1008,8 +1035,7 @@ function handleNavigation(allFolders) {
         ? allFolders[targetId]
         : allFolders[_const__WEBPACK_IMPORTED_MODULE_0__.ROOT_FOLDER_ID];
     // 3. Update UI
-    // UIManager.refreshUI(currentFolder.id);
-    // UIManager.updateBreadcrumbs(currentFolder.id, allFolders);
+    _uiManager__WEBPACK_IMPORTED_MODULE_1__.UIManager.refreshUI(currentFolder.id, allFolders, allFiles);
 }
 function generateBreadcrumbPath(currentFolderId, allFolders) {
     const breadcrumbTrail = [];
@@ -1143,9 +1169,9 @@ class UIManager {
         // 4. Render the newly sorted array
         UIManager.renderGrid(allItems);
     }
-    static saveAndRefresh(currentFolder) {
-        (0,_storageUtil__WEBPACK_IMPORTED_MODULE_1__.saveToStorage)(currentFolder);
-        this.refreshUI(currentFolder);
+    static saveAndRefresh(currentFolderId, allFolders, allFiles) {
+        (0,_storageUtil__WEBPACK_IMPORTED_MODULE_1__.saveToStorage)(allFolders, allFiles);
+        this.refreshUI(currentFolderId, allFolders, allFiles);
     }
     static updateBreadcrumbs(containerId, currentFolderId, allFolders) {
         const container = document.getElementById(containerId);

@@ -1,4 +1,4 @@
-import { Folder } from '../models/entity';
+import { File, Folder } from '../models/entity';
 import { ROOT_FOLDER_ID } from './_const';
 import { UIManager } from './uiManager';
 
@@ -50,7 +50,10 @@ export function getIdFromUrl(): string | null {
   return urlParams.get('folderId'); // Returns 'fin-456' or null
 }
 // Run this on initial page load, and inside your 'popstate' event listener
-export function handleNavigation(allFolders: Record<string, Folder>) {
+export function handleNavigation(
+  allFolders: Record<string, Folder>,
+  allFiles: Record<string, File>,
+) {
   // 1. Look at the URL
   const targetId = getIdFromUrl();
 
@@ -61,8 +64,7 @@ export function handleNavigation(allFolders: Record<string, Folder>) {
       : allFolders[ROOT_FOLDER_ID];
 
   // 3. Update UI
-  // UIManager.refreshUI(currentFolder.id);
-  // UIManager.updateBreadcrumbs(currentFolder.id, allFolders);
+  UIManager.refreshUI(currentFolder.id, allFolders, allFiles);
 }
 export function generateBreadcrumbPath(
   currentFolderId: string,

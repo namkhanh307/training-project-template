@@ -1,12 +1,13 @@
 import { Folder, File } from '../models/entity';
 import { EditingState, MobileActionItem } from '../models/model';
-import { initFiles, initFolders, rootFolder } from '../utilities/_initData';
+import {
+  initFiles,
+  initFolders,
+} from '../utilities/_initData';
 import { closeModal, openNewFileModal } from '../utilities/_modal';
 import {
-  getPathFromUrl,
+  getIdFromUrl,
   handleFolderClick,
-  navigateFromBreadcrumb,
-  updateUrlPath,
 } from '../utilities/_navigate';
 import {
   loadFromStorage,
@@ -49,7 +50,7 @@ export class FileExplorer {
   constructor() {
     // 1. Load the flat hashmaps from the hard drive
     const savedData = loadFromStorage();
-    
+
     // 2. Assign them to your class properties
     this._allFolders = savedData.folders;
     this._allFiles = savedData.files;
@@ -57,26 +58,34 @@ export class FileExplorer {
     this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
 
     // Initial Render
-    UIManager.refreshUI(this._currentFolder);
+    UIManager.refreshUI(
+      this._currentFolder.id,
+      this._allFolders,
+      this._allFiles,
+    );
     UIManager.updateBreadcrumbs(
       'folder-path-display',
       this._currentFolder.id,
-      this._allFolders
+      this._allFolders,
     );
 
-    window.addEventListener('popstate', () => {
-      const path = getPathFromUrl();
-      this._currentFolder = navigateFromBreadcrumb(
-        this._rootFolder,
-        path,
-      );
-      UIManager.refreshUI(this._currentFolder);
-      UIManager.updateBreadcrumbs(
-      'folder-path-display',
-      this._currentFolder.id,
-      this._allFolders
-    );
-    });
+    // window.addEventListener('popstate', () => {
+    //   const folderId = getIdFromUrl();
+    //   this._currentFolder = navigateFromBreadcrumb(
+    //     this._rootFolder,
+    //     folderId,
+    //   );
+    //   UIManager.refreshUI(
+    //     this._currentFolder.id,
+    //     this._allFolders,
+    //     this._allFiles,
+    //   );
+    //   UIManager.updateBreadcrumbs(
+    //     'folder-path-display',
+    //     this._currentFolder.id,
+    //     this._allFolders,
+    //   );
+    // });
   }
 
   private setupEventListeners() {
@@ -119,7 +128,11 @@ export class FileExplorer {
           if (newMenu) newMenu.style.display = 'none';
           // 2. Call your existing inline folder creation method!
           createNewFolderDesktop(this._currentFolder, () =>
-            UIManager.refreshUI(this._currentFolder),
+            UIManager.refreshUI(
+              this._currentFolder.id,
+              this._allFolders,
+              this._allFiles,
+            ),
           );
           break;
 
@@ -143,7 +156,12 @@ export class FileExplorer {
       processFileSelection(
         this._rootFolder,
         this._currentFolder,
-        () => UIManager.refreshUI(this._currentFolder),
+        () =>
+          UIManager.refreshUI(
+            this._currentFolder.id,
+            this._allFolders,
+            this._allFiles,
+          ),
         event,
       );
     });
@@ -169,9 +187,8 @@ export class FileExplorer {
           if (itemName) {
             // Overwrite the class state with the newly returned folder!
             this._currentFolder = handleFolderClick(
-              this._navigationHistory,
-              this._currentFolder,
-              itemName,
+              itemId,
+              this._allFolders,
             );
           }
           break;
@@ -217,11 +234,15 @@ export class FileExplorer {
           // Bonus UX: Let them hit Escape to cancel!
           if (event.key === 'Escape') {
             // Revert the UI by just refreshing the grid (which wipes out the unsaved input)
-            this._currentFolder.subFolders =
-              this._currentFolder.subFolders.filter(
-                (f) => !f.isEditing,
-              );
-            UIManager.refreshUI(this._currentFolder);
+            // this._currentFolder.subFolders =
+            //   this._currentFolder.subFolders.filter(
+            //     (f) => !f.isEditing,
+            //   );
+            UIManager.refreshUI(
+              this._currentFolder.id,
+              this._allFolders,
+              this._allFiles,
+            );
           }
         }
       },
@@ -318,28 +339,33 @@ export class FileExplorer {
       'folder-path-display',
     );
 
-    pathDisplay?.addEventListener('click', (event) => {
-      const target = (event.target as HTMLElement).closest(
-        '[data-path]',
-      ) as HTMLElement;
-      if (!target || !target.dataset.path) return;
+    // pathDisplay?.addEventListener('click', (event) => {
+    //   const target = (event.target as HTMLElement).closest(
+    //     '[data-path]',
+    //   ) as HTMLElement;
+    //   if (!target || !target.dataset.path) return;
 
-      // 1. Calculate the new folder
-      this._currentFolder = navigateFromBreadcrumb(
-        this._rootFolder,
-        target.dataset.path,
-      );
+    //   // 1. Calculate the new folder
+    //   this._currentFolder = navigateFromBreadcrumb(
+    //     this._rootFolder,
+    //     target.dataset.path,
+    //   );
 
-      // 2. Update the URL visually
-      updateUrlPath(this._currentFolder.path || '/');
+    //   // 2. Update the URL visually
+    //   updateUrlPath(this._currentFolder.path || '/');
 
-      // 3. Render BOTH the grid and the breadcrumbs! (Removed arrow function)
-      UIManager.refreshUI(this._currentFolder);
-      UIManager.updateBreadcrumbs(
-        'folder-path-display',
-        this._currentFolder,
-      );
-    });
+    //   // 3. Render BOTH the grid and the breadcrumbs! (Removed arrow function)
+    //   UIManager.refreshUI(
+    //     this._currentFolder.id,
+    //     this._allFolders,
+    //     this._allFiles,
+    //   );
+    //   UIManager.updateBreadcrumbs(
+    //     'folder-path-display',
+    //     this._currentFolder.id,
+    //     this._allFolders,
+    //   );
+    // });
   }
   private initMobileMenuEvents() {
     const mobileMenuList = document.querySelector('.m-mobile-list');

@@ -55,9 +55,13 @@ export class UIManager {
     // 4. Render the newly sorted array
     UIManager.renderGrid(allItems);
   }
-  static saveAndRefresh(currentFolder: Folder) {
-    saveToStorage(currentFolder);
-    this.refreshUI(currentFolder);
+  static saveAndRefresh(
+    currentFolderId: string,
+    allFolders: Record<string, Folder>,
+    allFiles: Record<string, File>,
+  ) {
+    saveToStorage(allFolders, allFiles);
+    this.refreshUI(currentFolderId, allFolders, allFiles);
   }
   static renderGrid = (data: Row[]): void => {
     const container = document.getElementById('item-container');
