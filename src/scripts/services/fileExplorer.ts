@@ -125,15 +125,14 @@ export class FileExplorer {
           openNewFileModal();
           break;
       }
-      document.addEventListener('click', (event) => {
-        const target = event.target as HTMLElement;
-        if (!target.closest('[data-action="toggle-new-menu"]')) {
-          const menu = document.getElementById('newOptionsMenu');
-          if (menu) menu.style.display = 'none';
-        }
-      });
     });
-
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('[data-action="toggle-new-menu"]')) {
+        const menu = document.getElementById('newOptionsMenu');
+        if (menu) menu.style.display = 'none';
+      }
+    });
     // 2. Listener for the Hidden File Input
     fileInput?.addEventListener('change', (event) => {
       processFileSelection(
