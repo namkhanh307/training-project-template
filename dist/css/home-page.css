@@ -263,4 +263,13 @@ body {
   opacity: 0.6;
 }
 
+.option-menu-mobile {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 150px;
+}
+
 /*# sourceMappingURL=home-page.css.map*/
