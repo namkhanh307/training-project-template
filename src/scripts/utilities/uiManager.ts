@@ -2,22 +2,40 @@ import { Row, File, Folder } from '../models/entity';
 import { getFileIconHTML } from './_helper';
 import { saveToStorage } from './_storageUtil';
 import { getRelativeTime } from './_helper';
+import { generateBreadcrumbPath } from './_navigate';
 export class UIManager {
-  static async refreshUI(currentFolder: Folder) {
+  /**
+   * RefreshUI
+   * @param currentFolderId
+   * @param allFolders
+   * @param allFiles
+   */
+  static async refreshUI(
+    currentFolderId: string,
+    allFolders: Record<string, Folder>,
+    allFiles: Record<string, File>,
+  ) {
     UIManager.renderLoadingState();
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    // 1. Combine folders and files
-    const allItems = [
-      ...currentFolder.subFolders,
-      ...currentFolder.files,
-    ];
+    // 1. FILTER: Search the dictionaries for items belonging to this folder
+    // Object.values() turns our flat dictionary into an array we can filter
+    const currentSubFolders = Object.values(allFolders).filter(
+      (folder) => folder.parentId === currentFolderId,
+    );
 
-    // 2. Sort the array dynamically
+    const currentSubFiles = Object.values(allFiles).filter(
+      (file) => file.parentId === currentFolderId,
+    );
+
+    // 2. Combine folders and files into one array for the grid
+    const allItems = [...currentSubFolders, ...currentSubFiles];
+
+    // 3. Sort the array dynamically
     allItems.sort((a, b) => {
-      // Rule A: Group Folders First
-      const isFolderA = 'subFolders' in a ? 1 : 0;
-      const isFolderB = 'subFolders' in b ? 1 : 0;
+      // Rule A: Group Folders First (Using our new 'type' property!)
+      const isFolderA = a.type === 'folder' ? 1 : 0;
+      const isFolderB = b.type === 'folder' ? 1 : 0;
 
       if (isFolderA !== isFolderB) {
         return isFolderB - isFolderA; // Puts folders (1) before files (0)
@@ -34,7 +52,7 @@ export class UIManager {
       return validDateB - validDateA; // Descending order (Newest first)
     });
 
-    // 3. Render the newly sorted array
+    // 4. Render the newly sorted array
     UIManager.renderGrid(allItems);
   }
   static saveAndRefresh(currentFolder: Folder) {
@@ -42,23 +60,15 @@ export class UIManager {
     this.refreshUI(currentFolder);
   }
   static renderGrid = (data: Row[]): void => {
-    const desktopContainer = document.getElementById(
-      'desktop-row-container',
-    );
-    const mobileContainer = document.getElementById(
-      'mobile-card-container',
-    );
-
-    if (!desktopContainer || !mobileContainer) return;
+    const container = document.getElementById('item-container');
+    if (!container) return;
     if (!data || data.length === 0) {
-      desktopContainer.innerHTML =
+      container.innerHTML =
         '<p class="mt-4 text-center">No items to display</p>';
-      mobileContainer.innerHTML =
-        '<p class=" mt-4 text-center">No items to display</p>';
       return;
     }
-    // 1. Desktop Rendering
-    desktopContainer.innerHTML = data
+
+    container.innerHTML = data
       .map((item) => {
         const isFolder = 'subFolders' in item;
         const file = item as File;
@@ -69,23 +79,23 @@ export class UIManager {
           : item.name;
 
         return `
-        <div class="m-table-row m-table-row--interactive" 
-             data-action="${isFolder ? 'open-folder' : 'open-file'}" 
+        <div class="m-table-row m-table-row--interactive"
+             data-action="${isFolder ? 'open-folder' : 'open-file'}"
              data-id="${item.id}"
              data-name="${item.name}">
-             
           <div>
-            ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : getFileIconHTML(file.extension)}          
+            ${
+              isFolder
+                ? `<i class="fas fa-folder m-icon-folder"></i>`
+                : getFileIconHTML(file.extension)
+            }
           </div>
-          
           <div class="m-text-overlay">
             ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
             ${nameDisplay}
           </div>
-          
           <div class="m-text-secondary">${getRelativeTime(file.modified)}</div>
           <div class="m-text-secondary">${file.modifiedBy}</div>
-          
           <div class="d-flex gap-2 justify-content-center">
             <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
               <use href="src/files/icons.svg#icon-edit"></use>
@@ -98,69 +108,49 @@ export class UIManager {
       `;
       })
       .join('');
+  };
+  static updateBreadcrumbs(
+    containerId: string,
+    currentFolderId: string,
+    allFolders: Record<string, Folder>,
+  ) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-    // 2. Mobile Rendering
-    mobileContainer.innerHTML = data
-      .map((item) => {
-        const isFolder = 'subFolders' in item;
-        const file = item as File;
+    // 1. Get our perfect array of folders
+    const pathArray = generateBreadcrumbPath(
+      currentFolderId,
+      allFolders,
+    );
 
+    // 2. Map them into HTML
+    const html = pathArray
+      .map((folder, index) => {
+        const isLast = index === pathArray.length - 1;
+
+        // If it's the folder we are currently in, just show text (not clickable)
+        if (isLast) {
+          return `<span class="fw-bold text-dark">${folder.name}</span>`;
+        }
+
+        // If it's a parent folder, make it a clickable link with the ID!
         return `
-        <div class="m-card" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}" data-name="${item.name}">
-          <div class="m-card__row m-card__row--header">
-                <div class="m-card__label">File Type</div>
-              <div class="me-2" 
-                  data-action="mobile-options" 
-                  data-id="${item.id}" 
-                  data-name="${item.name}" 
-                  data-type="${isFolder ? 'folder' : 'file'}">
-                    ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : getFileIconHTML(file.extension)}
-              </div>
-            </div>
-          </div>
-          <div class="m-card__row">
-            <div class="m-card__label">Name</div>
-            <div class="m-card__value">
-              <div class="m-text-overlay">
-                ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
-                ${item.name}
-              </div>
-            </div>
-          </div>
-          <div class="m-card__row"><div class="m-card__label">Modified</div><div class="m-card__value">${getRelativeTime(file.modified)}</div></div>
-          <div class="m-card__row"><div class="m-card__label">Modified By</div><div class="m-card__value">${file.modifiedBy}</div></div>
-        </div>
-      `;
+      <span 
+        class="text-primary is-clickable" 
+        data-action="navigate-breadcrumb" 
+        data-id="${folder.id}"
+      >
+        ${folder.name}
+      </span>
+      <span class="mx-2 text-muted">/</span>
+    `;
       })
       .join('');
-  };
-  static updateBreadcrumbs(modalId: string, currentFolder: Folder) {
-    const pathDisplay = document.getElementById(modalId);
-    if (!pathDisplay) return;
 
-    let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" data-path="/">Documents</span>`;
-
-    if (currentFolder.path !== '/') {
-      const segments = currentFolder.path
-        .split('/')
-        .filter((s) => s.length > 0);
-      let buildPath = '';
-
-      segments.forEach((segment) => {
-        buildPath += `/${segment}`;
-        breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
-        breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" data-path="${buildPath}">${segment}</span>`;
-      });
-    }
-    pathDisplay.innerHTML = breadcrumbsHTML;
+    container.innerHTML = html;
   }
   static renderLoadingState = (): void => {
-    const desktopContainer = document.getElementById(
-      'desktop-row-container',
-    );
-    const mobileContainer = document.getElementById(
-      'mobile-card-container',
-    );
+    const container = document.getElementById('item-container');
 
     const spinnerHTML = `
       <div class="d-flex justify-content-center align-items-center w-100" style="height: 200px;">
@@ -170,7 +160,6 @@ export class UIManager {
       </div>
     `;
 
-    if (desktopContainer) desktopContainer.innerHTML = spinnerHTML;
-    if (mobileContainer) mobileContainer.innerHTML = spinnerHTML;
+    if (container) container.innerHTML = spinnerHTML;
   };
 }

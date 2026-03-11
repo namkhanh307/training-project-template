@@ -87,18 +87,14 @@ export async function createNewFolderDesktop(
   );
   const newFolder: Folder = {
     name: folderName,
-    path:
-      currentFolder.path === '/'
-        ? `/${folderName}`
-        : `${currentFolder.path}/${folderName}`,
-    subFolders: [],
-    files: [],
     modified: new Date().toISOString(),
     modifiedBy: 'You',
     isNew: true,
     isEditing: true,
     type: 'folder',
     id: generateID(),
+    maxSize: 0,
+    parentId: ''
   };
 
   currentFolder.subFolders.unshift(newFolder);

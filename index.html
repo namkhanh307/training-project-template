@@ -171,10 +171,10 @@
           Documents
         </h1>
       </div>
-      <!-- Desktop table container (hidden on mobile) -->
-      <div class="ms-5 d-none d-md-block">
-        <!-- Header title -->
-        <div class="m-table-row m-table-row--header">
+      <!-- Item container (responsive) -->
+      <div class="ms-5">
+        <!-- Header title (hidden on mobile) -->
+        <div class="m-table-row m-table-row--header d-none d-md-flex">
           <div>
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-folder"></use>
@@ -196,13 +196,8 @@
             <i class="fas fa-plus"></i> Add column
           </div>
         </div>
-        <!-- Desktop row container (rows will be added dynamically via JavaScript) -->
-        <div id="desktop-row-container"></div>
-      </div>
-      <!-- Mobile card container (hidden on desktop) -->
-      <div class="d-md-none">
-        <!-- Mobile card container (cards will be added dynamically via JavaScript) -->
-        <div id="mobile-card-container"></div>
+        <!-- Item container (items will be added dynamically via JavaScript) -->
+        <div id="item-container"></div>
       </div>
     </div>
     <!-- File detail modal -->

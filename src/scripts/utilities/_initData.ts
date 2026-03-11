@@ -1,48 +1,48 @@
-import { Folder } from "../models/entity";
+import { File, Folder } from '../models/entity';
 
-export let rootFolder: Folder = {
-  name: 'Root',
-  path: '/',
-  subFolders: [
-    {
-      name: 'CAS',
-      path: '/CAS',
-      subFolders: [],
-      files: [],
-      modified: '2026-03-10T10:57:54.553Z',
-      modifiedBy: 'Administrator MOD',
-      isNew: false,
-      type: 'file',
-      id: "19d500847ecc4b5380717625f022e568"
-    },
-  ],
-  files: [
-    {
-      name: 'CoasterAndBargeLoading.xlsx',
-      extension: 'xlsx',
-      modified: '2026-03-10T10:57:54.553Z',
-      modifiedBy: 'Administrator MOD',
-      isNew: true,
-      data: '',
-      type: 'file',
-      path: "",
-      id: "db3d4c7c70664b7ca78ad096e8b6e438"
-    },
-    {
-      name: 'RevenueByServices.xlsx',
-      extension: 'xlsx',
-      modified: '2026-03-10T10:57:54.553Z',
-      modifiedBy: 'Administrator MOD',
-      isNew: true,
-      data: '',
-      type: 'file',
-      path: "",
-      id: "18b614c9a0d04404a5320e67c632230e"
-    },
-  ],
-  modified: '2026-03-10T10:57:54.553Z',
-  modifiedBy: 'Administrator MOD',
-  isNew: true,
-  type: 'folder',
-  id: "ea7e1286db2f4b60b058caffb87f1572"
+export let initFolders: Record<string, Folder> = {
+  'cb875544839f44fc9947cd55e81b7ade': {
+    id: 'cb875544839f44fc9947cd55e81b7ade',
+    name: 'Root',
+    parentId: null,
+    type: 'folder',
+    maxSize: 1000,
+    modified: new Date().toISOString(),
+    modifiedBy: 'System',
+    isNew: false,
+  },
+  '22c1a54960c045cfaa0eefe6e966fcb4': {
+    id: '22c1a54960c045cfaa0eefe6e966fcb4',
+    name: 'Finance',
+    parentId: 'cb875544839f44fc9947cd55e81b7ade',
+    type: 'folder',
+    maxSize: 500,
+    modified: new Date().toISOString(),
+    modifiedBy: 'System',
+    isNew: true,
+  },
+};
+export let initFiles: Record<string, File> = {
+  '33d2b65071d146d0b858f0f0f0f0f0f0': {
+    id: '33d2b65071d146d0b858f0f0f0f0f0f0',
+    name: 'Report.pdf',
+    parentId: '22c1a54960c045cfaa0eefe6e966fcb4',
+    type: 'file',
+    extension: 'pdf',
+    data: '',
+    modified: new Date().toISOString(),
+    modifiedBy: 'System',
+    isNew: true,
+  },
+  '568cb6dd3e024376b52f4c0e1e475d01': {
+    id: '568cb6dd3e024376b52f4c0e1e475d01',
+    name: 'Finance',
+    parentId: 'cb875544839f44fc9947cd55e81b7ade',
+    type: 'file',
+    extension: 'txt',
+    data: '',
+    modified: new Date().toISOString(),
+    modifiedBy: 'System',
+    isNew: true,
+  },
 };

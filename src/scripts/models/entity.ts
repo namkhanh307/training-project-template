@@ -1,22 +1,20 @@
 export interface BaseEntity {
   id: string;
+  name: string;
+  parentId: string | null;
   modified: string;
   modifiedBy: string;
   isNew: boolean;
   type: 'folder' | 'file';
-  path: string;
+  isEditing?: boolean;
 }
 export interface File extends BaseEntity {
-  name: string;
   extension: string;
-  data: string; // Base64 
+  data: string; // Base64
 }
 
 export interface Folder extends BaseEntity {
-  name: string;
-  files: File[];
-  subFolders: Folder[];
-  isEditing?: boolean;
+  maxSize: number;
 }
 
 export type Row = File | Folder;

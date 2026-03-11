@@ -59,7 +59,6 @@ export function generateID(): string {
     ? crypto.randomUUID() 
     : Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
-
 //Naming Helper
 /**
  * Checks if a file or folder name already exists.
@@ -126,7 +125,7 @@ export function isValidName(name: string): boolean {
   return !forbiddenChars.test(name);
 }
 /**
- * Generates a unique file name, preserving the extension.
+ * Generates a unique file name when upload a duplicate file name, preserving the extension.
  * Example: "Data.csv" -> "Data (1).csv"
  * * @param originalName The full uploaded file name (e.g., "Budget.xlsx")
  * @param existingItems The array of current files to check against
@@ -137,8 +136,6 @@ export function generateUniqueFileName(
   existingItems: { name: string }[]
 ): string {
   // 1. Separate the base name and the extension]
-  console.log('Generating unique name for:', originalName);
-  console.log('Existing items:', existingItems.map(i => i.name));
   const lastDotIndex = originalName.lastIndexOf('.');
   let baseName = originalName;
   let extension = '';

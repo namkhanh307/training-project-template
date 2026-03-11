@@ -1,6 +1,6 @@
 import { Folder, File } from '../models/entity';
 import { EditingState, MobileActionItem } from '../models/model';
-import { rootFolder } from '../utilities/_initData';
+import { initFiles, initFolders, rootFolder } from '../utilities/_initData';
 import { closeModal, openNewFileModal } from '../utilities/_modal';
 import {
   getPathFromUrl,
@@ -29,6 +29,8 @@ import {
 import { createNewFolderDesktop, saveFolderName } from './crud';
 
 export class FileExplorer {
+  private _allFolders: Record<string, Folder> = initFolders;
+  private _allFiles: Record<string, File> = initFiles;
   _rootFolder: Folder;
   _currentFolder: Folder;
   _navigationHistory: Folder[] = [];
@@ -45,19 +47,21 @@ export class FileExplorer {
   };
 
   constructor() {
-    this._rootFolder = loadFromStorage(rootFolder); //load database
-    const initialPath = getPathFromUrl(); //read url
-    this._currentFolder = navigateFromBreadcrumb(
-      this._rootFolder,
-      initialPath,
-    ); //locate current folder
+    // 1. Load the flat hashmaps from the hard drive
+    const savedData = loadFromStorage();
+    
+    // 2. Assign them to your class properties
+    this._allFolders = savedData.folders;
+    this._allFiles = savedData.files;
+
     this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
 
     // Initial Render
     UIManager.refreshUI(this._currentFolder);
     UIManager.updateBreadcrumbs(
       'folder-path-display',
-      this._currentFolder,
+      this._currentFolder.id,
+      this._allFolders
     );
 
     window.addEventListener('popstate', () => {
@@ -68,9 +72,10 @@ export class FileExplorer {
       );
       UIManager.refreshUI(this._currentFolder);
       UIManager.updateBreadcrumbs(
-        'folder-path-display',
-        this._currentFolder,
-      );
+      'folder-path-display',
+      this._currentFolder.id,
+      this._allFolders
+    );
     });
   }
 

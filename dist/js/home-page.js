@@ -1,6 +1,34 @@
 /******/ (function() { // webpackBootstrap
-/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
+
+/***/ "./src/styles/pages/home-page.scss":
+/*!*****************************************!*\
+  !*** ./src/styles/pages/home-page.scss ***!
+  \*****************************************/
+/***/ (function() {
+
+throw new Error("Module build failed (from ./node_modules/mini-css-extract-plugin/dist/loader.js):\nHookWebpackError: Module build failed (from ./node_modules/sass-loader/dist/cjs.js):\nexpected \"{\".\n\u001b[34m    ╷\u001b[0m\n\u001b[34m152 │\u001b[0m   right: 0\u001b[31m\u001b[0m;\r\n\u001b[34m    │\u001b[0m \u001b[31m          ^\u001b[0m\n\u001b[34m    ╵\u001b[0m\n  src\\styles\\components\\_documents.scss 152:11  @import\n  src\\styles\\pages\\_master-page.scss 16:9       @import\n  src\\styles\\pages\\home-page.scss 2:9           root stylesheet\n    at tryRunOrWebpackError (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\HookWebpackError.js:116:9)\n    at __webpack_require_module__ (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5626:14)\n    at __webpack_require__ (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5570:20)\n    at C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5661:22\n    at symbolIterator (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\neo-async\\async.js:3485:9)\n    at done (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\neo-async\\async.js:3527:9)\n    at Hook.eval [as callAsync] (eval at create (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\tapable\\lib\\HookCodeFactory.js:31:10), <anonymous>:15:1)\n    at Hook.CALL_ASYNC_DELEGATE [as _callAsync] (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\tapable\\lib\\Hook.js:21:14)\n    at C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5545:45\n    at symbolIterator (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\neo-async\\async.js:3482:9)\n-- inner error --\nError: Module build failed (from ./node_modules/sass-loader/dist/cjs.js):\nexpected \"{\".\n\u001b[34m    ╷\u001b[0m\n\u001b[34m152 │\u001b[0m   right: 0\u001b[31m\u001b[0m;\r\n\u001b[34m    │\u001b[0m \u001b[31m          ^\u001b[0m\n\u001b[34m    ╵\u001b[0m\n  src\\styles\\components\\_documents.scss 152:11  @import\n  src\\styles\\pages\\_master-page.scss 16:9       @import\n  src\\styles\\pages\\home-page.scss 2:9           root stylesheet\n    at Object.<anonymous> (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\css-loader\\dist\\cjs.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\postcss-loader\\dist\\cjs.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\resolve-url-loader\\index.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\sass-loader\\dist\\cjs.js??ruleSet[1].rules[2].use[4]!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\src\\styles\\pages\\home-page.scss:1:7)\n    at C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\javascript\\JavascriptModulesPlugin.js:596:10\n    at Hook.eval [as call] (eval at create (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\tapable\\lib\\HookCodeFactory.js:19:10), <anonymous>:7:1)\n    at Hook.CALL_DELEGATE [as _call] (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\tapable\\lib\\Hook.js:16:14)\n    at C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5628:41\n    at tryRunOrWebpackError (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\HookWebpackError.js:111:7)\n    at __webpack_require_module__ (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5626:14)\n    at __webpack_require__ (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5570:20)\n    at C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5661:22\n    at symbolIterator (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\neo-async\\async.js:3485:9)\n\nGenerated code for C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\css-loader\\dist\\cjs.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\postcss-loader\\dist\\cjs.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\resolve-url-loader\\index.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\sass-loader\\dist\\cjs.js??ruleSet[1].rules[2].use[4]!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\src\\styles\\pages\\home-page.scss\n1 | throw new Error(\"Module build failed (from ./node_modules/sass-loader/dist/cjs.js):\\nexpected \\\"{\\\".\\n\\u001b[34m    ╷\\u001b[0m\\n\\u001b[34m152 │\\u001b[0m   right: 0\\u001b[31m\\u001b[0m;\\r\\n\\u001b[34m    │\\u001b[0m \\u001b[31m          ^\\u001b[0m\\n\\u001b[34m    ╵\\u001b[0m\\n  src\\\\styles\\\\components\\\\_documents.scss 152:11  @import\\n  src\\\\styles\\\\pages\\\\_master-page.scss 16:9       @import\\n  src\\\\styles\\\\pages\\\\home-page.scss 2:9           root stylesheet\");");
+
+/***/ }),
+
+/***/ "./src/scripts/pages/home-page.ts":
+/*!****************************************!*\
+  !*** ./src/scripts/pages/home-page.ts ***!
+  \****************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _utilities_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_helper */ "./src/scripts/utilities/_helper.ts");
+/* harmony import */ var _services_fileExplorer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../services/fileExplorer */ "./src/scripts/services/fileExplorer.ts");
+
+
+(0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__["default"])(() => {
+    const app = new _services_fileExplorer__WEBPACK_IMPORTED_MODULE_1__.FileExplorer();
+});
+
+
+/***/ }),
 
 /***/ "./src/scripts/services/crud.ts":
 /*!**************************************!*\
@@ -8,6 +36,7 @@
   \**************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   createNewFolderDesktop: function() { return /* binding */ createNewFolderDesktop; },
@@ -83,17 +112,14 @@ async function createNewFolderDesktop(currentFolder, refreshUI) {
     const folderName = (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateUniqueName)('New folder', currentFolder.subFolders);
     const newFolder = {
         name: folderName,
-        path: currentFolder.path === '/'
-            ? `/${folderName}`
-            : `${currentFolder.path}/${folderName}`,
-        subFolders: [],
-        files: [],
         modified: new Date().toISOString(),
         modifiedBy: 'You',
         isNew: true,
         isEditing: true,
         type: 'folder',
         id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)(),
+        maxSize: 0,
+        parentId: ''
     };
     currentFolder.subFolders.unshift(newFolder);
     await refreshUI();
@@ -357,6 +383,7 @@ function submitNewFile(currentFolder) {
   \**********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   FileExplorer: function() { return /* binding */ FileExplorer; }
@@ -376,6 +403,8 @@ __webpack_require__.r(__webpack_exports__);
 
 class FileExplorer {
     constructor() {
+        this._allFolders = _utilities_initData__WEBPACK_IMPORTED_MODULE_0__.initFolders;
+        this._allFiles = _utilities_initData__WEBPACK_IMPORTED_MODULE_0__.initFiles;
         this._navigationHistory = [];
         //State for modals
         this._editingItemState = {
@@ -388,18 +417,20 @@ class FileExplorer {
             name: '',
             isFolder: false,
         };
-        this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder); //load database
-        const initialPath = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)(); //read url
-        this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, initialPath); //locate current folder
+        // 1. Load the flat hashmaps from the hard drive
+        const savedData = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)();
+        // 2. Assign them to your class properties
+        this._allFolders = savedData.folders;
+        this._allFiles = savedData.files;
         this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
         // Initial Render
         _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
-        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
+        _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder.id, this._allFolders);
         window.addEventListener('popstate', () => {
             const path = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)();
             this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, path);
             _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
-            _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
+            _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder.id, this._allFolders);
         });
     }
     setupEventListeners() {
@@ -647,12 +678,29 @@ class FileExplorer {
 
 /***/ }),
 
+/***/ "./src/scripts/utilities/_const.ts":
+/*!*****************************************!*\
+  !*** ./src/scripts/utilities/_const.ts ***!
+  \*****************************************/
+/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ROOT_FOLDER_ID: function() { return /* binding */ ROOT_FOLDER_ID; }
+/* harmony export */ });
+const ROOT_FOLDER_ID = 'cb875544839f44fc9947cd55e81b7ade';
+
+
+/***/ }),
+
 /***/ "./src/scripts/utilities/_helper.ts":
 /*!******************************************!*\
   !*** ./src/scripts/utilities/_helper.ts ***!
   \******************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   generateID: function() { return /* binding */ generateID; },
@@ -769,7 +817,7 @@ function isValidName(name) {
     return !forbiddenChars.test(name);
 }
 /**
- * Generates a unique file name, preserving the extension.
+ * Generates a unique file name when upload a duplicate file name, preserving the extension.
  * Example: "Data.csv" -> "Data (1).csv"
  * * @param originalName The full uploaded file name (e.g., "Budget.xlsx")
  * @param existingItems The array of current files to check against
@@ -777,8 +825,6 @@ function isValidName(name) {
  */
 function generateUniqueFileName(originalName, existingItems) {
     // 1. Separate the base name and the extension]
-    console.log('Generating unique name for:', originalName);
-    console.log('Existing items:', existingItems.map(i => i.name));
     const lastDotIndex = originalName.lastIndexOf('.');
     let baseName = originalName;
     let extension = '';
@@ -808,55 +854,57 @@ function generateUniqueFileName(originalName, existingItems) {
   \********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   rootFolder: function() { return /* binding */ rootFolder; }
+/* harmony export */   initFiles: function() { return /* binding */ initFiles; },
+/* harmony export */   initFolders: function() { return /* binding */ initFolders; }
 /* harmony export */ });
-let rootFolder = {
-    name: 'Root',
-    path: '/',
-    subFolders: [
-        {
-            name: 'CAS',
-            path: '/CAS',
-            subFolders: [],
-            files: [],
-            modified: '2026-03-10T10:57:54.553Z',
-            modifiedBy: 'Administrator MOD',
-            isNew: false,
-            type: 'file',
-            id: "19d500847ecc4b5380717625f022e568"
-        },
-    ],
-    files: [
-        {
-            name: 'CoasterAndBargeLoading.xlsx',
-            extension: 'xlsx',
-            modified: '2026-03-10T10:57:54.553Z',
-            modifiedBy: 'Administrator MOD',
-            isNew: true,
-            data: '',
-            type: 'file',
-            path: "",
-            id: "db3d4c7c70664b7ca78ad096e8b6e438"
-        },
-        {
-            name: 'RevenueByServices.xlsx',
-            extension: 'xlsx',
-            modified: '2026-03-10T10:57:54.553Z',
-            modifiedBy: 'Administrator MOD',
-            isNew: true,
-            data: '',
-            type: 'file',
-            path: "",
-            id: "18b614c9a0d04404a5320e67c632230e"
-        },
-    ],
-    modified: '2026-03-10T10:57:54.553Z',
-    modifiedBy: 'Administrator MOD',
-    isNew: true,
-    type: 'folder',
-    id: "ea7e1286db2f4b60b058caffb87f1572"
+let initFolders = {
+    'cb875544839f44fc9947cd55e81b7ade': {
+        id: 'cb875544839f44fc9947cd55e81b7ade',
+        name: 'Root',
+        parentId: null,
+        type: 'folder',
+        maxSize: 1000,
+        modified: new Date().toISOString(),
+        modifiedBy: 'System',
+        isNew: false,
+    },
+    '22c1a54960c045cfaa0eefe6e966fcb4': {
+        id: '22c1a54960c045cfaa0eefe6e966fcb4',
+        name: 'Finance',
+        parentId: 'cb875544839f44fc9947cd55e81b7ade',
+        type: 'folder',
+        maxSize: 500,
+        modified: new Date().toISOString(),
+        modifiedBy: 'System',
+        isNew: true,
+    },
+};
+let initFiles = {
+    '33d2b65071d146d0b858f0f0f0f0f0f0': {
+        id: '33d2b65071d146d0b858f0f0f0f0f0f0',
+        name: 'Report.pdf',
+        parentId: '22c1a54960c045cfaa0eefe6e966fcb4',
+        type: 'file',
+        extension: 'pdf',
+        data: '',
+        modified: new Date().toISOString(),
+        modifiedBy: 'System',
+        isNew: true,
+    },
+    '568cb6dd3e024376b52f4c0e1e475d01': {
+        id: '568cb6dd3e024376b52f4c0e1e475d01',
+        name: 'Finance',
+        parentId: 'cb875544839f44fc9947cd55e81b7ade',
+        type: 'file',
+        extension: 'txt',
+        data: '',
+        modified: new Date().toISOString(),
+        modifiedBy: 'System',
+        isNew: true,
+    },
 };
 
 
@@ -868,6 +916,7 @@ let rootFolder = {
   \*****************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   closeModal: function() { return /* binding */ closeModal; },
@@ -901,53 +950,80 @@ function openNewFileModal() {
   \********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   getPathFromUrl: function() { return /* binding */ getPathFromUrl; },
+/* harmony export */   generateBreadcrumbPath: function() { return /* binding */ generateBreadcrumbPath; },
+/* harmony export */   getIdFromUrl: function() { return /* binding */ getIdFromUrl; },
 /* harmony export */   handleFolderClick: function() { return /* binding */ handleFolderClick; },
-/* harmony export */   navigateFromBreadcrumb: function() { return /* binding */ navigateFromBreadcrumb; },
-/* harmony export */   updateUrlPath: function() { return /* binding */ updateUrlPath; }
+/* harmony export */   handleNavigation: function() { return /* binding */ handleNavigation; },
+/* harmony export */   updateUrlWithId: function() { return /* binding */ updateUrlWithId; }
 /* harmony export */ });
-/* harmony import */ var _uiManager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./uiManager */ "./src/scripts/utilities/uiManager.ts");
+/* harmony import */ var _const__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_const */ "./src/scripts/utilities/_const.ts");
 
-function handleFolderClick(navigationHistory, currentFolder, folderName) {
-    const targetFolder = currentFolder.subFolders.find((f) => f.name === folderName);
+function handleFolderClick(targetFolderId, allFolders) {
+    const targetFolder = allFolders[targetFolderId];
     if (!targetFolder)
-        return currentFolder;
+        return allFolders[_const__WEBPACK_IMPORTED_MODULE_0__.ROOT_FOLDER_ID]; // Fallback to root if ID is bad
     targetFolder.isNew = false;
-    navigationHistory.push(currentFolder);
-    currentFolder = targetFolder;
-    updateUrlPath(currentFolder.path || '/');
-    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.refreshUI(currentFolder);
-    _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
-    return currentFolder;
+    // Just put the ID in the URL!
+    updateUrlWithId(targetFolderId);
+    return targetFolder;
 }
-function navigateFromBreadcrumb(rootFolder, targetPath) {
-    if (targetPath === '/')
-        return rootFolder;
-    const segments = targetPath.split('/').filter((s) => s.length > 0);
-    let foundFolder = rootFolder;
-    for (const segment of segments) {
-        const nextFolder = foundFolder.subFolders.find((f) => f.name === segment);
-        if (nextFolder) {
-            foundFolder = nextFolder;
-        }
-        else {
-            console.warn(`Folder missing at path: ${targetPath}`);
-            return rootFolder; // Fallback to root if path is broken
-        }
-    }
-    return foundFolder;
+// export function navigateFromBreadcrumb(
+//   rootFolder: Folder,
+//   targetPath: string,
+// ): Folder {
+//   if (targetPath === '/') return rootFolder;
+//   const segments = targetPath.split('/').filter((s) => s.length > 0);
+//   let foundFolder = rootFolder;
+//   for (const segment of segments) {
+//     const nextFolder = foundFolder.subFolders.find(
+//       (f) => f.name === segment,
+//     );
+//     if (nextFolder) {
+//       foundFolder = nextFolder;
+//     } else {
+//       console.warn(`Folder missing at path: ${targetPath}`);
+//       return rootFolder; // Fallback to root if path is broken
+//     }
+//   }
+//   return foundFolder;
+// }
+function updateUrlWithId(folderId) {
+    const newUrl = window.location.pathname + '?folderId=' + folderId;
+    // Save the ID in the browser's history state too!
+    window.history.pushState({ folderId: folderId }, '', newUrl);
 }
-function updateUrlPath(folderPath) {
-    const newUrl = window.location.pathname +
-        '?path=' +
-        encodeURIComponent(folderPath);
-    window.history.pushState({ path: folderPath }, '', newUrl);
-}
-function getPathFromUrl() {
+function getIdFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('path') || '/';
+    return urlParams.get('folderId'); // Returns 'fin-456' or null
+}
+// Run this on initial page load, and inside your 'popstate' event listener
+function handleNavigation(allFolders) {
+    // 1. Look at the URL
+    const targetId = getIdFromUrl();
+    // 2. Find it in the dictionary (Fallback to 'root' if ID is missing or bad)
+    const currentFolder = targetId && allFolders[targetId]
+        ? allFolders[targetId]
+        : allFolders[_const__WEBPACK_IMPORTED_MODULE_0__.ROOT_FOLDER_ID];
+    // 3. Update UI
+    // UIManager.refreshUI(currentFolder.id);
+    // UIManager.updateBreadcrumbs(currentFolder.id, allFolders);
+}
+function generateBreadcrumbPath(currentFolderId, allFolders) {
+    const breadcrumbTrail = [];
+    let currentId = currentFolderId;
+    // Keep climbing until we run out of parentIds!
+    while (currentId && allFolders[currentId]) {
+        const folder = allFolders[currentId];
+        // unshift() adds the folder to the FRONT of the array.
+        // This ensures our final array looks like: [Root, Finance, 2026]
+        breadcrumbTrail.unshift(folder);
+        // Set the currentId to the parent, so the loop moves up one level
+        currentId = folder.parentId;
+    }
+    return breadcrumbTrail;
 }
 
 
@@ -959,6 +1035,7 @@ function getPathFromUrl() {
   \***********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   clearStorage: function() { return /* binding */ clearStorage; },
@@ -966,17 +1043,46 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   loadFromStorage: function() { return /* binding */ loadFromStorage; },
 /* harmony export */   saveToStorage: function() { return /* binding */ saveToStorage; }
 /* harmony export */ });
+/* harmony import */ var _initData__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_initData */ "./src/scripts/utilities/_initData.ts");
+
 const STORAGE_KEY = 'my_file_explorer_data';
-const saveToStorage = (rootFolder) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(rootFolder));
+/**
+ * Init the default state with bundled data. This ensures that even if localStorage is empty, users will have some folders and files to interact with.
+ */
+const DEFAULT_STATE = {
+    folders: _initData__WEBPACK_IMPORTED_MODULE_0__.initFolders,
+    files: _initData__WEBPACK_IMPORTED_MODULE_0__.initFiles
 };
-const loadFromStorage = (rootFolder) => {
+/**
+ * Saves the provided folders and files to local storage.
+ * @param folders
+ * @param files
+ */
+const saveToStorage = (folders, files) => {
+    const dataToSave = { folders, files };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+};
+/**
+ * Loads the saved state from local storage.
+ * @returns Returns the bundled dictionaries (or the default state if empty)
+ */
+const loadFromStorage = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : rootFolder;
+    if (saved) {
+        return JSON.parse(saved);
+    }
+    // If nothing is in localStorage, give them the default Root folder
+    return DEFAULT_STATE;
 };
+/**
+ * Removes the saved state from local storage.
+ */
 const deleteFromStorage = () => {
     localStorage.removeItem(STORAGE_KEY);
 };
+/**
+ * Clears all data from local storage.
+ */
 const clearStorage = () => {
     localStorage.clear();
 };
@@ -990,29 +1096,39 @@ const clearStorage = () => {
   \********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   UIManager: function() { return /* binding */ UIManager; }
 /* harmony export */ });
 /* harmony import */ var _helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./_helper */ "./src/scripts/utilities/_helper.ts");
 /* harmony import */ var _storageUtil__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./_storageUtil */ "./src/scripts/utilities/_storageUtil.ts");
+/* harmony import */ var _navigate__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./_navigate */ "./src/scripts/utilities/_navigate.ts");
+
 
 
 
 class UIManager {
-    static async refreshUI(currentFolder) {
+    /**
+     * RefreshUI
+     * @param currentFolderId
+     * @param allFolders
+     * @param allFiles
+     */
+    static async refreshUI(currentFolderId, allFolders, allFiles) {
         UIManager.renderLoadingState();
         await new Promise((resolve) => setTimeout(resolve, 400));
-        // 1. Combine folders and files
-        const allItems = [
-            ...currentFolder.subFolders,
-            ...currentFolder.files,
-        ];
-        // 2. Sort the array dynamically
+        // 1. FILTER: Search the dictionaries for items belonging to this folder
+        // Object.values() turns our flat dictionary into an array we can filter
+        const currentSubFolders = Object.values(allFolders).filter((folder) => folder.parentId === currentFolderId);
+        const currentSubFiles = Object.values(allFiles).filter((file) => file.parentId === currentFolderId);
+        // 2. Combine folders and files into one array for the grid
+        const allItems = [...currentSubFolders, ...currentSubFiles];
+        // 3. Sort the array dynamically
         allItems.sort((a, b) => {
-            // Rule A: Group Folders First
-            const isFolderA = 'subFolders' in a ? 1 : 0;
-            const isFolderB = 'subFolders' in b ? 1 : 0;
+            // Rule A: Group Folders First (Using our new 'type' property!)
+            const isFolderA = a.type === 'folder' ? 1 : 0;
+            const isFolderB = b.type === 'folder' ? 1 : 0;
             if (isFolderA !== isFolderB) {
                 return isFolderB - isFolderA; // Puts folders (1) before files (0)
             }
@@ -1024,46 +1140,53 @@ class UIManager {
             const validDateB = isNaN(dateB) ? 0 : dateB;
             return validDateB - validDateA; // Descending order (Newest first)
         });
-        // 3. Render the newly sorted array
+        // 4. Render the newly sorted array
         UIManager.renderGrid(allItems);
     }
     static saveAndRefresh(currentFolder) {
         (0,_storageUtil__WEBPACK_IMPORTED_MODULE_1__.saveToStorage)(currentFolder);
         this.refreshUI(currentFolder);
     }
-    static updateBreadcrumbs(modalId, currentFolder) {
-        const pathDisplay = document.getElementById(modalId);
-        if (!pathDisplay)
+    static updateBreadcrumbs(containerId, currentFolderId, allFolders) {
+        const container = document.getElementById(containerId);
+        if (!container)
             return;
-        let breadcrumbsHTML = `<span class="m-breadcrumb is-clickable" data-path="/">Documents</span>`;
-        if (currentFolder.path !== '/') {
-            const segments = currentFolder.path
-                .split('/')
-                .filter((s) => s.length > 0);
-            let buildPath = '';
-            segments.forEach((segment) => {
-                buildPath += `/${segment}`;
-                breadcrumbsHTML += ` <span class="m-breadcrumb-separator"><i class="fas fa-chevron-right small"></i></span> `;
-                breadcrumbsHTML += `<span class="m-breadcrumb is-clickable" data-path="${buildPath}">${segment}</span>`;
-            });
-        }
-        pathDisplay.innerHTML = breadcrumbsHTML;
+        // 1. Get our perfect array of folders
+        const pathArray = (0,_navigate__WEBPACK_IMPORTED_MODULE_2__.generateBreadcrumbPath)(currentFolderId, allFolders);
+        // 2. Map them into HTML
+        const html = pathArray
+            .map((folder, index) => {
+            const isLast = index === pathArray.length - 1;
+            // If it's the folder we are currently in, just show text (not clickable)
+            if (isLast) {
+                return `<span class="fw-bold text-dark">${folder.name}</span>`;
+            }
+            // If it's a parent folder, make it a clickable link with the ID!
+            return `
+      <span 
+        class="text-primary is-clickable" 
+        data-action="navigate-breadcrumb" 
+        data-id="${folder.id}"
+      >
+        ${folder.name}
+      </span>
+      <span class="mx-2 text-muted">/</span>
+    `;
+        })
+            .join('');
+        container.innerHTML = html;
     }
 }
 UIManager.renderGrid = (data) => {
-    const desktopContainer = document.getElementById('desktop-row-container');
-    const mobileContainer = document.getElementById('mobile-card-container');
-    if (!desktopContainer || !mobileContainer)
+    const container = document.getElementById('item-container');
+    if (!container)
         return;
     if (!data || data.length === 0) {
-        desktopContainer.innerHTML =
+        container.innerHTML =
             '<p class="mt-4 text-center">No items to display</p>';
-        mobileContainer.innerHTML =
-            '<p class=" mt-4 text-center">No items to display</p>';
         return;
     }
-    // 1. Desktop Rendering
-    desktopContainer.innerHTML = data
+    container.innerHTML = data
         .map((item) => {
         const isFolder = 'subFolders' in item;
         const file = item;
@@ -1072,23 +1195,21 @@ UIManager.renderGrid = (data) => {
             ? `<input type="text" id="new-folder-input" class="m-input-rename" value="${folderItem.name}" />`
             : item.name;
         return `
-        <div class="m-table-row m-table-row--interactive" 
-             data-action="${isFolder ? 'open-folder' : 'open-file'}" 
+        <div class="m-table-row m-table-row--interactive"
+             data-action="${isFolder ? 'open-folder' : 'open-file'}"
              data-id="${item.id}"
              data-name="${item.name}">
-             
           <div>
-            ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : (0,_helper__WEBPACK_IMPORTED_MODULE_0__.getFileIconHTML)(file.extension)}          
+            ${isFolder
+            ? `<i class="fas fa-folder m-icon-folder"></i>`
+            : (0,_helper__WEBPACK_IMPORTED_MODULE_0__.getFileIconHTML)(file.extension)}
           </div>
-          
           <div class="m-text-overlay">
             ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
             ${nameDisplay}
           </div>
-          
           <div class="m-text-secondary">${(0,_helper__WEBPACK_IMPORTED_MODULE_0__.getRelativeTime)(file.modified)}</div>
           <div class="m-text-secondary">${file.modifiedBy}</div>
-          
           <div class="d-flex gap-2 justify-content-center">
             <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
               <use href="src/files/icons.svg#icon-edit"></use>
@@ -1101,43 +1222,9 @@ UIManager.renderGrid = (data) => {
       `;
     })
         .join('');
-    // 2. Mobile Rendering
-    mobileContainer.innerHTML = data
-        .map((item) => {
-        const isFolder = 'subFolders' in item;
-        const file = item;
-        return `
-        <div class="m-card" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}" data-name="${item.name}">
-          <div class="m-card__row m-card__row--header">
-                <div class="m-card__label">File Type</div>
-              <div class="me-2" 
-                  data-action="mobile-options" 
-                  data-id="${item.id}" 
-                  data-name="${item.name}" 
-                  data-type="${isFolder ? 'folder' : 'file'}">
-                    ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : (0,_helper__WEBPACK_IMPORTED_MODULE_0__.getFileIconHTML)(file.extension)}
-              </div>
-            </div>
-          </div>
-          <div class="m-card__row">
-            <div class="m-card__label">Name</div>
-            <div class="m-card__value">
-              <div class="m-text-overlay">
-                ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
-                ${item.name}
-              </div>
-            </div>
-          </div>
-          <div class="m-card__row"><div class="m-card__label">Modified</div><div class="m-card__value">${(0,_helper__WEBPACK_IMPORTED_MODULE_0__.getRelativeTime)(file.modified)}</div></div>
-          <div class="m-card__row"><div class="m-card__label">Modified By</div><div class="m-card__value">${file.modifiedBy}</div></div>
-        </div>
-      `;
-    })
-        .join('');
 };
 UIManager.renderLoadingState = () => {
-    const desktopContainer = document.getElementById('desktop-row-container');
-    const mobileContainer = document.getElementById('mobile-card-container');
+    const container = document.getElementById('item-container');
     const spinnerHTML = `
       <div class="d-flex justify-content-center align-items-center w-100" style="height: 200px;">
         <div class="spinner-border text-primary" role="status">
@@ -1145,10 +1232,8 @@ UIManager.renderLoadingState = () => {
         </div>
       </div>
     `;
-    if (desktopContainer)
-        desktopContainer.innerHTML = spinnerHTML;
-    if (mobileContainer)
-        mobileContainer.innerHTML = spinnerHTML;
+    if (container)
+        container.innerHTML = spinnerHTML;
 };
 
 
@@ -1216,32 +1301,13 @@ UIManager.renderLoadingState = () => {
 /******/ 	}();
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry needs to be wrapped in an IIFE because it needs to be isolated against other entry modules.
-!function() {
-var __webpack_exports__ = {};
-/*!****************************************!*\
-  !*** ./src/scripts/pages/home-page.ts ***!
-  \****************************************/
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _utilities_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_helper */ "./src/scripts/utilities/_helper.ts");
-/* harmony import */ var _services_fileExplorer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../services/fileExplorer */ "./src/scripts/services/fileExplorer.ts");
-
-
-(0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__["default"])(() => {
-    const app = new _services_fileExplorer__WEBPACK_IMPORTED_MODULE_1__.FileExplorer();
-});
-
-}();
-// This entry needs to be wrapped in an IIFE because it needs to be isolated against other entry modules.
-!function() {
-/*!*****************************************!*\
-  !*** ./src/styles/pages/home-page.scss ***!
-  \*****************************************/
-__webpack_require__.r(__webpack_exports__);
-// extracted by mini-css-extract-plugin
-
-}();
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	__webpack_require__("./src/scripts/pages/home-page.ts");
+/******/ 	// This entry module doesn't tell about it's top-level declarations so it can't be inlined
+/******/ 	var __webpack_exports__ = __webpack_require__("./src/styles/pages/home-page.scss");
+/******/ 	
 /******/ })()
 ;
 //# sourceMappingURL=home-page.js.map
