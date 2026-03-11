@@ -51,7 +51,6 @@ export class FileExplorer {
       this._rootFolder,
       initialPath,
     ); //locate current folder
-    // Setup event listeners once when the app starts
     this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
 
     // Initial Render
@@ -60,6 +59,7 @@ export class FileExplorer {
       'folder-path-display',
       this._currentFolder,
     );
+
     window.addEventListener('popstate', () => {
       const path = getPathFromUrl();
       this._currentFolder = navigateFromBreadcrumb(
@@ -73,8 +73,6 @@ export class FileExplorer {
       );
     });
   }
-
-  // A handy helper to keep your code DRY (Don't Repeat Yourself)
 
   private setupEventListeners() {
     this.initToolbarEvents();
@@ -100,11 +98,6 @@ export class FileExplorer {
       const action = target.dataset.action;
       const newMenu = document.getElementById('newOptionsMenu');
       switch (action) {
-        case 'new-folder':
-          await createNewFolderDesktop(this._currentFolder, () =>
-            UIManager.refreshUI(this._currentFolder),
-          );
-          break;
         case 'upload-file':
           triggerUpload();
           break;
@@ -152,7 +145,6 @@ export class FileExplorer {
     });
   }
   private initGridEvents() {
-    // We attach one listener to the main container that holds both grids
     const mainContainer = document.querySelector('.l-main-container');
 
     mainContainer?.addEventListener('click', (event) => {

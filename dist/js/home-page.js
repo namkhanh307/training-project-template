@@ -104,41 +104,6 @@ async function createNewFolderDesktop(currentFolder, refreshUI) {
         input.select();
     }
 }
-// export function saveFolderName(
-//   rootFolder: Folder,
-//   currentFolder: Folder,
-//   refreshUI: () => void,
-//   inputElement: HTMLInputElement,
-// ) {
-//   const newName = inputElement.value.trim() || 'New folder';
-//   const folderBeingEdited = currentFolder.subFolders.find(
-//     (f) => f.isEditing,
-//   );
-//   if (!folderBeingEdited) return;
-//   const isDuplicate = currentFolder.subFolders.some(
-//     (f) =>
-//       f !== folderBeingEdited &&
-//       f.name.toLowerCase() === newName.toLowerCase(),
-//   );
-//   if (isDuplicate) {
-//     alert(
-//       `This destination already contains a folder named '${newName}'.`,
-//     );
-//     setTimeout(() => {
-//       inputElement.focus();
-//       inputElement.select();
-//     }, 10);
-//     return;
-//   }
-//   folderBeingEdited.name = newName;
-//   folderBeingEdited.path =
-//     currentFolder.path === '/'
-//       ? `/${newName}`
-//       : `${currentFolder.path}/${newName}`;
-//   delete folderBeingEdited.isEditing;
-//   saveToStorage(rootFolder);
-//   refreshUI();
-// }
 function handleFileClick(currentFolder, fileId) {
     const file = currentFolder.files.find((f) => f.id === fileId);
     if (!file)
@@ -426,7 +391,6 @@ class FileExplorer {
         this._rootFolder = (0,_utilities_storageUtil__WEBPACK_IMPORTED_MODULE_3__.loadFromStorage)(_utilities_initData__WEBPACK_IMPORTED_MODULE_0__.rootFolder); //load database
         const initialPath = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.getPathFromUrl)(); //read url
         this._currentFolder = (0,_utilities_navigate__WEBPACK_IMPORTED_MODULE_2__.navigateFromBreadcrumb)(this._rootFolder, initialPath); //locate current folder
-        // Setup event listeners once when the app starts
         this.setupEventListeners(); //attach listeners for the entire app (using delegation inside those methods)
         // Initial Render
         _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
@@ -438,7 +402,6 @@ class FileExplorer {
             _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.updateBreadcrumbs('folder-path-display', this._currentFolder);
         });
     }
-    // A handy helper to keep your code DRY (Don't Repeat Yourself)
     setupEventListeners() {
         this.initToolbarEvents();
         this.initGridEvents();
@@ -457,9 +420,6 @@ class FileExplorer {
             const action = target.dataset.action;
             const newMenu = document.getElementById('newOptionsMenu');
             switch (action) {
-                case 'new-folder':
-                    await (0,_crud__WEBPACK_IMPORTED_MODULE_5__.createNewFolderDesktop)(this._currentFolder, () => _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder));
-                    break;
                 case 'upload-file':
                     (0,_crud__WEBPACK_IMPORTED_MODULE_5__.triggerUpload)();
                     break;
@@ -500,7 +460,6 @@ class FileExplorer {
         });
     }
     initGridEvents() {
-        // We attach one listener to the main container that holds both grids
         const mainContainer = document.querySelector('.l-main-container');
         mainContainer?.addEventListener('click', (event) => {
             const target = event.target.closest('[data-action]');
@@ -953,18 +912,14 @@ __webpack_require__.r(__webpack_exports__);
 
 function handleFolderClick(navigationHistory, currentFolder, folderName) {
     const targetFolder = currentFolder.subFolders.find((f) => f.name === folderName);
-    // If we don't find it, just return the current one so nothing breaks
     if (!targetFolder)
         return currentFolder;
     targetFolder.isNew = false;
-    // (Assuming saveAndRefresh handles saving the root state properly)
-    // UIManager.saveAndRefresh(currentFolder); 
     navigationHistory.push(currentFolder);
-    currentFolder = targetFolder; // This updates the local variable
+    currentFolder = targetFolder;
     updateUrlPath(currentFolder.path || '/');
     _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.refreshUI(currentFolder);
     _uiManager__WEBPACK_IMPORTED_MODULE_0__.UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
-    // CRITICAL: Send the new folder back to the class!
     return currentFolder;
 }
 function navigateFromBreadcrumb(rootFolder, targetPath) {

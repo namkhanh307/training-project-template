@@ -8,23 +8,14 @@ export function handleFolderClick(
 ): Folder {  // Return folders
   
   const targetFolder = currentFolder.subFolders.find((f) => f.name === folderName);
-  
-  // If we don't find it, just return the current one so nothing breaks
   if (!targetFolder) return currentFolder; 
-
   targetFolder.isNew = false;
-  
-  // (Assuming saveAndRefresh handles saving the root state properly)
-  // UIManager.saveAndRefresh(currentFolder); 
-
   navigationHistory.push(currentFolder);
-  currentFolder = targetFolder; // This updates the local variable
+  currentFolder = targetFolder;
 
   updateUrlPath(currentFolder.path || '/');
   UIManager.refreshUI(currentFolder);
   UIManager.updateBreadcrumbs('folder-path-display', currentFolder);
-
-  // CRITICAL: Send the new folder back to the class!
   return currentFolder; 
 }
 export function navigateFromBreadcrumb(

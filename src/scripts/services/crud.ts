@@ -113,46 +113,6 @@ export async function createNewFolderDesktop(
     input.select();
   }
 }
-// export function saveFolderName(
-//   rootFolder: Folder,
-//   currentFolder: Folder,
-//   refreshUI: () => void,
-//   inputElement: HTMLInputElement,
-// ) {
-//   const newName = inputElement.value.trim() || 'New folder';
-//   const folderBeingEdited = currentFolder.subFolders.find(
-//     (f) => f.isEditing,
-//   );
-
-//   if (!folderBeingEdited) return;
-
-//   const isDuplicate = currentFolder.subFolders.some(
-//     (f) =>
-//       f !== folderBeingEdited &&
-//       f.name.toLowerCase() === newName.toLowerCase(),
-//   );
-
-//   if (isDuplicate) {
-//     alert(
-//       `This destination already contains a folder named '${newName}'.`,
-//     );
-//     setTimeout(() => {
-//       inputElement.focus();
-//       inputElement.select();
-//     }, 10);
-//     return;
-//   }
-
-//   folderBeingEdited.name = newName;
-//   folderBeingEdited.path =
-//     currentFolder.path === '/'
-//       ? `/${newName}`
-//       : `${currentFolder.path}/${newName}`;
-//   delete folderBeingEdited.isEditing;
-
-//   saveToStorage(rootFolder);
-//   refreshUI();
-// }
 export function handleFileClick(
   currentFolder: Folder,
   fileId: string,
