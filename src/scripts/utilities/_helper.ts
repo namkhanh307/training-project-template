@@ -11,7 +11,6 @@ export default ready;
 const SUPPORTED_ICONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
 
 export function getFileIconHTML(extension: string): string {
-  console.log('Getting icon for extension:', extension);
   const safeExt = extension.toLowerCase();
 
   // 1. If have the custom SVG
