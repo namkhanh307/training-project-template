@@ -1,6 +1,12 @@
 import { File, Folder } from '../models/entity';
 import { EditingState, MobileActionItem } from '../models/model';
-import { generateID } from '../utilities/_helper';
+import {
+  generateID,
+  generateUniqueFileName,
+  generateUniqueName,
+  isNameDuplicate,
+  isValidName,
+} from '../utilities/_helper';
 import { closeModal, openModal } from '../utilities/_modal';
 import { saveToStorage } from '../utilities/_storageUtil';
 import { UIManager } from '../utilities/uiManager';
@@ -28,6 +34,10 @@ export async function processFileSelection(
   const filePromises = Array.from(files).map((selectedFile) => {
     return new Promise<File>((resolve) => {
       const reader = new FileReader();
+      const safeUniqueName = generateUniqueFileName(
+        selectedFile.name,
+        currentFolder.files,
+      );
       const lastDotIndex = selectedFile.name.lastIndexOf('.');
       const fileExtension =
         lastDotIndex > 0
@@ -38,7 +48,7 @@ export async function processFileSelection(
 
       reader.onload = (e) => {
         resolve({
-          name: selectedFile.name,
+          name: safeUniqueName,
           extension: fileExtension,
           modified: new Date().toISOString(),
           modifiedBy: 'You',
@@ -49,7 +59,7 @@ export async function processFileSelection(
               : `${currentFolder.path}/${currentFolder.name}`,
           data: e.target?.result as string,
           type: 'file',
-          id: generateID()
+          id: generateID(),
         });
       };
       reader.readAsDataURL(selectedFile);
@@ -71,23 +81,16 @@ export async function createNewFolderDesktop(
   currentFolder: Folder,
   refreshUI: () => Promise<void>,
 ) {
-  let baseName = 'New folder';
-  let folderName = baseName;
-  let counter = 1;
-  const existingNames = currentFolder.subFolders.map((f) =>
-    f.name.toLowerCase(),
+  const folderName = generateUniqueName(
+    'New folder',
+    currentFolder.subFolders,
   );
-
-  while (existingNames.includes(folderName.toLowerCase())) {
-    folderName = `${baseName} (${counter})`;
-    counter++;
-  }
-
   const newFolder: Folder = {
     name: folderName,
-    path: currentFolder.path === '/'
-      ? `/${folderName}`
-      : `${currentFolder.path}/${folderName}`,
+    path:
+      currentFolder.path === '/'
+        ? `/${folderName}`
+        : `${currentFolder.path}/${folderName}`,
     subFolders: [],
     files: [],
     modified: new Date().toISOString(),
@@ -95,7 +98,7 @@ export async function createNewFolderDesktop(
     isNew: true,
     isEditing: true,
     type: 'folder',
-    id: generateID()
+    id: generateID(),
   };
 
   currentFolder.subFolders.unshift(newFolder);
@@ -152,9 +155,9 @@ export async function createNewFolderDesktop(
 // }
 export function handleFileClick(
   currentFolder: Folder,
-  fileName: string,
+  fileId: string,
 ) {
-  const file = currentFolder.files.find((f) => f.name === fileName);
+  const file = currentFolder.files.find((f) => f.id === fileId);
   if (!file) return;
 
   file.isNew = false;
@@ -186,11 +189,12 @@ export function downloadFile(
 }
 export function deleteItem(
   currentFolder: Folder,
-  name: string,
+  itemId: string,
   isFolder: boolean,
 ) {
+  console.log(currentFolder.subFolders.map((f) => f.id));
   console.log(
-    `Attempting to delete ${currentFolder} ${isFolder ? 'folder' : 'file'}: ${name}`,
+    `Attempting to delete ${isFolder ? 'folder' : 'file'} with ID: ${itemId}`,
   );
   if (
     !confirm(
@@ -201,11 +205,11 @@ export function deleteItem(
 
   if (isFolder) {
     currentFolder.subFolders = currentFolder.subFolders.filter(
-      (f) => f.name !== name,
+      (f) => f.id !== itemId,
     );
   } else {
     currentFolder.files = currentFolder.files.filter(
-      (f) => f.name !== name,
+      (f) => f.id !== itemId,
     );
   }
   UIManager.saveAndRefresh(currentFolder);
@@ -244,22 +248,32 @@ export function submitRename(
     'renameInput',
   ) as HTMLInputElement;
   const newName = input.value.trim();
-  const { oldName, isFolder } = stateRef;
+  const { id, oldName, isFolder } = stateRef;
 
   if (!newName || newName === oldName) {
     closeModal('renameModal');
+    return;
+  }
+  if (!isValidName(newName)) {
+    alert(
+      'A file name cannot contain any of the following characters: \\ / : * ? " < > |',
+    );
+    input.focus();
     return;
   }
 
   const itemArray = isFolder
     ? currentFolder.subFolders
     : currentFolder.files;
-  if (
-    itemArray.some(
-      (f) => f.name.toLowerCase() === newName.toLowerCase(),
-    )
-  ) {
-    alert('An item with this name already exists.');
+  const duplicateFound = isNameDuplicate(
+    newName,
+    itemArray,
+    true,
+    id,
+  );
+
+  if (duplicateFound) {
+    alert('An item with this name already exists in this location.');
     input.focus();
     return;
   }
@@ -285,10 +299,12 @@ export function submitRename(
   closeModal('renameModal');
 }
 export function openMobileOptionsSheet(
+  id: string,
   name: string,
   isFolder: boolean,
   mobileActionItem: MobileActionItem,
 ) {
+  mobileActionItem.id = id;
   mobileActionItem.name = name;
   mobileActionItem.isFolder = isFolder;
   const title = document.getElementById('optionsModalTitle');
@@ -321,31 +337,40 @@ export function submitNewFolderMobile(currentFolder: Folder) {
   if (!newName) {
     newName = 'New folder';
   }
-
+  if (!isValidName(newName)) {
+    alert(
+      'A folder name cannot contain any of the following characters: \\ / : * ? " < > |',
+    );
+    input.focus();
+    return;
+  }
   // Check if a folder with this name already exists
-  const isDuplicate = currentFolder.subFolders.some(
-    (f) => f.name.toLowerCase() === newName.toLowerCase(),
+  const duplicateFound = isNameDuplicate(
+    newName,
+    currentFolder.subFolders,
+    false,
   );
 
-  if (isDuplicate) {
+  if (duplicateFound) {
     alert('A folder with this name already exists.');
     input.focus();
-    return; // Stop the function early
+    return;
   }
 
   // Create the new folder object
   const newFolder: Folder = {
     name: newName,
-    path: currentFolder.path === '/'
-      ? `/${newName}`
-      : `${currentFolder.path}/${newName}`,
+    path:
+      currentFolder.path === '/'
+        ? `/${newName}`
+        : `${currentFolder.path}/${newName}`,
     subFolders: [],
     files: [],
     modified: new Date().toISOString(),
     modifiedBy: 'You',
     isNew: true,
     type: 'folder',
-    id: generateID()
+    id: generateID(),
   };
 
   // Add it to the top of the list
@@ -359,30 +384,47 @@ export function saveFolderName(
   currentFolder: Folder,
   inputElement: HTMLInputElement,
 ) {
+  // 1. THE LOCK: Prevent Enter-key mashing
+  if (inputElement.dataset.isSaving === 'true') return;
+  inputElement.dataset.isSaving = 'true';
+
   const newName = inputElement.value.trim() || 'New folder';
+
+  // Find the temporary folder
   const folderBeingEdited = currentFolder.subFolders.find(
     (f) => f.isEditing,
   );
-
-  if (!folderBeingEdited) return;
-
-  const isDuplicate = currentFolder.subFolders.some(
-    (f) =>
-      f !== folderBeingEdited &&
-      f.name.toLowerCase() === newName.toLowerCase(),
-  );
-
-  if (isDuplicate) {
-    alert(
-      `This destination already contains a folder named '${newName}'.`,
-    );
-    setTimeout(() => {
-      inputElement.focus();
-      inputElement.select();
-    }, 10);
+  if (!folderBeingEdited) {
+    inputElement.dataset.isSaving = 'false';
     return;
   }
 
+  // 2. VALIDATION
+  const isInvalid = !isValidName(newName);
+  const isDuplicate = isNameDuplicate(
+    newName,
+    currentFolder.subFolders,
+    false,
+  );
+
+  if (isInvalid || isDuplicate) {
+    const errorMsg = isInvalid
+      ? 'A folder name cannot contain special characters like / : * ? " < > |'
+      : 'A folder with this name already exists.';
+
+    alert(errorMsg); // Safe to use now!
+
+    // Give focus back to the input so they can fix it
+    setTimeout(() => {
+      inputElement.dataset.isSaving = 'false';
+      inputElement.focus();
+      inputElement.select();
+    }, 10);
+
+    return;
+  }
+
+  // 3. SUCCESS
   folderBeingEdited.name = newName;
   folderBeingEdited.path =
     currentFolder.path === '/'
@@ -390,6 +432,9 @@ export function saveFolderName(
       : `${currentFolder.path}/${newName}`;
 
   delete folderBeingEdited.isEditing;
+
+  // 4. RENDER
+  // Make sure your saveAndRefresh actually calls your UI update!
   UIManager.saveAndRefresh(currentFolder);
 }
 export function submitNewFile(currentFolder: Folder) {
@@ -403,22 +448,30 @@ export function submitNewFile(currentFolder: Folder) {
     newName = 'New Document.txt';
   }
 
-  // Check for duplicates
-  const isDuplicate = currentFolder.files.some(
-    (f) => f.name.toLowerCase() === newName.toLowerCase(),
+  const duplicateFound = isNameDuplicate(
+    newName,
+    currentFolder.files,
+    true,
   );
-  if (isDuplicate) {
+
+  if (duplicateFound) {
     alert('A file with this name already exists.');
     input.focus();
     return;
   }
-
+  if (!isValidName(newName)) {
+    alert(
+      'A file name cannot contain any of the following characters: \\ / : * ? " < > |',
+    );
+    input.focus();
+    return;
+  }
   // Extract the extension (e.g. from "data.xlsx" get "xlsx")
   const lastDotIndex = newName.lastIndexOf('.');
   const extension =
     lastDotIndex > 0
       ? newName.substring(lastDotIndex + 1).toLowerCase()
-      : 'doc';
+      : '';
 
   // Create the dummy file object
   const newFile: File = {
@@ -429,10 +482,11 @@ export function submitNewFile(currentFolder: Folder) {
     isNew: true,
     data: '', // Empty base64 data since it's a blank file
     type: 'file',
-    path: currentFolder.path === '/'
-      ? `/${currentFolder.name}`
-      : `${currentFolder.path}/${name}`,
-    id: generateID()
+    path:
+      currentFolder.path === '/'
+        ? `/${currentFolder.name}`
+        : `${currentFolder.path}/${newName}`,
+    id: generateID(),
   };
 
   // Push it to the top of the array

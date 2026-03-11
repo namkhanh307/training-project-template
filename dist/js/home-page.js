@@ -46,6 +46,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
     const filePromises = Array.from(files).map((selectedFile) => {
         return new Promise((resolve) => {
             const reader = new FileReader();
+            const safeUniqueName = (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateUniqueFileName)(selectedFile.name, currentFolder.files);
             const lastDotIndex = selectedFile.name.lastIndexOf('.');
             const fileExtension = lastDotIndex > 0
                 ? selectedFile.name
@@ -54,7 +55,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
                 : '';
             reader.onload = (e) => {
                 resolve({
-                    name: selectedFile.name,
+                    name: safeUniqueName,
                     extension: fileExtension,
                     modified: new Date().toISOString(),
                     modifiedBy: 'You',
@@ -64,7 +65,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
                         : `${currentFolder.path}/${currentFolder.name}`,
                     data: e.target?.result,
                     type: 'file',
-                    id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)()
+                    id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)(),
                 });
             };
             reader.readAsDataURL(selectedFile);
@@ -79,14 +80,7 @@ async function processFileSelection(rootFolder, currentFolder, refreshUI, event)
     target.value = ''; // Reset input
 }
 async function createNewFolderDesktop(currentFolder, refreshUI) {
-    let baseName = 'New folder';
-    let folderName = baseName;
-    let counter = 1;
-    const existingNames = currentFolder.subFolders.map((f) => f.name.toLowerCase());
-    while (existingNames.includes(folderName.toLowerCase())) {
-        folderName = `${baseName} (${counter})`;
-        counter++;
-    }
+    const folderName = (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateUniqueName)('New folder', currentFolder.subFolders);
     const newFolder = {
         name: folderName,
         path: currentFolder.path === '/'
@@ -99,7 +93,7 @@ async function createNewFolderDesktop(currentFolder, refreshUI) {
         isNew: true,
         isEditing: true,
         type: 'folder',
-        id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)()
+        id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)(),
     };
     currentFolder.subFolders.unshift(newFolder);
     await refreshUI();
@@ -145,8 +139,8 @@ async function createNewFolderDesktop(currentFolder, refreshUI) {
 //   saveToStorage(rootFolder);
 //   refreshUI();
 // }
-function handleFileClick(currentFolder, fileName) {
-    const file = currentFolder.files.find((f) => f.name === fileName);
+function handleFileClick(currentFolder, fileId) {
+    const file = currentFolder.files.find((f) => f.id === fileId);
     if (!file)
         return;
     file.isNew = false;
@@ -171,15 +165,16 @@ function downloadFile(currentFolder, fileName) {
     link.click();
     document.body.removeChild(link);
 }
-function deleteItem(currentFolder, name, isFolder) {
-    console.log(`Attempting to delete ${currentFolder} ${isFolder ? 'folder' : 'file'}: ${name}`);
+function deleteItem(currentFolder, itemId, isFolder) {
+    console.log(currentFolder.subFolders.map((f) => f.id));
+    console.log(`Attempting to delete ${isFolder ? 'folder' : 'file'} with ID: ${itemId}`);
     if (!confirm(`Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`))
         return;
     if (isFolder) {
-        currentFolder.subFolders = currentFolder.subFolders.filter((f) => f.name !== name);
+        currentFolder.subFolders = currentFolder.subFolders.filter((f) => f.id !== itemId);
     }
     else {
-        currentFolder.files = currentFolder.files.filter((f) => f.name !== name);
+        currentFolder.files = currentFolder.files.filter((f) => f.id !== itemId);
     }
     _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.saveAndRefresh(currentFolder);
 }
@@ -204,16 +199,22 @@ function openRenameModal(stateRef, oldName, isFolder) {
 function submitRename(stateRef, currentFolder) {
     const input = document.getElementById('renameInput');
     const newName = input.value.trim();
-    const { oldName, isFolder } = stateRef;
+    const { id, oldName, isFolder } = stateRef;
     if (!newName || newName === oldName) {
         (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('renameModal');
+        return;
+    }
+    if (!(0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.isValidName)(newName)) {
+        alert('A file name cannot contain any of the following characters: \\ / : * ? " < > |');
+        input.focus();
         return;
     }
     const itemArray = isFolder
         ? currentFolder.subFolders
         : currentFolder.files;
-    if (itemArray.some((f) => f.name.toLowerCase() === newName.toLowerCase())) {
-        alert('An item with this name already exists.');
+    const duplicateFound = (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.isNameDuplicate)(newName, itemArray, true, id);
+    if (duplicateFound) {
+        alert('An item with this name already exists in this location.');
         input.focus();
         return;
     }
@@ -237,7 +238,8 @@ function submitRename(stateRef, currentFolder) {
     _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.saveAndRefresh(currentFolder);
     (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('renameModal');
 }
-function openMobileOptionsSheet(name, isFolder, mobileActionItem) {
+function openMobileOptionsSheet(id, name, isFolder, mobileActionItem) {
+    mobileActionItem.id = id;
     mobileActionItem.name = name;
     mobileActionItem.isFolder = isFolder;
     const title = document.getElementById('optionsModalTitle');
@@ -264,12 +266,17 @@ function submitNewFolderMobile(currentFolder) {
     if (!newName) {
         newName = 'New folder';
     }
+    if (!(0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.isValidName)(newName)) {
+        alert('A folder name cannot contain any of the following characters: \\ / : * ? " < > |');
+        input.focus();
+        return;
+    }
     // Check if a folder with this name already exists
-    const isDuplicate = currentFolder.subFolders.some((f) => f.name.toLowerCase() === newName.toLowerCase());
-    if (isDuplicate) {
+    const duplicateFound = (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.isNameDuplicate)(newName, currentFolder.subFolders, false);
+    if (duplicateFound) {
         alert('A folder with this name already exists.');
         input.focus();
-        return; // Stop the function early
+        return;
     }
     // Create the new folder object
     const newFolder = {
@@ -283,7 +290,7 @@ function submitNewFolderMobile(currentFolder) {
         modifiedBy: 'You',
         isNew: true,
         type: 'folder',
-        id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)()
+        id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)(),
     };
     // Add it to the top of the list
     currentFolder.subFolders.unshift(newFolder);
@@ -292,26 +299,42 @@ function submitNewFolderMobile(currentFolder) {
     (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('newFolderModal');
 }
 function saveFolderName(currentFolder, inputElement) {
-    const newName = inputElement.value.trim() || 'New folder';
-    const folderBeingEdited = currentFolder.subFolders.find((f) => f.isEditing);
-    if (!folderBeingEdited)
+    // 1. THE LOCK: Prevent Enter-key mashing
+    if (inputElement.dataset.isSaving === 'true')
         return;
-    const isDuplicate = currentFolder.subFolders.some((f) => f !== folderBeingEdited &&
-        f.name.toLowerCase() === newName.toLowerCase());
-    if (isDuplicate) {
-        alert(`This destination already contains a folder named '${newName}'.`);
+    inputElement.dataset.isSaving = 'true';
+    const newName = inputElement.value.trim() || 'New folder';
+    // Find the temporary folder
+    const folderBeingEdited = currentFolder.subFolders.find((f) => f.isEditing);
+    if (!folderBeingEdited) {
+        inputElement.dataset.isSaving = 'false';
+        return;
+    }
+    // 2. VALIDATION
+    const isInvalid = !(0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.isValidName)(newName);
+    const isDuplicate = (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.isNameDuplicate)(newName, currentFolder.subFolders, false);
+    if (isInvalid || isDuplicate) {
+        const errorMsg = isInvalid
+            ? 'A folder name cannot contain special characters like / : * ? " < > |'
+            : 'A folder with this name already exists.';
+        alert(errorMsg); // Safe to use now!
+        // Give focus back to the input so they can fix it
         setTimeout(() => {
+            inputElement.dataset.isSaving = 'false';
             inputElement.focus();
             inputElement.select();
         }, 10);
         return;
     }
+    // 3. SUCCESS
     folderBeingEdited.name = newName;
     folderBeingEdited.path =
         currentFolder.path === '/'
             ? `/${newName}`
             : `${currentFolder.path}/${newName}`;
     delete folderBeingEdited.isEditing;
+    // 4. RENDER
+    // Make sure your saveAndRefresh actually calls your UI update!
     _utilities_uiManager__WEBPACK_IMPORTED_MODULE_3__.UIManager.saveAndRefresh(currentFolder);
 }
 function submitNewFile(currentFolder) {
@@ -321,10 +344,14 @@ function submitNewFile(currentFolder) {
     if (!newName) {
         newName = 'New Document.txt';
     }
-    // Check for duplicates
-    const isDuplicate = currentFolder.files.some((f) => f.name.toLowerCase() === newName.toLowerCase());
-    if (isDuplicate) {
+    const duplicateFound = (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.isNameDuplicate)(newName, currentFolder.files, true);
+    if (duplicateFound) {
         alert('A file with this name already exists.');
+        input.focus();
+        return;
+    }
+    if (!(0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.isValidName)(newName)) {
+        alert('A file name cannot contain any of the following characters: \\ / : * ? " < > |');
         input.focus();
         return;
     }
@@ -332,7 +359,7 @@ function submitNewFile(currentFolder) {
     const lastDotIndex = newName.lastIndexOf('.');
     const extension = lastDotIndex > 0
         ? newName.substring(lastDotIndex + 1).toLowerCase()
-        : 'doc';
+        : '';
     // Create the dummy file object
     const newFile = {
         name: newName,
@@ -344,8 +371,8 @@ function submitNewFile(currentFolder) {
         type: 'file',
         path: currentFolder.path === '/'
             ? `/${currentFolder.name}`
-            : `${currentFolder.path}/${name}`,
-        id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)()
+            : `${currentFolder.path}/${newName}`,
+        id: (0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__.generateID)(),
     };
     // Push it to the top of the array
     currentFolder.files.unshift(newFile);
@@ -385,10 +412,12 @@ class FileExplorer {
         this._navigationHistory = [];
         //State for modals
         this._editingItemState = {
+            id: '',
             oldName: '',
             isFolder: false,
         };
         this._mobileActionItem = {
+            id: '',
             name: '',
             isFolder: false,
         };
@@ -477,6 +506,7 @@ class FileExplorer {
                 return;
             event.stopPropagation(); // Prevent clicks from bubbling up to parent rows
             const action = target.dataset.action;
+            const itemId = target.dataset.id;
             const itemName = target.dataset.name;
             const isFolder = target.dataset.type === 'folder';
             switch (action) {
@@ -487,12 +517,12 @@ class FileExplorer {
                     }
                     break;
                 case 'open-file':
-                    if (itemName)
-                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.handleFileClick)(this._currentFolder, itemName);
+                    if (itemId)
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.handleFileClick)(this._currentFolder, itemId);
                     break;
                 case 'delete':
-                    if (itemName)
-                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.deleteItem)(this._currentFolder, itemName, isFolder);
+                    if (itemId)
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.deleteItem)(this._currentFolder, itemId, isFolder);
                     break;
                 case 'edit':
                     if (itemName)
@@ -500,24 +530,25 @@ class FileExplorer {
                     break;
                 case 'mobile-options':
                     if (itemName)
-                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openMobileOptionsSheet)(itemName, isFolder, this._mobileActionItem);
+                        (0,_crud__WEBPACK_IMPORTED_MODULE_5__.openMobileOptionsSheet)(itemId, itemName, isFolder, this._mobileActionItem);
                     break;
             }
         });
-        // Handle pressing Enter to save folder
-        mainContainer?.addEventListener('keyup', (event) => {
-            if (event.key === 'Enter') {
-                const target = event.target;
-                if (target.id === 'new-folder-input') {
-                    target.blur(); // Triggers the focusout event below
-                }
-            }
-        });
-        // Handle input blur to save folder
-        mainContainer?.addEventListener('focusout', (event) => {
+        // Handle typing in the input box
+        mainContainer?.addEventListener('keydown', (event) => {
             const target = event.target;
             if (target.id === 'new-folder-input') {
-                (0,_crud__WEBPACK_IMPORTED_MODULE_5__.saveFolderName)(this._currentFolder, target);
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Stop the enter key from doing anything else
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.saveFolderName)(this._currentFolder, target);
+                }
+                // Bonus UX: Let them hit Escape to cancel!
+                if (event.key === 'Escape') {
+                    // Revert the UI by just refreshing the grid (which wipes out the unsaved input)
+                    this._currentFolder.subFolders =
+                        this._currentFolder.subFolders.filter((f) => !f.isEditing);
+                    _utilities_uiManager__WEBPACK_IMPORTED_MODULE_4__.UIManager.refreshUI(this._currentFolder);
+                }
             }
         });
     }
@@ -543,7 +574,7 @@ class FileExplorer {
                     break;
                 case 'trigger-mobile-delete':
                     (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('mobileOptionsModal');
-                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.deleteItem)(this._currentFolder, this._mobileActionItem.name, this._mobileActionItem.isFolder);
+                    (0,_crud__WEBPACK_IMPORTED_MODULE_5__.deleteItem)(this._currentFolder, this._mobileActionItem.id, this._mobileActionItem.isFolder);
                     break;
                 case 'close-mobile-options':
                     (0,_utilities_modal__WEBPACK_IMPORTED_MODULE_1__.closeModal)('mobileOptionsModal');
@@ -662,8 +693,12 @@ class FileExplorer {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   generateID: function() { return /* binding */ generateID; },
+/* harmony export */   generateUniqueFileName: function() { return /* binding */ generateUniqueFileName; },
+/* harmony export */   generateUniqueName: function() { return /* binding */ generateUniqueName; },
 /* harmony export */   getFileIconHTML: function() { return /* binding */ getFileIconHTML; },
-/* harmony export */   getRelativeTime: function() { return /* binding */ getRelativeTime; }
+/* harmony export */   getRelativeTime: function() { return /* binding */ getRelativeTime; },
+/* harmony export */   isNameDuplicate: function() { return /* binding */ isNameDuplicate; },
+/* harmony export */   isValidName: function() { return /* binding */ isValidName; }
 /* harmony export */ });
 const ready = (fn) => {
     if (document.readyState !== 'loading') {
@@ -718,6 +753,87 @@ function generateID() {
     return window.crypto && crypto.randomUUID
         ? crypto.randomUUID()
         : Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+//Naming Helper
+/**
+ * Checks if a file or folder name already exists.
+ * * @param newName The text the user typed into the input
+ * @param items The array to check (either currentFolder.subFolders or currentFolder.files)
+ * @param isEdit True if renaming, False if creating new
+ * @param currentId The ID of the item being renamed (Only needed if isEdit is true)
+ * @returns boolean (true if it's a duplicate, false if it's safe to use)
+ */
+function isNameDuplicate(newName, items, isEdit, currentId) {
+    const formattedNewName = newName.trim().toLowerCase();
+    return items.some((item) => {
+        // 1. If we are editing, IGNORE the item we are currently renaming!
+        // This allows the user to save without changing the name.
+        if (isEdit && item.id === currentId) {
+            return false;
+        }
+        // 2. Otherwise, check if the name matches another item
+        return item.name.toLowerCase() === formattedNewName;
+    });
+}
+/**
+ * Generates a unique name by appending (1), (2), etc., if the base name already exists.
+ * @param baseName The default name you want to use (e.g., "New folder")
+ * @param existingItems The array of current files or folders to check against
+ * @returns A guaranteed unique string
+ */
+function generateUniqueName(baseName, existingItems) {
+    let uniqueName = baseName;
+    let counter = 1;
+    // Map all existing names to lowercase once for easy comparison
+    const existingNames = existingItems.map((item) => item.name.toLowerCase());
+    // Keep incrementing the counter until we find a name that isn't in the list
+    while (existingNames.includes(uniqueName.toLowerCase())) {
+        uniqueName = `${baseName} (${counter})`;
+        counter++;
+    }
+    return uniqueName;
+}
+/**
+ * Checks if a file or folder name contains forbidden special characters.
+ * Forbidden characters: < > : " / \ | ? *
+ * * @param name The name to check
+ * @returns boolean (true if the name is SAFE, false if it contains bad characters)
+ */
+function isValidName(name) {
+    // This Regex looks for any of the standard forbidden file system characters
+    const forbiddenChars = /[<>:"/\\|?*]/;
+    // If the regex finds a match, it's invalid (returns false). Otherwise, it's safe (returns true).
+    return !forbiddenChars.test(name);
+}
+/**
+ * Generates a unique file name, preserving the extension.
+ * Example: "Data.csv" -> "Data (1).csv"
+ * * @param originalName The full uploaded file name (e.g., "Budget.xlsx")
+ * @param existingItems The array of current files to check against
+ * @returns A guaranteed unique file string
+ */
+function generateUniqueFileName(originalName, existingItems) {
+    // 1. Separate the base name and the extension]
+    console.log('Generating unique name for:', originalName);
+    console.log('Existing items:', existingItems.map(i => i.name));
+    const lastDotIndex = originalName.lastIndexOf('.');
+    let baseName = originalName;
+    let extension = '';
+    // If there's a dot, and it's not the very first character (like a .gitignore file)
+    if (lastDotIndex > 0) {
+        baseName = originalName.substring(0, lastDotIndex);
+        extension = originalName.substring(lastDotIndex); // This includes the dot, e.g., ".xlsx"
+    }
+    let uniqueName = originalName;
+    let counter = 1;
+    // Map existing names to lowercase for safe comparison
+    const existingNames = existingItems.map((item) => item.name.toLowerCase());
+    // 2. Keep incrementing the counter right BEFORE the extension
+    while (existingNames.includes(uniqueName.toLowerCase())) {
+        uniqueName = `${baseName} (${counter})${extension}`;
+        counter++;
+    }
+    return uniqueName;
 }
 
 
@@ -808,9 +924,8 @@ function closeModal(id) {
 function openNewFileModal() {
     const input = document.getElementById('newFileNameInput');
     if (input)
-        input.value = ''; // Reset input
+        input.value = '';
     openModal('newFileModal');
-    // Auto-focus the input
     setTimeout(() => input?.focus(), 100);
 }
 
@@ -1001,6 +1116,7 @@ UIManager.renderGrid = (data) => {
         return `
         <div class="m-table-row m-table-row--interactive" 
              data-action="${isFolder ? 'open-folder' : 'open-file'}" 
+             data-id="${item.id}"
              data-name="${item.name}">
              
           <div>
@@ -1016,10 +1132,10 @@ UIManager.renderGrid = (data) => {
           <div class="m-text-secondary">${file.modifiedBy}</div>
           
           <div class="d-flex gap-2 justify-content-center">
-            <svg class="m-icon-custom is-clickable" data-action="edit" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+            <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
               <use href="src/files/icons.svg#icon-edit"></use>
             </svg>
-            <svg class="m-icon-custom is-clickable" data-action="delete" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+            <svg class="m-icon-custom is-clickable" data-action="delete" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
               <use href="src/files/icons.svg#icon-delete"></use>
             </svg>
           </div>
@@ -1033,11 +1149,12 @@ UIManager.renderGrid = (data) => {
         const isFolder = 'subFolders' in item;
         const file = item;
         return `
-        <div class="m-card" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-name="${item.name}">
+        <div class="m-card" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}" data-name="${item.name}">
           <div class="m-card__row m-card__row--header">
                 <div class="m-card__label">File Type</div>
               <div class="me-2" 
                   data-action="mobile-options" 
+                  data-id="${item.id}" 
                   data-name="${item.name}" 
                   data-type="${isFolder ? 'folder' : 'file'}">
                     ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : (0,_helper__WEBPACK_IMPORTED_MODULE_0__.getFileIconHTML)(file.extension)}

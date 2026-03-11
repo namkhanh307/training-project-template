@@ -72,6 +72,7 @@ export class UIManager {
         return `
         <div class="m-table-row m-table-row--interactive" 
              data-action="${isFolder ? 'open-folder' : 'open-file'}" 
+             data-id="${item.id}"
              data-name="${item.name}">
              
           <div>
@@ -87,10 +88,10 @@ export class UIManager {
           <div class="m-text-secondary">${file.modifiedBy}</div>
           
           <div class="d-flex gap-2 justify-content-center">
-            <svg class="m-icon-custom is-clickable" data-action="edit" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+            <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
               <use href="src/files/icons.svg#icon-edit"></use>
             </svg>
-            <svg class="m-icon-custom is-clickable" data-action="delete" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+            <svg class="m-icon-custom is-clickable" data-action="delete" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
               <use href="src/files/icons.svg#icon-delete"></use>
             </svg>
           </div>
@@ -106,11 +107,12 @@ export class UIManager {
         const file = item as File;
 
         return `
-        <div class="m-card" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-name="${item.name}">
+        <div class="m-card" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}" data-name="${item.name}">
           <div class="m-card__row m-card__row--header">
                 <div class="m-card__label">File Type</div>
               <div class="me-2" 
                   data-action="mobile-options" 
+                  data-id="${item.id}" 
                   data-name="${item.name}" 
                   data-type="${isFolder ? 'folder' : 'file'}">
                     ${isFolder ? `<i class="fas fa-folder m-icon-folder"></i>` : getFileIconHTML(file.extension)}

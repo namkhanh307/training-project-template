@@ -5,7 +5,7 @@ export function handleFolderClick(
   navigationHistory: Folder[],
   currentFolder: Folder,
   folderName: string,
-): Folder {  // <-- Notice we say this returns a Folder now!
+): Folder {  // Return folders
   
   const targetFolder = currentFolder.subFolders.find((f) => f.name === folderName);
   

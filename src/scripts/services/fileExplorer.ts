@@ -34,10 +34,12 @@ export class FileExplorer {
   _navigationHistory: Folder[] = [];
   //State for modals
   private _editingItemState: EditingState = {
+    id: '',
     oldName: '',
     isFolder: false,
   };
   private _mobileActionItem: MobileActionItem = {
+    id: '',
     name: '',
     isFolder: false,
   };
@@ -162,6 +164,7 @@ export class FileExplorer {
       event.stopPropagation(); // Prevent clicks from bubbling up to parent rows
 
       const action = target.dataset.action;
+      const itemId = target.dataset.id;
       const itemName = target.dataset.name;
       const isFolder = target.dataset.type === 'folder';
 
@@ -177,12 +180,11 @@ export class FileExplorer {
           }
           break;
         case 'open-file':
-          if (itemName)
-            handleFileClick(this._currentFolder, itemName);
+          if (itemId) handleFileClick(this._currentFolder, itemId);
           break;
         case 'delete':
-          if (itemName)
-            deleteItem(this._currentFolder, itemName, isFolder);
+          if (itemId)
+            deleteItem(this._currentFolder, itemId, isFolder);
           break;
         case 'edit':
           if (itemName)
@@ -195,6 +197,7 @@ export class FileExplorer {
         case 'mobile-options':
           if (itemName)
             openMobileOptionsSheet(
+              itemId,
               itemName,
               isFolder,
               this._mobileActionItem,
@@ -203,29 +206,30 @@ export class FileExplorer {
       }
     });
 
-    // Handle pressing Enter to save folder
+    // Handle typing in the input box
     mainContainer?.addEventListener(
-      'keyup',
+      'keydown',
       (event: KeyboardEvent) => {
-        if (event.key === 'Enter') {
-          const target = event.target as HTMLElement;
-          if (target.id === 'new-folder-input') {
-            target.blur(); // Triggers the focusout event below
+        const target = event.target as HTMLInputElement;
+
+        if (target.id === 'new-folder-input') {
+          if (event.key === 'Enter') {
+            event.preventDefault(); // Stop the enter key from doing anything else
+            saveFolderName(this._currentFolder, target);
+          }
+
+          // Bonus UX: Let them hit Escape to cancel!
+          if (event.key === 'Escape') {
+            // Revert the UI by just refreshing the grid (which wipes out the unsaved input)
+            this._currentFolder.subFolders =
+              this._currentFolder.subFolders.filter(
+                (f) => !f.isEditing,
+              );
+            UIManager.refreshUI(this._currentFolder);
           }
         }
       },
     );
-
-    // Handle input blur to save folder
-    mainContainer?.addEventListener('focusout', (event) => {
-      const target = event.target as HTMLElement;
-      if (target.id === 'new-folder-input') {
-        saveFolderName(
-          this._currentFolder,
-          target as HTMLInputElement,
-        );
-      }
-    });
   }
   private initModalEvents() {
     // We attach one listener to the body to catch ALL modal clicks
@@ -259,7 +263,7 @@ export class FileExplorer {
           closeModal('mobileOptionsModal');
           deleteItem(
             this._currentFolder,
-            this._mobileActionItem.name,
+            this._mobileActionItem.id,
             this._mobileActionItem.isFolder,
           );
           break;

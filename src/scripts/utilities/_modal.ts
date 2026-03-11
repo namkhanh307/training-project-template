@@ -1,4 +1,3 @@
-import { File, Folder } from '../models/entity';
 export function openModal(id: string) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = 'flex';
@@ -12,10 +11,7 @@ export function openNewFileModal() {
   const input = document.getElementById(
     'newFileNameInput',
   ) as HTMLInputElement;
-  if (input) input.value = ''; // Reset input
-
+  if (input) input.value = ''; 
   openModal('newFileModal');
-
-  // Auto-focus the input
   setTimeout(() => input?.focus(), 100);
 }
