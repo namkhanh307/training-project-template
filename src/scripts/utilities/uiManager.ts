@@ -64,8 +64,11 @@ export class UIManager {
     this.refreshUI(currentFolderId, allFolders, allFiles);
   }
   static renderGrid = (data: Row[]): void => {
-    const container = document.getElementById('item-container');
+    const container = document.getElementById(
+      'unified-row-container',
+    );
     if (!container) return;
+
     if (!data || data.length === 0) {
       container.innerHTML =
         '<p class="mt-4 text-center">No items to display</p>';
@@ -82,25 +85,41 @@ export class UIManager {
           ? `<input type="text" id="new-folder-input" class="m-input-rename" value="${folderItem.name}" />`
           : item.name;
 
+        const iconHTML = isFolder
+          ? `<i class="fas fa-folder m-icon-folder"></i>`
+          : getFileIconHTML(file.extension);
+        const sparkleHTML = file.isNew
+          ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>`
+          : '';
+
         return `
-        <div class="m-table-row m-table-row--interactive"
-             data-action="${isFolder ? 'open-folder' : 'open-file'}"
-             data-id="${item.id}"
-             data-name="${item.name}">
-          <div>
-            ${
-              isFolder
-                ? `<i class="fas fa-folder m-icon-folder"></i>`
-                : getFileIconHTML(file.extension)
-            }
+      <div class="m-list-row m-list-item" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}" data-name="${item.name}">
+        
+        <div class="m-list-cell">
+          <div class="m-mobile-label d-md-none">File Type</div>
+          <div class="m-cell-content">${iconHTML}</div>
+        </div>
+
+        <div class="m-list-cell">
+          <div class="m-mobile-label d-md-none">Name</div>
+          <div class="m-cell-content m-text-overlay">
+            ${sparkleHTML} ${nameDisplay}
           </div>
-          <div class="m-text-overlay">
-            ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
-            ${nameDisplay}
-          </div>
-          <div class="m-text-secondary">${getRelativeTime(file.modified)}</div>
-          <div class="m-text-secondary">${file.modifiedBy}</div>
-          <div class="d-flex gap-2 justify-content-center">
+        </div>
+
+        <div class="m-list-cell">
+          <div class="m-mobile-label d-md-none">Modified</div>
+          <div class="m-cell-content m-text-secondary">${getRelativeTime(file.modified)}</div>
+        </div>
+
+        <div class="m-list-cell">
+          <div class="m-mobile-label d-md-none">Modified By</div>
+          <div class="m-cell-content m-text-secondary">${file.modifiedBy}</div>
+        </div>
+
+        <div class="m-list-cell">
+          <div class="m-mobile-label d-md-none">Actions</div>
+          <div class="m-cell-content d-flex gap-2 justify-content-start justify-content-md-center">
             <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
               <use href="src/files/icons.svg#icon-edit"></use>
             </svg>
@@ -109,7 +128,10 @@ export class UIManager {
             </svg>
           </div>
         </div>
-      `;
+
+        <div class="d-none d-md-block"></div>
+      </div>
+    `;
       })
       .join('');
   };

@@ -19,162 +19,119 @@
   </head>
   <body>
     <!-- Desktop tool bars -->
-    <div class="l-toolbar d-none d-md-flex">
+    <nav class="navbar navbar-expand-md l-toolbar p-0">
       <div
-        class="m-toolbar-item is-clickable position-relative"
-        data-action="toggle-new-menu"
+        class="container-fluid px-0 d-flex justify-content-end justify-content-md-start"
       >
-        <svg class="m-icon-custom">
-          <use href="src/files/icons.svg#icon-new"></use>
-        </svg>
-        New <i class="fas fa-chevron-down ms-1 small"></i>
-
-        <div
-          id="newOptionsMenu"
-          class="option-menu-mobile dropdown-menu shadow-sm"   
-        >
-          <div
-            class="dropdown-item is-clickable py-2"
-            data-action="trigger-new-folder"
-          >
-            <i class="fas fa-folder text-warning me-2"></i> Folder
-          </div>
-          <div
-            class="dropdown-item is-clickable py-2"
-            data-action="trigger-new-file"
-          >
-            <i class="fas fa-file-alt text-primary me-2"></i> File
-          </div>
-        </div>
-      </div>
-
-      <input
-        type="file"
-        id="fileInput"
-        style="display: none"
-        accept=".xlsx,.xls,.doc,.docx,.pdf"
-        multiple
-      />
-
-      <div
-        class="m-toolbar-item is-clickable"
-        data-action="upload-file"
-      >
-        <svg class="m-icon-custom">
-          <use href="src/files/icons.svg#icon-upload"></use>
-        </svg>
-        Upload <i class="fas fa-chevron-down ms-1 small"></i>
-      </div>
-
-      <div class="m-toolbar-item is-clickable" data-action="sync">
-        <svg class="m-icon-custom">
-          <use href="src/files/icons.svg#icon-sync"></use>
-        </svg>
-        Sync
-      </div>
-      <div class="m-toolbar-item is-clickable" data-action="export">
-        <svg class="m-icon-custom">
-          <use href="src/files/icons.svg#icon-excel"></use>
-        </svg>
-        Export to Excel
-      </div>
-      <div class="m-toolbar-item is-clickable" data-action="flow">
-        <svg class="m-icon-custom">
-          <use href="src/files/icons.svg#icon-flow"></use>
-        </svg>
-        Flow
-      </div>
-      <div class="m-toolbar-item is-clickable" data-action="more">
-        <svg class="m-icon-custom">
-          <use href="src/files/icons.svg#icon-more"></use>
-        </svg>
-      </div>
-    </div>
-    <!-- Mobile tool bars and collapse menu -->
-    <div class="l-header-mobile d-md-none">
-      <!--display flex on md and above -->
-      <!-- Hamburger button -->
-      <div class="l-header-content">
         <button
-          class="m-btn-hamburger"
+          class="navbar-toggler m-btn-hamburger d-md-none my-2 me-3"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#mobileMenu"
+          data-bs-target="#unifiedMenu"
         >
           <i class="fas fa-bars"></i>
         </button>
-      </div>
-      <!-- Collapse menu content -->
-      <div class="collapse m-mobile-collapse" id="mobileMenu">
-        <div class="m-mobile-list">
-          <div class="m-mobile-item position-relative" data-action="toggle-new-menu-mobile">
-            <svg class="m-icon-custom">
-              <use href="src/files/icons.svg#icon-new"></use>
-            </svg>
-            New
-            <i class="fas fa-chevron-down small"></i>
+
+        <div class="collapse navbar-collapse" id="unifiedMenu">
+          <div
+            class="d-flex flex-column flex-md-row gap-0 gap-md-4 w-100 m-toolbar-nav"
+          >
             <div
-              id="newOptionsMenuMobile"
-              class="option-menu-mobile dropdown-menu shadow-sm"
+              class="m-toolbar-item is-clickable position-relative"
+              data-action="toggle-new-menu"
             >
+              <svg class="m-icon-custom">
+                <use href="src/files/icons.svg#icon-new"></use>
+              </svg>
+              New <i class="fas fa-chevron-down ms-1 small"></i>
+
               <div
-                class="dropdown-item is-clickable py-2"
-                data-action="trigger-new-folder-mobile"
+                id="newOptionsMenu"
+                class="option-menu-mobile dropdown-menu shadow-sm"
               >
-                <i class="fas fa-folder text-warning me-2"></i> Folder
-              </div>
-              <div
-                class="dropdown-item is-clickable py-2"
-                data-action="trigger-new-file-mobile"
-              >
-                <i class="fas fa-file-alt text-primary me-2"></i> File
+                <div
+                  class="dropdown-item is-clickable py-2"
+                  data-action="trigger-new-folder"
+                >
+                  <i class="fas fa-folder text-warning me-2"></i>
+                  Folder
+                </div>
+                <div
+                  class="dropdown-item is-clickable py-2"
+                  data-action="trigger-new-file"
+                >
+                  <i class="fas fa-file-alt text-primary me-2"></i>
+                  File
+                </div>
               </div>
             </div>
-          </div>
-          <div class="m-mobile-item" data-action="upload-file">
-            <svg class="m-icon-custom">
-              <use href="src/files/icons.svg#icon-upload"></use>
-            </svg>
-            Upload
-            <i class="fas fa-chevron-down small"></i>
-          </div>
-          <div class="m-mobile-item">
-            <svg class="m-icon-custom">
-              <use href="src/files/icons.svg#icon-sync"></use>
-            </svg>
-            Sync
-          </div>
-          <div class="m-mobile-item">
-            <svg class="m-icon-custom">
-              <use href="src/files/icons.svg#icon-excel"></use>
-            </svg>
-            Export to Excel
-          </div>
-          <div class="m-mobile-item">
-            <svg class="m-icon-custom">
-              <use href="src/files/icons.svg#icon-flow"></use>
-            </svg>
-            Flow
-          </div>
-          <div class="m-mobile-item">
-            <svg class="m-icon-custom">
-              <use href="src/files/icons.svg#icon-more"></use>
-            </svg>
+
+            <input
+              type="file"
+              id="fileInput"
+              style="display: none"
+              accept=".xlsx,.xls,.doc,.docx,.pdf"
+              multiple
+            />
+
+            <div
+              class="m-toolbar-item is-clickable"
+              data-action="upload-file"
+            >
+              <svg class="m-icon-custom">
+                <use href="src/files/icons.svg#icon-upload"></use>
+              </svg>
+              Upload
+            </div>
+            <div
+              class="m-toolbar-item is-clickable"
+              data-action="sync"
+            >
+              <svg class="m-icon-custom">
+                <use href="src/files/icons.svg#icon-sync"></use>
+              </svg>
+              Sync
+            </div>
+            <div
+              class="m-toolbar-item is-clickable"
+              data-action="export"
+            >
+              <svg class="m-icon-custom">
+                <use href="src/files/icons.svg#icon-excel"></use>
+              </svg>
+              Export to Excel
+            </div>
+            <div
+              class="m-toolbar-item is-clickable"
+              data-action="flow"
+            >
+              <svg class="m-icon-custom">
+                <use href="src/files/icons.svg#icon-flow"></use>
+              </svg>
+              Flow
+            </div>
+            <div
+              class="m-toolbar-item is-clickable"
+              data-action="more"
+            >
+              <svg class="m-icon-custom">
+                <use href="src/files/icons.svg#icon-more"></use>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <!-- Main content container -->
+    </nav>
+
     <div class="l-main-container container-fluid">
       <div class="d-flex align-items-center gap-2">
         <h1 id="folder-path-display" class="m-title-primary mb-0">
           Documents
         </h1>
       </div>
-      <!-- Item container (responsive) -->
-      <div class="ms-5">
-        <!-- Header title (hidden on mobile) -->
-        <div class="m-table-row m-table-row--header d-none d-md-flex">
+
+      <div class="m-data-grid mt-3">
+        <div class="m-list-row m-list-header d-none d-md-grid">
           <div>
             <svg class="m-icon-custom">
               <use href="src/files/icons.svg#icon-folder"></use>
@@ -196,8 +153,8 @@
             <i class="fas fa-plus"></i> Add column
           </div>
         </div>
-        <!-- Item container (items will be added dynamically via JavaScript) -->
-        <div id="item-container"></div>
+
+        <div id="unified-row-container"></div>
       </div>
     </div>
     <!-- File detail modal -->

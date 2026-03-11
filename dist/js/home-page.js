@@ -1,34 +1,6 @@
 /******/ (function() { // webpackBootstrap
+/******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
-
-/***/ "./src/styles/pages/home-page.scss":
-/*!*****************************************!*\
-  !*** ./src/styles/pages/home-page.scss ***!
-  \*****************************************/
-/***/ (function() {
-
-throw new Error("Module build failed (from ./node_modules/mini-css-extract-plugin/dist/loader.js):\nHookWebpackError: Module build failed (from ./node_modules/sass-loader/dist/cjs.js):\nexpected \"{\".\n\u001b[34m    ╷\u001b[0m\n\u001b[34m152 │\u001b[0m   right: 0\u001b[31m\u001b[0m;\r\n\u001b[34m    │\u001b[0m \u001b[31m          ^\u001b[0m\n\u001b[34m    ╵\u001b[0m\n  src\\styles\\components\\_documents.scss 152:11  @import\n  src\\styles\\pages\\_master-page.scss 16:9       @import\n  src\\styles\\pages\\home-page.scss 2:9           root stylesheet\n    at tryRunOrWebpackError (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\HookWebpackError.js:116:9)\n    at __webpack_require_module__ (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5626:14)\n    at __webpack_require__ (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5570:20)\n    at C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5661:22\n    at symbolIterator (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\neo-async\\async.js:3485:9)\n    at done (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\neo-async\\async.js:3527:9)\n    at Hook.eval [as callAsync] (eval at create (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\tapable\\lib\\HookCodeFactory.js:31:10), <anonymous>:15:1)\n    at Hook.CALL_ASYNC_DELEGATE [as _callAsync] (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\tapable\\lib\\Hook.js:21:14)\n    at C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5545:45\n    at symbolIterator (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\neo-async\\async.js:3482:9)\n-- inner error --\nError: Module build failed (from ./node_modules/sass-loader/dist/cjs.js):\nexpected \"{\".\n\u001b[34m    ╷\u001b[0m\n\u001b[34m152 │\u001b[0m   right: 0\u001b[31m\u001b[0m;\r\n\u001b[34m    │\u001b[0m \u001b[31m          ^\u001b[0m\n\u001b[34m    ╵\u001b[0m\n  src\\styles\\components\\_documents.scss 152:11  @import\n  src\\styles\\pages\\_master-page.scss 16:9       @import\n  src\\styles\\pages\\home-page.scss 2:9           root stylesheet\n    at Object.<anonymous> (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\css-loader\\dist\\cjs.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\postcss-loader\\dist\\cjs.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\resolve-url-loader\\index.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\sass-loader\\dist\\cjs.js??ruleSet[1].rules[2].use[4]!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\src\\styles\\pages\\home-page.scss:1:7)\n    at C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\javascript\\JavascriptModulesPlugin.js:596:10\n    at Hook.eval [as call] (eval at create (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\tapable\\lib\\HookCodeFactory.js:19:10), <anonymous>:7:1)\n    at Hook.CALL_DELEGATE [as _call] (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\tapable\\lib\\Hook.js:16:14)\n    at C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5628:41\n    at tryRunOrWebpackError (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\HookWebpackError.js:111:7)\n    at __webpack_require_module__ (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5626:14)\n    at __webpack_require__ (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5570:20)\n    at C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\webpack\\lib\\Compilation.js:5661:22\n    at symbolIterator (C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\neo-async\\async.js:3485:9)\n\nGenerated code for C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\css-loader\\dist\\cjs.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\postcss-loader\\dist\\cjs.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\resolve-url-loader\\index.js!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\node_modules\\sass-loader\\dist\\cjs.js??ruleSet[1].rules[2].use[4]!C:\\Users\\knvn\\Documents\\Github\\training-project-template\\src\\styles\\pages\\home-page.scss\n1 | throw new Error(\"Module build failed (from ./node_modules/sass-loader/dist/cjs.js):\\nexpected \\\"{\\\".\\n\\u001b[34m    ╷\\u001b[0m\\n\\u001b[34m152 │\\u001b[0m   right: 0\\u001b[31m\\u001b[0m;\\r\\n\\u001b[34m    │\\u001b[0m \\u001b[31m          ^\\u001b[0m\\n\\u001b[34m    ╵\\u001b[0m\\n  src\\\\styles\\\\components\\\\_documents.scss 152:11  @import\\n  src\\\\styles\\\\pages\\\\_master-page.scss 16:9       @import\\n  src\\\\styles\\\\pages\\\\home-page.scss 2:9           root stylesheet\");");
-
-/***/ }),
-
-/***/ "./src/scripts/pages/home-page.ts":
-/*!****************************************!*\
-  !*** ./src/scripts/pages/home-page.ts ***!
-  \****************************************/
-/***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _utilities_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_helper */ "./src/scripts/utilities/_helper.ts");
-/* harmony import */ var _services_fileExplorer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../services/fileExplorer */ "./src/scripts/services/fileExplorer.ts");
-
-
-(0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__["default"])(() => {
-    const app = new _services_fileExplorer__WEBPACK_IMPORTED_MODULE_1__.FileExplorer();
-});
-
-
-/***/ }),
 
 /***/ "./src/scripts/services/crud.ts":
 /*!**************************************!*\
@@ -36,7 +8,6 @@ __webpack_require__.r(__webpack_exports__);
   \**************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   createNewFolderDesktop: function() { return /* binding */ createNewFolderDesktop; },
@@ -383,7 +354,6 @@ function submitNewFile(currentFolder) {
   \**********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   FileExplorer: function() { return /* binding */ FileExplorer; }
@@ -709,7 +679,6 @@ class FileExplorer {
   \*****************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ROOT_FOLDER_ID: function() { return /* binding */ ROOT_FOLDER_ID; }
@@ -725,7 +694,6 @@ const ROOT_FOLDER_ID = 'cb875544839f44fc9947cd55e81b7ade';
   \******************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   generateID: function() { return /* binding */ generateID; },
@@ -879,7 +847,6 @@ function generateUniqueFileName(originalName, existingItems) {
   \********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   initFiles: function() { return /* binding */ initFiles; },
@@ -941,7 +908,6 @@ let initFiles = {
   \*****************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   closeModal: function() { return /* binding */ closeModal; },
@@ -975,7 +941,6 @@ function openNewFileModal() {
   \********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   generateBreadcrumbPath: function() { return /* binding */ generateBreadcrumbPath; },
@@ -1061,7 +1026,6 @@ function generateBreadcrumbPath(currentFolderId, allFolders) {
   \***********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   clearStorage: function() { return /* binding */ clearStorage; },
@@ -1122,7 +1086,6 @@ const clearStorage = () => {
   \********************************************/
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   UIManager: function() { return /* binding */ UIManager; }
@@ -1204,7 +1167,7 @@ class UIManager {
     }
 }
 UIManager.renderGrid = (data) => {
-    const container = document.getElementById('item-container');
+    const container = document.getElementById('unified-row-container');
     if (!container)
         return;
     if (!data || data.length === 0) {
@@ -1220,23 +1183,40 @@ UIManager.renderGrid = (data) => {
         const nameDisplay = folderItem.isEditing
             ? `<input type="text" id="new-folder-input" class="m-input-rename" value="${folderItem.name}" />`
             : item.name;
-        return `
-        <div class="m-table-row m-table-row--interactive"
-             data-action="${isFolder ? 'open-folder' : 'open-file'}"
-             data-id="${item.id}"
-             data-name="${item.name}">
-          <div>
-            ${isFolder
+        const iconHTML = isFolder
             ? `<i class="fas fa-folder m-icon-folder"></i>`
-            : (0,_helper__WEBPACK_IMPORTED_MODULE_0__.getFileIconHTML)(file.extension)}
+            : (0,_helper__WEBPACK_IMPORTED_MODULE_0__.getFileIconHTML)(file.extension);
+        const sparkleHTML = file.isNew
+            ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>`
+            : '';
+        return `
+      <div class="m-list-row m-list-item" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}" data-name="${item.name}">
+        
+        <div class="m-list-cell">
+          <div class="m-mobile-label d-md-none">File Type</div>
+          <div class="m-cell-content">${iconHTML}</div>
+        </div>
+
+        <div class="m-list-cell">
+          <div class="m-mobile-label d-md-none">Name</div>
+          <div class="m-cell-content m-text-overlay">
+            ${sparkleHTML} ${nameDisplay}
           </div>
-          <div class="m-text-overlay">
-            ${file.isNew ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>` : ''}
-            ${nameDisplay}
-          </div>
-          <div class="m-text-secondary">${(0,_helper__WEBPACK_IMPORTED_MODULE_0__.getRelativeTime)(file.modified)}</div>
-          <div class="m-text-secondary">${file.modifiedBy}</div>
-          <div class="d-flex gap-2 justify-content-center">
+        </div>
+
+        <div class="m-list-cell">
+          <div class="m-mobile-label d-md-none">Modified</div>
+          <div class="m-cell-content m-text-secondary">${(0,_helper__WEBPACK_IMPORTED_MODULE_0__.getRelativeTime)(file.modified)}</div>
+        </div>
+
+        <div class="m-list-cell">
+          <div class="m-mobile-label d-md-none">Modified By</div>
+          <div class="m-cell-content m-text-secondary">${file.modifiedBy}</div>
+        </div>
+
+        <div class="m-list-cell">
+          <div class="m-mobile-label d-md-none">Actions</div>
+          <div class="m-cell-content d-flex gap-2 justify-content-start justify-content-md-center">
             <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
               <use href="src/files/icons.svg#icon-edit"></use>
             </svg>
@@ -1245,7 +1225,10 @@ UIManager.renderGrid = (data) => {
             </svg>
           </div>
         </div>
-      `;
+
+        <div class="d-none d-md-block"></div>
+      </div>
+    `;
     })
         .join('');
 };
@@ -1327,13 +1310,32 @@ UIManager.renderLoadingState = () => {
 /******/ 	}();
 /******/ 	
 /************************************************************************/
-/******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	__webpack_require__("./src/scripts/pages/home-page.ts");
-/******/ 	// This entry module doesn't tell about it's top-level declarations so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__("./src/styles/pages/home-page.scss");
-/******/ 	
+var __webpack_exports__ = {};
+// This entry needs to be wrapped in an IIFE because it needs to be isolated against other entry modules.
+!function() {
+var __webpack_exports__ = {};
+/*!****************************************!*\
+  !*** ./src/scripts/pages/home-page.ts ***!
+  \****************************************/
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _utilities_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utilities/_helper */ "./src/scripts/utilities/_helper.ts");
+/* harmony import */ var _services_fileExplorer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../services/fileExplorer */ "./src/scripts/services/fileExplorer.ts");
+
+
+(0,_utilities_helper__WEBPACK_IMPORTED_MODULE_0__["default"])(() => {
+    const app = new _services_fileExplorer__WEBPACK_IMPORTED_MODULE_1__.FileExplorer();
+});
+
+}();
+// This entry needs to be wrapped in an IIFE because it needs to be isolated against other entry modules.
+!function() {
+/*!*****************************************!*\
+  !*** ./src/styles/pages/home-page.scss ***!
+  \*****************************************/
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+}();
 /******/ })()
 ;
 //# sourceMappingURL=home-page.js.map

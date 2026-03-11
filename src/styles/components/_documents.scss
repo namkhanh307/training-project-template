@@ -16,7 +16,6 @@ body {
 .l-page-header {
   min-height: 50px;
 }
-
 .l-header-mobile {
   position: relative;
   background-color: $color-grey;
@@ -29,14 +28,11 @@ body {
     padding: 10px 15px; //padding top/bottom 10px, left/right 15px
   }
 }
-
 .l-main-container {
   padding-left: 1.5rem;
   padding-right: 1.5rem; //roor em
 }
-
 // --- 4. Module Rules ---
-// Toolbar Items
 .m-toolbar-item {
   display: flex;
   align-items: center; //align icon and text vertically
@@ -46,18 +42,15 @@ body {
     fill: $color-primary;
   }
 }
-
 // Icons
 .m-icon-custom {
   width: 18px;
   height: 18px;
   flex-shrink: 0; // no shrink, maintain size
 }
-
 .m-icon-folder {
   color: #797775;
 }
-
 // Hamburger Component
 .m-btn-hamburger {
   border: 1px solid #ccc;
@@ -66,14 +59,12 @@ body {
   color: #888;
   background: transparent;
 }
-
 // Typography
 .m-title-primary {
   padding: 24px 0 10px 0; //top right bottom left
   font-size: 28px;
   font-weight: 300; //smaller than normal(400)
 }
-
 // Table/Grid Module
 .m-table-row {
   display: grid; //make it a grid container
@@ -82,73 +73,21 @@ body {
   border-bottom: 1px solid $color-border;
   align-items: start;
   cursor: pointer;
-
   &--header {
     border-bottom: 1px solid black;
   }
-
   &--interactive:hover {
     background-color: $color-hover-bg;
   }
-
-  // Mobile responsive: switch to card layout
-  @media (max-width: 768px) {
-    display: block;
-    border: 1px solid $color-border;
-    margin-bottom: 10px;
-    padding: 0;
-
-    &--header {
-      display: none; // Hide header on mobile
-    }
-
-    &--interactive:hover {
-      background-color: transparent;
-    }
-  }
 }
-
-// Card Module (Mobile)
-.m-card {
-  margin-bottom: 5px;
-  border: 1px solid #e0e0e0;
-  background-color: #fff;
-
-  &__row {
-    display: flex;
-    border-bottom: 1px solid #eee;
-    align-items: center;
-
-    &--header {
-      background-color: $color-grey;
-      justify-content: space-between;
-
-      .m-card__value {
-        flex-grow: 1;
-        padding: 10px 10px 10px 24px; //increase left padding (e.g., 24px) for ALL values
-        text-align: left;
-      }
-    }
-  }
-
-  &__label {
-    width: 120px;
-    min-width: 120px;
-    flex-shrink: 0;
-    padding: 10px;
-    font-weight: bold;
-    font-style: italic;
-    color: black;
-  }
-
-  &__value {
-    flex-grow: 1;
-    padding: 10px;
-    display: flex; /// align the sparkle container
-    align-items: center;
-    text-align: left; // ensure content stays left
-  }
+.m-text-secondary {
+  color: $color-text-secondary;
 }
+// Mobile Menu Module
+.m-mobile-collapse {
+  position: absolute;
+  top: 100%;
+  left: 0;
   right: 0;
   width: 100%;
   z-index: 9999;
@@ -181,7 +120,6 @@ body {
     }
   }
 }
-
 // Sparkle/Overlay Module
 .m-text-overlay {
   position: relative;
@@ -203,7 +141,6 @@ body {
     pointer-events: none; // allows user to click the text "through" the icon
   }
 }
-
 // Card Module (Mobile)
 .m-card {
   margin-bottom: 5px;
@@ -245,7 +182,6 @@ body {
     text-align: left; // ensure content stays left
   }
 }
-
 // --- 5. State Rules ---
 .is-clickable {
   cursor: pointer;
@@ -255,7 +191,83 @@ body {
     color: $color-primary;
   }
 }
+// Toolbar Menu Adjustments
+.m-toolbar-nav {
+  background-color: $color-grey;
+  
+  .m-toolbar-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #eee; // Mobile dividers
+    
+    @media (min-width: 768px) {
+      padding: 0;
+      border-bottom: none;
+    }
+  }
+}
 
+// Unified List Layout (Mobile First)
+.m-list-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
+
+  // Transform into Grid for Desktop
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: 5% 35% 15% 10% 10% 30%; // Your original desktop ratio
+    align-items: start;
+    margin-bottom: 0;
+    border: none;
+    border-bottom: 1px solid $color-border;
+    padding: 10px 0;
+    cursor: pointer;
+
+    &.m-list-item:hover {
+      background-color: $color-hover-bg;
+    }
+  }
+}
+
+.m-list-header {
+  border-bottom: 1px solid black !important;
+}
+
+// Cells within the row
+.m-list-cell {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+
+  @media (min-width: 768px) {
+    border-bottom: none;
+    display: block; // Let CSS Grid handle layout
+  }
+
+  // Label only visible on mobile
+  .m-mobile-label {
+    width: 120px;
+    min-width: 120px;
+    flex-shrink: 0;
+    padding: 10px;
+    font-weight: bold;
+    font-style: italic;
+    color: black;
+    background-color: $color-grey;
+  }
+
+  // Actual content
+  .m-cell-content {
+    flex-grow: 1;
+    padding: 10px;
+    
+    @media (min-width: 768px) {
+      padding: 0; // Remove mobile padding on desktop
+    }
+  }
+}
 .m-modal {
   position: fixed;
   top: 0;
