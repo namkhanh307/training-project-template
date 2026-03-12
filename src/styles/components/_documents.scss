@@ -85,10 +85,12 @@ body {
 .m-toolbar-nav {
   background-color: $color-grey;
   padding: 12px 20px;
+  max-height: 80vh;
+  overflow-y: auto;
   .m-toolbar-item {
     padding: 12px 20px;
     border-bottom: 1px solid #eee; // Mobile dividers
-    
+
     @media (min-width: 768px) {
       padding: 0;
       border-bottom: none;
@@ -152,7 +154,7 @@ body {
   .m-cell-content {
     flex-grow: 1;
     padding: 10px;
-    
+
     @media (min-width: 768px) {
       padding: 0; // Remove mobile padding on desktop
     }
@@ -162,15 +164,15 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;   /* Changed to vw for certainty */
-  height: 100vh;  /* Changed to vh for certainty */
+  width: 100vw; /* Changed to vw for certainty */
+  height: 100vh; /* Changed to vh for certainty */
   background: rgba(0, 0, 0, 0.5);
-  
+
   /* Centering Engine */
-  display: flex; 
-  align-items: center; 
+  display: flex;
+  align-items: center;
   justify-content: center;
-  
+
   z-index: 9999; /* Ensure it's on top */
 }
 
@@ -181,7 +183,7 @@ body {
   width: 400px;
   max-width: 90vw;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  
+
   /* Prevent modal from being taller than the screen */
   max-height: 90vh;
   overflow-y: auto;
