@@ -45,6 +45,7 @@ export const loadFromStorage = (): StorageState => {
 export const deleteFromStorage = () => {
   localStorage.removeItem(STORAGE_KEY);
 };
+
 /**
  * Clears all data from local storage.
  */

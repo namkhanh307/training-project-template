@@ -50,7 +50,7 @@ body {
   font-weight: 300; //smaller than normal(400)
 }
 
-// Sparkle/Overlay Module
+// Sparkle/Overlay Module considerable
 .m-text-overlay {
   position: relative;
   padding-left: 0;
@@ -84,7 +84,7 @@ body {
 // Toolbar Menu Adjustments
 .m-toolbar-nav {
   background-color: $color-grey;
-  
+  padding: 12px 20px;
   .m-toolbar-item {
     padding: 12px 20px;
     border-bottom: 1px solid #eee; // Mobile dividers
@@ -107,7 +107,7 @@ body {
   // Transform into Grid for Desktop
   @media (min-width: 768px) {
     display: grid;
-    grid-template-columns: 5% 35% 15% 10% 10% 30%; // Your original desktop ratio
+    grid-template-columns: 5% 30% 15% 15% 10% 30%; // Your original desktop ratio
     align-items: start;
     margin-bottom: 0;
     border: none;
@@ -162,24 +162,30 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw; /* Forces it to span the entire screen width */
-  height: 100vh; /* Forces it to span the entire screen height */
+  width: 100vw;   /* Changed to vw for certainty */
+  height: 100vh;  /* Changed to vh for certainty */
   background: rgba(0, 0, 0, 0.5);
-  display: none; /* Controlled by JS */
-  align-items: center; /* Centers vertically */
-  justify-content: center; /* Centers horizontally */
-  z-index: 1000;
+  
+  /* Centering Engine */
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  
+  z-index: 9999; /* Ensure it's on top */
 }
-/* 1. Add a max/fixed width to the modal content */
+
 .m-modal-content {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  width: 400px; /* Gives it a solid size on desktop */
-  max-width: 90vw; /* Keeps it responsive on mobile phones */
+  width: 400px;
+  max-width: 90vw;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  
+  /* Prevent modal from being taller than the screen */
+  max-height: 90vh;
+  overflow-y: auto;
 }
-
 .m-modal-header {
   display: flex;
   justify-content: space-between;
@@ -187,17 +193,6 @@ body {
   border-bottom: 1px solid #eee;
   margin-bottom: 15px;
   padding-bottom: 10px; /* Give it a little breathing room */
-}
-
-/* 2. Target the h3 specifically for truncation */
-#modalFileName {
-  margin: 0; /* Reset default browser margins */
-  white-space: nowrap; /* Prevent text from wrapping to a second line */
-  overflow: hidden; /* Hide the text that spills over */
-  text-overflow: ellipsis; /* Add the '...' */
-  min-width: 0; /* CRITICAL: Tells flexbox it's allowed to shrink below its content size */
-  flex: 1; /* Take up remaining space */
-  padding-right: 15px; /* Keep the text from touching the close button */
 }
 
 /* 3. Make sure the close button never shrinks */
@@ -216,27 +211,8 @@ body {
   font-family: inherit;
   width: 80%;
 }
-.m-breadcrumbs {
-  display: inline-block;
-  color: inherit; /* Inherits the h1 text color */
-  transition: color 0.2s;
-}
 
-.m-breadcrumbs:hover {
-  color: #0078d4; /* Your primary theme color */
-  text-decoration: underline;
-}
-
-.m-breadcrumb-separator {
-  color: #888; /* Dim the separators so the folder names stand out */
-  margin: 0 6px;
-  font-size: 0.75rem; /* Make the arrow slightly smaller than the h1 text */
-  opacity: 0.6;
-}
-.m-breadcrumbs::-webkit-scrollbar {
-  display: none;          /* Hides the scrollbar on Chrome/Safari */
-}
-.option-menu-mobile {
+.new-options-menu {
   display: none;
   position: absolute;
   top: 100%;

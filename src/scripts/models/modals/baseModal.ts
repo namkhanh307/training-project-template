@@ -15,7 +15,7 @@ export abstract class BaseModal {
     this.bindEvents(); // Attach button listeners
 
     if (this.modalElement) {
-      this.modalElement.style.display = 'block';
+      this.modalElement.style.display = 'flex';
     }
     this.onOpen();
   }
