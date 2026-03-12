@@ -1,19 +1,12 @@
 import { File, Folder } from '../models/entity';
 import {
-  EditingState,
-  MobileActionItem,
   UniqueNameModel,
 } from '../models/model';
 import {
   generateID,
   generateUniqueFileName,
-  generateUniqueName,
-  isNameDuplicate,
-  isValidName,
 } from '../utilities/_helper';
-import { closeModal, openModal } from '../utilities/_modal';
 import { saveToStorage } from '../utilities/_storageUtil';
-import { UIManager } from '../utilities/uiManager';
 
 export function triggerUpload() {
   // Mobile safety check (optional: remove 'show' class if triggered from mobile menu)
@@ -100,33 +93,4 @@ export async function processFileSelection(
   refreshUI();
 
   target.value = ''; // Reset the input field
-}
-export function deleteItem(
-  itemId: string,
-  isFolder: boolean,
-  allFolders: Record<string, Folder>,
-  allFiles: Record<string, File>,
-) {
-  if (isFolder) {
-    // 1. Find and delete all files that live inside this folder
-    for (const file of Object.values(allFiles)) {
-      if (file.parentId === itemId) {
-        delete allFiles[file.id]; // Instantly destroys the record
-      }
-    }
-
-    // 2. Find and delete all sub-folders that live inside this folder
-    for (const folder of Object.values(allFolders)) {
-      if (folder.parentId === itemId) {
-        // Recursive call: Dig deeper and delete the sub-folder's contents too!
-        deleteItem(folder.id, true, allFolders, allFiles);
-      }
-    }
-
-    // 3. Finally, delete the actual target folder
-    delete allFolders[itemId];
-  } else {
-    // If it's just a file, delete it directly
-    delete allFiles[itemId];
-  }
 }

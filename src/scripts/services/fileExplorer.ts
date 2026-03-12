@@ -18,10 +18,9 @@ import {
 } from '../utilities/_storageUtil';
 import { UIManager } from '../utilities/uiManager';
 import {
-  deleteItem,
   processFileSelection,
   triggerUpload,
-} from './crud';
+} from '../utilities/_fileUpload';
 
 export class FileExplorer {
   private _allFolders: Record<string, Folder> = initFolders;

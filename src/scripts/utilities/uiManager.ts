@@ -179,7 +179,7 @@ export class UIManager {
     container.innerHTML = html;
   }
   static renderLoadingState = (): void => {
-    const container = document.getElementById('item-container');
+    const container = document.getElementById('unified-row-container');
 
     const spinnerHTML = `
       <div class="d-flex justify-content-center align-items-center w-100" style="height: 200px;">
