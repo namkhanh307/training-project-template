@@ -6,7 +6,8 @@ import {
   generateBreadcrumbPath,
   getBreadcrumbPath,
 } from '../utilities/_navigate';
-import { BREAD_CRUMB } from '../utilities/_const';
+import { BREAD_CRUMB, UNIFIED_ROW_CONTAINER } from '../utilities/_const';
+import { ROW_TYPE } from '../models/enum';
 export class UIManager {
   /**
    * RefreshUI
@@ -42,8 +43,8 @@ export class UIManager {
     // 3. Sort the array dynamically
     allItems.sort((a, b) => {
       // Rule A: Group Folders First (Using our new 'type' property!)
-      const isFolderA = a.type === 'folder' ? 1 : 0;
-      const isFolderB = b.type === 'folder' ? 1 : 0;
+      const isFolderA = a.type === ROW_TYPE.FOLDER ? 1 : 0;
+      const isFolderB = b.type === ROW_TYPE.FOLDER ? 1 : 0;
 
       if (isFolderA !== isFolderB) {
         return isFolderB - isFolderA; // Puts folders (1) before files (0)
@@ -73,7 +74,7 @@ export class UIManager {
   }
   static renderGrid = (data: Row[]): void => {
     const container = document.getElementById(
-      'unified-row-container',
+      UNIFIED_ROW_CONTAINER,
     );
     if (!container) return;
 
@@ -85,7 +86,7 @@ export class UIManager {
     container.innerHTML = data
       .map((item) => {
         // 1. THE FIX: Look at the exact 'type' string instead of guessing!
-        const isFolder = item.type === 'folder';
+        const isFolder = item.type === ROW_TYPE.FOLDER;
 
         // 2. We keep these for TypeScript autocomplete, but remember
         // they are just the same 'item' object under the hood!
@@ -131,10 +132,10 @@ export class UIManager {
         <div class="m-list-cell">
           <div class="m-mobile-label d-md-none">Actions</div>
           <div class="m-cell-content d-flex gap-2 justify-content-start justify-content-md-center">
-            <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+            <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? ROW_TYPE.FOLDER : ROW_TYPE.FILE}">
               <use href="src/files/icons.svg#icon-edit"></use>
             </svg>
-            <svg class="m-icon-custom is-clickable" data-action="delete" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? 'folder' : 'file'}">
+            <svg class="m-icon-custom is-clickable" data-action="delete" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? ROW_TYPE.FOLDER : ROW_TYPE.FILE}">
               <use href="src/files/icons.svg#icon-delete"></use>
             </svg>
           </div>
@@ -188,7 +189,7 @@ export class UIManager {
 
   static renderLoadingState = (): void => {
     const container = document.getElementById(
-      'unified-row-container',
+      UNIFIED_ROW_CONTAINER,
     );
 
     const spinnerHTML = `

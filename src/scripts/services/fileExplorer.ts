@@ -21,6 +21,7 @@ import {
   processFileSelection,
   triggerUpload,
 } from '../utilities/_fileUpload';
+import { ROW_TYPE } from '../models/enum';
 
 export class FileExplorer {
   private _allFolders: Record<string, Folder> = initFolders;
@@ -189,7 +190,7 @@ export class FileExplorer {
 
       const action = target.dataset.action;
       const itemId = target.dataset.id;
-      const isFolder = target.dataset.type === 'folder';
+      const isFolder = target.dataset.type === ROW_TYPE.FOLDER;
 
       switch (action) {
         case 'open-folder':

@@ -1,5 +1,6 @@
 import { saveToStorage } from "../../utilities/_storageUtil";
 import { File, Folder } from "../entity";
+import { ROW_TYPE } from "../enum";
 import { BaseModal } from "./baseModal";
 
 export class DeleteModal extends BaseModal {
@@ -29,7 +30,7 @@ export class DeleteModal extends BaseModal {
     const activeDict = this.isFolder ? this.allFolders : this.allFiles;
     const itemToDelete = activeDict[this.itemId];
     const itemName = itemToDelete ? itemToDelete.name : 'this item';
-    const typeName = this.isFolder ? 'folder' : 'file';
+    const typeName = this.isFolder ? ROW_TYPE.FOLDER : ROW_TYPE.FILE;
 
     return `
       <div class="alert alert-danger mb-0">

@@ -1,3 +1,5 @@
+import { ROW_TYPE } from "./enum";
+
 export interface BaseEntity {
   id: string;
   name: string;
@@ -5,7 +7,7 @@ export interface BaseEntity {
   modified: string;
   modifiedBy: string;
   isNew: boolean;
-  type: 'folder' | 'file';
+  type: ROW_TYPE
   isEditing?: boolean;
 }
 export interface File extends BaseEntity {

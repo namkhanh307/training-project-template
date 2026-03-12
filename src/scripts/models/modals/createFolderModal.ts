@@ -1,6 +1,7 @@
 import { generateID, isNameDuplicate, isValidName } from "../../utilities/_helper";
 import { saveToStorage } from "../../utilities/_storageUtil";
 import { File, Folder } from "../entity";
+import { ROW_TYPE } from "../enum";
 import { BaseModal } from "./baseModal";
 
 export class CreateFolderModal extends BaseModal {
@@ -60,7 +61,7 @@ export class CreateFolderModal extends BaseModal {
         id: newId,
         parentId: this.currentFolderId,
         name: newName,
-        type: 'folder',
+        type: ROW_TYPE.FOLDER,
         modified: new Date().toISOString(),
         modifiedBy: 'You',
         isNew: true,

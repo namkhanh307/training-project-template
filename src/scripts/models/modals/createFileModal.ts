@@ -5,6 +5,7 @@ import {
 } from '../../utilities/_helper';
 import { saveToStorage } from '../../utilities/_storageUtil';
 import { File, Folder } from '../entity';
+import { ROW_TYPE } from '../enum';
 import { BaseModal } from './baseModal';
 
 export class CreateFileModal extends BaseModal {
@@ -85,7 +86,7 @@ export class CreateFileModal extends BaseModal {
       modifiedBy: 'You',
       isNew: true,
       data: '', // Empty file
-      type: 'file',
+      type: ROW_TYPE.FILE,
     };
 
     // 4. Save, refresh, and close

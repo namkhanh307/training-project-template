@@ -1,4 +1,5 @@
 import { File, Folder } from '../models/entity';
+import { ROW_TYPE } from '../models/enum';
 import {
   UniqueNameModel,
 } from '../models/model';
@@ -9,9 +10,6 @@ import {
 import { saveToStorage } from '../utilities/_storageUtil';
 
 export function triggerUpload() {
-  // Mobile safety check (optional: remove 'show' class if triggered from mobile menu)
-  document.getElementById('mobileMenu')?.classList.remove('show');
-
   const fileInput = document.getElementById(
     'fileInput',
   ) as HTMLInputElement;
@@ -70,7 +68,7 @@ export async function processFileSelection(
           modified: new Date().toISOString(),
           modifiedBy: 'You',
           isNew: true,
-          type: 'file',
+          type: ROW_TYPE.FILE,
           data: e.target?.result as string,
         });
       };
