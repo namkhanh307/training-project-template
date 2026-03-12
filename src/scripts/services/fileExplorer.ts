@@ -14,7 +14,7 @@ import {
 } from '../utilities/_storageUtil';
 import { UIManager } from '../utilities/uiManager';
 import {
-  deleteItem,
+  deleteItem, 
   downloadFile,
   handleFileClick,
   openMobileOptionsSheet,
@@ -32,9 +32,9 @@ export class FileExplorer {
   private _allFolders: Record<string, Folder> = initFolders;
   private _allFiles: Record<string, File> = initFiles;
   private _currentFolderId: string;
-  _rootFolder: Folder;
-  _currentFolder: Folder;
-  _navigationHistory: Folder[] = [];
+  // _rootFolder: Folder;
+  // _currentFolder: Folder;
+  // _navigationHistory: Folder[] = [];
   //State for modals
   private _editingItemState: EditingState = {
     id: '',
@@ -96,7 +96,7 @@ export class FileExplorer {
     // // 2. Draw the Breadcrumbs
     // updateBreadcrumbs(
     //   'folder-path-display',
-    //   this._currentFolderId,
+    //   this._currentFolderIdId,
     //   this._allFolders,
     // );
   }
@@ -139,9 +139,11 @@ export class FileExplorer {
           // 1. Hide the menu
           if (newMenu) newMenu.style.display = 'none';
           // 2. Call your existing inline folder creation method!
-          createNewFolderDesktop(this._currentFolder, () =>
+          createNewFolderDesktop(this._currentFolderId,
+              this._allFolders,
+             () =>
             UIManager.refreshUI(
-              this._currentFolder.id,
+              this._currentFolderId,
               this._allFolders,
               this._allFiles,
             ),
@@ -166,11 +168,12 @@ export class FileExplorer {
     // 2. Listener for the Hidden File Input
     fileInput?.addEventListener('change', (event) => {
       processFileSelection(
-        this._rootFolder,
-        this._currentFolder,
+        this._currentFolderId,
+        this._allFolders,
+        this._allFiles,
         () =>
           UIManager.refreshUI(
-            this._currentFolder.id,
+            this._currentFolderId,
             this._allFolders,
             this._allFiles,
           ),
@@ -198,18 +201,18 @@ export class FileExplorer {
         case 'open-folder':
           if (itemName) {
             // Overwrite the class state with the newly returned folder!
-            this._currentFolder = handleFolderClick(
+            this._currentFolderId = handleFolderClick(
               itemId,
               this._allFolders,
             );
           }
           break;
         case 'open-file':
-          if (itemId) handleFileClick(this._currentFolder, itemId);
+          if (itemId) handleFileClick(this._allFolders, this._allFiles, itemId);
           break;
         case 'delete':
           if (itemId)
-            deleteItem(this._currentFolder, itemId, isFolder);
+            deleteItem(itemId, isFolder, this._allFolders, this._allFiles);
           break;
         case 'edit':
           if (itemName)
@@ -240,18 +243,18 @@ export class FileExplorer {
         if (target.id === 'new-folder-input') {
           if (event.key === 'Enter') {
             event.preventDefault(); // Stop the enter key from doing anything else
-            saveFolderName(this._currentFolder, target);
+            saveFolderName(this._currentFolderId, target);
           }
 
           // Bonus UX: Let them hit Escape to cancel!
           if (event.key === 'Escape') {
             // Revert the UI by just refreshing the grid (which wipes out the unsaved input)
-            // this._currentFolder.subFolders =
-            //   this._currentFolder.subFolders.filter(
+            // this._currentFolderId.subFolders =
+            //   this._currentFolderId.subFolders.filter(
             //     (f) => !f.isEditing,
             //   );
             UIManager.refreshUI(
-              this._currentFolder.id,
+              this._currentFolderId.id,
               this._allFolders,
               this._allFiles,
             );
@@ -273,7 +276,7 @@ export class FileExplorer {
       switch (action) {
         // --- Rename Modal ---
         case 'submit-rename':
-          submitRename(this._editingItemState, this._currentFolder);
+          submitRename(this._editingItemState, this._currentFolderId);
           break;
         case 'close-rename':
           closeModal('renameModal');
@@ -291,7 +294,7 @@ export class FileExplorer {
         case 'trigger-mobile-delete':
           closeModal('mobileOptionsModal');
           deleteItem(
-            this._currentFolder,
+            this._currentFolderId,
             this._mobileActionItem.id,
             this._mobileActionItem.isFolder,
           );
@@ -304,7 +307,7 @@ export class FileExplorer {
         case 'download-file':
           const fileName =
             document.getElementById('modalFileName')?.innerText;
-          if (fileName) downloadFile(this._currentFolder, fileName);
+          if (fileName) downloadFile(this._currentFolderId, fileName);
           break;
         case 'close-file-modal':
           closeModal('fileModal');
@@ -312,13 +315,13 @@ export class FileExplorer {
 
         // --- New Folder Modal (Mobile) ---
         case 'submit-new-folder':
-          submitNewFolderMobile(this._currentFolder);
+          submitNewFolderMobile(this._currentFolderId);
           break;
         case 'close-new-folder':
           closeModal('newFolderModal');
           break;
         case 'submit-new-file':
-          submitNewFile(this._currentFolder);
+          submitNewFile(this._currentFolderId);
           break;
         case 'close-new-file':
           closeModal('newFileModal');
@@ -334,13 +337,13 @@ export class FileExplorer {
           const target = event.target as HTMLElement;
           if (target.id === 'renameInput') {
             event.preventDefault();
-            submitRename(this._editingItemState, this._currentFolder);
+            submitRename(this._editingItemState, this._currentFolderId);
           } else if (target.id === 'newFolderNameInput') {
             event.preventDefault();
-            submitNewFolderMobile(this._currentFolder); // Assuming you migrated your submitNewFolder logic!
+            submitNewFolderMobile(this._currentFolderId); // Assuming you migrated your submitNewFolder logic!
           } else if (target.id === 'newFileNameInput') {
             event.preventDefault();
-            submitNewFile(this._currentFolder);
+            submitNewFile(this._currentFolderId);
           }
         }
       },
@@ -358,23 +361,23 @@ export class FileExplorer {
     //   if (!target || !target.dataset.path) return;
 
     //   // 1. Calculate the new folder
-    //   this._currentFolder = navigateFromBreadcrumb(
+    //   this._currentFolderId = navigateFromBreadcrumb(
     //     this._rootFolder,
     //     target.dataset.path,
     //   );
 
     //   // 2. Update the URL visually
-    //   updateUrlPath(this._currentFolder.path || '/');
+    //   updateUrlPath(this._currentFolderId.path || '/');
 
     //   // 3. Render BOTH the grid and the breadcrumbs! (Removed arrow function)
     //   UIManager.refreshUI(
-    //     this._currentFolder.id,
+    //     this._currentFolderId.id,
     //     this._allFolders,
     //     this._allFiles,
     //   );
     //   UIManager.updateBreadcrumbs(
     //     'folder-path-display',
-    //     this._currentFolder.id,
+    //     this._currentFolderId.id,
     //     this._allFolders,
     //   );
     // });

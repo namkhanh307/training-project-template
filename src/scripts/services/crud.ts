@@ -21,8 +21,9 @@ export function triggerUpload() {
   fileInput?.click();
 }
 export async function processFileSelection(
-  rootFolder: Folder,
-  currentFolder: Folder,
+  currentFolderId: string,
+  allFolders: Record<string, Folder>,
+  allFiles: Record<string, File>,
   refreshUI: () => void,
   event: Event,
 ) {
@@ -31,61 +32,73 @@ export async function processFileSelection(
 
   if (!files || files.length === 0) return;
 
+  // 1. Gather siblings to prevent duplicate names (e.g., "Budget (1).xlsx")
+  const siblingFiles = Object.values(allFiles).filter(
+    (file) => file.parentId === currentFolderId,
+  );
+
+  // 2. Map the files into an array of Promises
   const filePromises = Array.from(files).map((selectedFile) => {
     return new Promise<File>((resolve) => {
       const reader = new FileReader();
+
+      // Ensure the name is unique among files in THIS folder
       const safeUniqueName = generateUniqueFileName(
         selectedFile.name,
-        currentFolder.files,
+        siblingFiles,
       );
-      const lastDotIndex = selectedFile.name.lastIndexOf('.');
+
+      // Safely extract the extension from the newly generated name
+      const lastDotIndex = safeUniqueName.lastIndexOf('.');
       const fileExtension =
         lastDotIndex > 0
-          ? selectedFile.name
-              .substring(lastDotIndex + 1)
-              .toLowerCase()
+          ? safeUniqueName.substring(lastDotIndex + 1).toLowerCase()
           : '';
 
       reader.onload = (e) => {
+        const newId = generateID();
+
         resolve({
+          id: newId,
+          parentId: currentFolderId,
           name: safeUniqueName,
           extension: fileExtension,
           modified: new Date().toISOString(),
           modifiedBy: 'You',
           isNew: true,
-          path:
-            currentFolder.path === '/'
-              ? `/${currentFolder.name}`
-              : `${currentFolder.path}/${currentFolder.name}`,
-          data: e.target?.result as string,
           type: 'file',
-          id: generateID(),
+          data: e.target?.result as string,
         });
       };
+
       reader.readAsDataURL(selectedFile);
     });
   });
 
+  // 3. Wait for the hard drive to finish reading all files
   const processedFiles = await Promise.all(filePromises);
-  currentFolder.files.unshift(...processedFiles);
 
-  saveToStorage(rootFolder);
+  // 4. INSTANT INSERT: Add them directly to the global dictionary
+  for (const newFile of processedFiles) {
+    allFiles[newFile.id] = newFile;
+  }
 
-  // Instead of calling global navigateToFolder, just refresh the UI
-  // If you need path updates, trigger your UIManager.updatePath(...) here
+  // 5. Save and Refresh
+  // Note: Update your save function to save your new flat dictionaries!
+  saveToStorage(allFolders, allFiles);
   refreshUI();
 
-  target.value = ''; // Reset input
+  target.value = ''; // Reset the input field
 }
 export async function createNewFolderDesktop(
   currentFolderId: string, // 🔴 Pass the ID instead of the whole nested object
   allFolders: Record<string, Folder>, // 🔴 Pass the global dictionary
-  refreshUI: () => Promise<void>
+  refreshUI: () => Promise<void>,
 ) {
   // 1. Gather siblings to check for duplicate names
   // We grab all folders and only keep the ones inside the current folder
   const siblingFolders = Object.values(allFolders).filter(
-    (folder) => folder.parentId === currentFolderId
+    (folder) => folder.parentId === currentFolderId,
   );
 
   // 2. Generate a safe name using the siblings
@@ -112,7 +125,9 @@ export async function createNewFolderDesktop(
   await refreshUI();
 
   // 6. Handle the inline input focus
-  const input = document.getElementById('new-folder-input') as HTMLInputElement;
+  const input = document.getElementById(
+    'new-folder-input',
+  ) as HTMLInputElement;
   if (input) {
     input.value = folderName;
     input.focus();
@@ -120,14 +135,15 @@ export async function createNewFolderDesktop(
   }
 }
 export function handleFileClick(
-  currentFolder: Folder,
+  allFolders: Record<string, Folder>,
+  allFiles: Record<string, File>,
   fileId: string,
 ) {
-  const file = currentFolder.files.find((f) => f.id === fileId);
+  const file = allFiles[fileId];
   if (!file) return;
 
   file.isNew = false;
-  UIManager.saveAndRefresh(currentFolder);
+  UIManager.saveAndRefresh(file.parentId, allFolders, allFiles);
 
   document.getElementById('modalFileName')!.innerText = file.name;
   document.getElementById('modalFileExtension')!.innerText =
@@ -140,12 +156,15 @@ export function handleFileClick(
   openModal('fileModal');
 }
 export function downloadFile(
-  currentFolder: Folder,
-  fileName: string,
+  allFiles: Record<string, File>,
+  fileId: string,
 ) {
-  const file = currentFolder.files.find((f) => f.name === fileName);
-  if (!file || !file.data){
-    alert('Sorry, this file cannot be downloaded because it has no data.');
+  const file = allFiles[fileId];
+  console.log('Attempting to download file:', file);
+  if (!file || !file.data) {
+    alert(
+      'Sorry, this file cannot be downloaded because it has no data.',
+    );
     return;
   }
 
@@ -157,31 +176,33 @@ export function downloadFile(
   document.body.removeChild(link);
 }
 export function deleteItem(
-  currentFolder: Folder,
   itemId: string,
   isFolder: boolean,
+  allFolders: Record<string, Folder>,
+  allFiles: Record<string, File>,
 ) {
-  console.log(currentFolder.subFolders.map((f) => f.id));
-  console.log(
-    `Attempting to delete ${isFolder ? 'folder' : 'file'} with ID: ${itemId}`,
-  );
-  if (
-    !confirm(
-      `Are you sure you want to delete this ${isFolder ? 'folder' : 'file'}?`,
-    )
-  )
-    return;
-
   if (isFolder) {
-    currentFolder.subFolders = currentFolder.subFolders.filter(
-      (f) => f.id !== itemId,
-    );
+    // 1. Find and delete all files that live inside this folder
+    for (const file of Object.values(allFiles)) {
+      if (file.parentId === itemId) {
+        delete allFiles[file.id]; // Instantly destroys the record
+      }
+    }
+
+    // 2. Find and delete all sub-folders that live inside this folder
+    for (const folder of Object.values(allFolders)) {
+      if (folder.parentId === itemId) {
+        // Recursive call: Dig deeper and delete the sub-folder's contents too!
+        deleteItem(folder.id, true, allFolders, allFiles);
+      }
+    }
+
+    // 3. Finally, delete the actual target folder
+    delete allFolders[itemId];
   } else {
-    currentFolder.files = currentFolder.files.filter(
-      (f) => f.id !== itemId,
-    );
+    // If it's just a file, delete it directly
+    delete allFiles[itemId];
   }
-  UIManager.saveAndRefresh(currentFolder);
 }
 export function openRenameModal(
   stateRef: EditingState,

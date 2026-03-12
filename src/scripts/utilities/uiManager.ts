@@ -20,9 +20,6 @@ export class UIManager {
 
     // 1. FILTER: Search the dictionaries for items belonging to this folder
     // Object.values() turns our flat dictionary into an array we can filter
-    console.log('Refreshing UI for folderId:', currentFolderId);
-    console.log('All Folders:', allFolders);
-    console.log('All Files:', allFiles);
     const currentSubFolders = Object.values(allFolders).filter(
       (folder) => folder.parentId === currentFolderId,
     );
@@ -54,7 +51,6 @@ export class UIManager {
 
       return validDateB - validDateA; // Descending order (Newest first)
     });
-    console.log('All allItems AFTER SORTING:', allItems);
 
     // 4. Render the newly sorted array
     UIManager.renderGrid(allItems);

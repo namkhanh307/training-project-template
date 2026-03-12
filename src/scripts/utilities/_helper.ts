@@ -1,3 +1,6 @@
+import { RenameModel, UniqueNameModel } from "../models/model";
+import { SUPPORTED_ICONS } from "./_const";
+
 const ready = (fn: ()=> void) => {
   if (document.readyState !== 'loading') {
     fn();
@@ -6,9 +9,6 @@ const ready = (fn: ()=> void) => {
   }
 };
 export default ready;
-
-// Icon Helper
-const SUPPORTED_ICONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
 
 export function getFileIconHTML(extension: string): string {
   const safeExt = extension.toLowerCase();
@@ -59,57 +59,41 @@ export function generateID(): string {
     ? crypto.randomUUID() 
     : Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
+
 //Naming Helper
 /**
  * Checks if a file or folder name already exists.
  * * @param newName The text the user typed into the input
- * @param items The array to check (either currentFolder.subFolders or currentFolder.files)
+ * @param currentFolderId The ID of the folder to check
  * @param isEdit True if renaming, False if creating new
  * @param currentId The ID of the item being renamed (Only needed if isEdit is true)
  * @returns boolean (true if it's a duplicate, false if it's safe to use)
  */
+// Note: We use a generic Record so you can pass EITHER allFolders OR allFiles into this!
 export function isNameDuplicate(
-  newName: string, 
-  items: { id: string; name: string }[], 
-  isEdit: boolean, 
+  newName: string,
+  currentFolderId: string,
+  itemsDictionary: Record<string, RenameModel>,
   currentId?: string
 ): boolean {
   const formattedNewName = newName.trim().toLowerCase();
 
-  return items.some((item) => {
-    // 1. If we are editing, IGNORE the item we are currently renaming!
-    // This allows the user to save without changing the name.
-    if (isEdit && item.id === currentId) {
+  // 1. Turn the dictionary into an array so we can loop over it
+  return Object.values(itemsDictionary).some((item) => {
+    
+    // 2. THE SIBLING CHECK: Ignore items in other folders!
+    if (item.parentId !== currentFolderId) {
+      return false;
+    }
+
+    // 3. THE SELF CHECK: If editing, ignore the item we are renaming
+    if (currentId && item.id === currentId) {
       return false; 
     }
 
-    // 2. Otherwise, check if the name matches another item
+    // 4. THE MATCH: Do the names collide?
     return item.name.toLowerCase() === formattedNewName;
   });
-}
-/**
- * Generates a unique name by appending (1), (2), etc., if the base name already exists.
- * @param baseName The default name you want to use (e.g., "New folder")
- * @param existingItems The array of current files or folders to check against
- * @returns A guaranteed unique string
- */
-export function generateUniqueName(
-  baseName: string,
-  existingItems: { name: string }[]
-): string {
-  let uniqueName = baseName;
-  let counter = 1;
-  
-  // Map all existing names to lowercase once for easy comparison
-  const existingNames = existingItems.map((item) => item.name.toLowerCase());
-
-  // Keep incrementing the counter until we find a name that isn't in the list
-  while (existingNames.includes(uniqueName.toLowerCase())) {
-    uniqueName = `${baseName} (${counter})`;
-    counter++;
-  }
-
-  return uniqueName;
 }
 /**
  * Checks if a file or folder name contains forbidden special characters.
@@ -131,29 +115,66 @@ export function isValidName(name: string): boolean {
  * @param existingItems The array of current files to check against
  * @returns A guaranteed unique file string
  */
+/**
+ * Generates a unique name by appending (1), (2), etc., if the base name already exists.
+ * @param baseName The default name you want to use (e.g., "New folder")
+ * @param parentId The ID of the folder where this new item will live
+ * @param itemsDictionary The global dictionary of all folders (or files)
+ * @returns A guaranteed unique string
+ */
+export function generateUniqueName(
+  baseName: string,
+  parentId: string,
+  itemsDictionary: Record<string, UniqueNameModel>
+): string {
+  let uniqueName = baseName;
+  let counter = 1;
+  
+  // 1. FILTER & MAP: Get ONLY the names of items that live in the same parent folder
+  const siblingNames = Object.values(itemsDictionary)
+    .filter((item) => item.parentId === parentId)
+    .map((item) => item.name.toLowerCase());
+
+  // 2. Keep incrementing the counter until we find a name that isn't in the list
+  while (siblingNames.includes(uniqueName.toLowerCase())) {
+    uniqueName = `${baseName} (${counter})`;
+    counter++;
+  }
+
+  return uniqueName;
+}/**
+ * Generates a unique file name when uploading a duplicate file, preserving the extension.
+ * Example: "Data.csv" -> "Data (1).csv"
+ * @param originalName The full uploaded file name (e.g., "Budget.xlsx")
+ * @param parentId The ID of the folder where this file is being uploaded
+ * @param itemsDictionary The global dictionary of all files
+ * @returns A guaranteed unique file string
+ */
 export function generateUniqueFileName(
   originalName: string,
-  existingItems: { name: string }[]
+  parentId: string,
+  itemsDictionary: Record<string,UniqueNameModel>
 ): string {
-  // 1. Separate the base name and the extension]
+  // 1. Separate the base name and the extension
   const lastDotIndex = originalName.lastIndexOf('.');
   let baseName = originalName;
   let extension = '';
 
-  // If there's a dot, and it's not the very first character (like a .gitignore file)
   if (lastDotIndex > 0) {
     baseName = originalName.substring(0, lastDotIndex);
-    extension = originalName.substring(lastDotIndex); // This includes the dot, e.g., ".xlsx"
+    extension = originalName.substring(lastDotIndex); // Includes the dot
   }
 
   let uniqueName = originalName;
   let counter = 1;
   
-  // Map existing names to lowercase for safe comparison
-  const existingNames = existingItems.map((item) => item.name.toLowerCase());
+  // 2. FILTER & MAP: Get ONLY the names of sibling files
+  const siblingNames = Object.values(itemsDictionary)
+    .filter((item) => item.parentId === parentId)
+    .map((item) => item.name.toLowerCase());
 
-  // 2. Keep incrementing the counter right BEFORE the extension
-  while (existingNames.includes(uniqueName.toLowerCase())) {
+  // 3. Keep incrementing the counter right BEFORE the extension
+  while (siblingNames.includes(uniqueName.toLowerCase())) {
     uniqueName = `${baseName} (${counter})${extension}`;
     counter++;
   }
