@@ -85,12 +85,10 @@ body {
 .m-toolbar-nav {
   background-color: $color-grey;
   padding: 12px 20px;
-  max-height: 80vh;
-  overflow-y: auto;
   .m-toolbar-item {
     padding: 12px 20px;
     border-bottom: 1px solid #eee; // Mobile dividers
-
+    
     @media (min-width: 768px) {
       padding: 0;
       border-bottom: none;
@@ -109,7 +107,7 @@ body {
   // Transform into Grid for Desktop
   @media (min-width: 768px) {
     display: grid;
-    grid-template-columns: 5% 30% 15% 15% 10% 30%; // Your original desktop ratio
+    grid-template-columns: 5% 35% 15% 10% 10% 30%; // Your original desktop ratio
     align-items: start;
     margin-bottom: 0;
     border: none;
@@ -154,7 +152,7 @@ body {
   .m-cell-content {
     flex-grow: 1;
     padding: 10px;
-
+    
     @media (min-width: 768px) {
       padding: 0; // Remove mobile padding on desktop
     }
@@ -164,30 +162,24 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw; /* Changed to vw for certainty */
-  height: 100vh; /* Changed to vh for certainty */
+  width: 100vw; /* Forces it to span the entire screen width */
+  height: 100vh; /* Forces it to span the entire screen height */
   background: rgba(0, 0, 0, 0.5);
-
-  /* Centering Engine */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 9999; /* Ensure it's on top */
+  display: none; /* Controlled by JS */
+  align-items: center; /* Centers vertically */
+  justify-content: center; /* Centers horizontally */
+  z-index: 1000;
 }
-
+/* 1. Add a max/fixed width to the modal content */
 .m-modal-content {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  width: 400px;
-  max-width: 90vw;
+  width: 400px; /* Gives it a solid size on desktop */
+  max-width: 90vw; /* Keeps it responsive on mobile phones */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-
-  /* Prevent modal from being taller than the screen */
-  max-height: 90vh;
-  overflow-y: auto;
 }
+
 .m-modal-header {
   display: flex;
   justify-content: space-between;
