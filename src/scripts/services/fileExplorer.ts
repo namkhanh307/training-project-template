@@ -7,30 +7,27 @@ import { RenameModal } from '../models/modals/renameModal';
 import { EditingState, MobileActionItem } from '../models/model';
 import { ROOT_FOLDER_ID } from '../utilities/_const';
 import { initFiles, initFolders } from '../utilities/_initData';
-import { closeModal, openNewFileModal } from '../utilities/_modal';
 import {
   getIdFromUrl,
   handleFolderClick,
   updateUrlWithId,
 } from '../utilities/_navigate';
-import { loadFromStorage } from '../utilities/_storageUtil';
+import {
+  loadFromStorage,
+  saveToStorage,
+} from '../utilities/_storageUtil';
 import { UIManager } from '../utilities/uiManager';
 import {
   deleteItem,
-  downloadFile,
-  handleFileClick,
-  openMobileOptionsSheet,
-  openRenameModal,
   processFileSelection,
   triggerUpload,
 } from './crud';
-import { createNewFolderDesktop, submitNewFolder } from './crud';
 
 export class FileExplorer {
   private _allFolders: Record<string, Folder> = initFolders;
   private _allFiles: Record<string, File> = initFiles;
   private _currentFolderId: string;
-  private _activeFileId: string | null = null; 
+  private _activeFileId: string | null = null;
   //State for modals
   private _editingItemState: EditingState = {
     id: '',
@@ -99,7 +96,6 @@ export class FileExplorer {
   private setupEventListeners() {
     this.initToolbarEvents();
     this.initGridEvents();
-    this.initModalEvents();
     this.initBreadcrumbEvents();
   }
 
@@ -130,51 +126,67 @@ export class FileExplorer {
           }
           break;
 
-        // case 'trigger-new-folder':
-        //   // 1. Hide the menu
-        //   if (newMenu) newMenu.style.display = 'none';
-        //   // 2. Call your existing inline folder creation method!
-        //   createNewFolderDesktop(
-        //     this._currentFolderId,
-        //     this._allFolders,
-        //     () =>
-        //       UIManager.refreshUI(
-        //         this._currentFolderId,
-        //         this._allFolders,
-        //         this._allFiles,
-        //       ),
-        //   );
-        //   break;
-
-        case 'trigger-new-file':
-          // 1. Hide the menu
+        case 'trigger-new-folder':
+          // 1. Hide the dropdown menu
           if (newMenu) newMenu.style.display = 'none';
-          // 2. Open the new file modal
-          openNewFileModal();
-          break;
-      }
-    });
-    document.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('[data-action="toggle-new-menu"]')) {
-        const menu = document.getElementById('newOptionsMenu');
-        if (menu) menu.style.display = 'none';
-      }
-    });
-    // 2. Listener for the Hidden File Input
-    fileInput?.addEventListener('change', (event) => {
-      processFileSelection(
-        this._currentFolderId,
-        this._allFolders,
-        this._allFiles,
-        () =>
-          UIManager.refreshUI(
+
+          // 2. Instantiate our new OOP Modal and open it!
+          const newFolderModal = new CreateFolderModal(
             this._currentFolderId,
             this._allFolders,
             this._allFiles,
-          ),
-        event,
-      );
+            () =>
+              UIManager.refreshUI(
+                this._currentFolderId,
+                this._allFolders,
+                this._allFiles,
+              ),
+          );
+          newFolderModal.open();
+          break;
+
+        case 'trigger-new-file':
+          // 1. Hide the dropdown menu
+          if (newMenu) newMenu.style.display = 'none';
+
+          // 2. Instantiate our new OOP Modal and open it!
+          const newFileModal = new CreateFileModal(
+            this._currentFolderId,
+            this._allFolders,
+            this._allFiles,
+            () =>
+              UIManager.refreshUI(
+                this._currentFolderId,
+                this._allFolders,
+                this._allFiles,
+              ),
+          );
+          newFileModal.open();
+          break;
+      }
+      document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        if (!target.closest('[data-action="toggle-new-menu"]')) {
+          const menu = document.getElementById('newOptionsMenu');
+          if (menu) menu.style.display = 'none';
+        }
+      });
+
+      // 2. Listener for the Hidden File Input (Unchanged and perfect!)
+      fileInput?.addEventListener('change', (event) => {
+        processFileSelection(
+          this._currentFolderId,
+          this._allFolders,
+          this._allFiles,
+          () =>
+            UIManager.refreshUI(
+              this._currentFolderId,
+              this._allFolders,
+              this._allFiles,
+            ),
+          event,
+        );
+      });
     });
   }
   private initGridEvents() {
@@ -209,108 +221,55 @@ export class FileExplorer {
           }
           break;
         case 'open-file':
-          if (itemId)
-            handleFileClick(this._allFolders, this._allFiles, itemId);
+          if (itemId) {
+            const file = this._allFiles[itemId];
+            if (!file) {
+              console.error('File not found!');
+              return;
+            }
+            if (file.isNew) {
+              file.isNew = false;
+
+              // Save to local storage and redraw the grid to remove the shiny "new" dot
+              saveToStorage(this._allFolders, this._allFiles);
+              UIManager.refreshUI(
+                this._currentFolderId,
+                this._allFolders,
+                this._allFiles,
+              );
+            }
+
+            // 2. Instantiate our new OOP Modal and open it!
+            // (Make sure you import FileViewerModal at the top of the file)
+            const fileViewer = new FileViewerModal(
+              itemId,
+              this._allFiles,
+            );
+            fileViewer.open();
+          }
           break;
         case 'delete':
           if (itemId) {
-            deleteItem(
+            // 1. Instantiate our new OOP Modal
+            // Make sure you have imported { DeleteModal } at the top of the file!
+            const deleteModal = new DeleteModal(
               itemId,
               isFolder,
               this._allFolders,
               this._allFiles,
-            );
-            UIManager.saveAndRefresh(
-              this._currentFolderId,
-              this._allFolders,
-              this._allFiles,
-            );
-          }
-          break;
-        case 'edit':
-          if (itemId && itemName) {
-            openRenameModal(
-              this._editingItemState,
-              itemId,
-              itemName,
-              isFolder,
-            );
-            UIManager.saveAndRefresh(
-              this._currentFolderId,
-              this._allFolders,
-              this._allFiles,
-            );
-          }
-          break;
-        case 'mobile-options':
-          if (itemName)
-            openMobileOptionsSheet(
-              itemId,
-              itemName,
-              isFolder,
-              this._mobileActionItem,
-            );
-          break;
-      }
-    });
-
-    // Handle typing in the input box
-    mainContainer?.addEventListener(
-      'keydown',
-      (event: KeyboardEvent) => {
-        const target = event.target as HTMLInputElement;
-
-        if (target.id === 'new-folder-input') {
-          if (event.key === 'Enter') {
-            event.preventDefault(); // Stop the enter key from doing anything else
-            submitNewFolder(
-              this._currentFolderId,
-              this._allFolders,
-              target,
               () =>
-                UIManager.saveAndRefresh(
+                UIManager.refreshUI(
                   this._currentFolderId,
                   this._allFolders,
                   this._allFiles,
                 ),
             );
+
+            // 2. Open it! (The class will wait for the user to click Confirm before actually deleting anything)
+            deleteModal.open();
           }
-
-          // Bonus UX: Let them hit Escape to cancel!
-          if (event.key === 'Escape') {
-            // Revert the UI by just refreshing the grid (which wipes out the unsaved input)
-            // this._currentFolderId.subFolders =
-            //   this._currentFolderId.subFolders.filter(
-            //     (f) => !f.isEditing,
-            //   );
-            UIManager.refreshUI(
-              this._currentFolderId,
-              this._allFolders,
-              this._allFiles,
-            );
-          }
-        }
-      },
-    );
-  }
-  private initModalEvents() {
-    // 1. The Global Click Listener
-    document.body.addEventListener('click', async (event) => {
-      const target = (event.target as HTMLElement).closest(
-        '[data-modal-action]',
-      ) as HTMLElement;
-      if (!target) return;
-
-      const action = target.dataset.modalAction;
-      const itemId = target.dataset.id;
-      const isFolder = target.dataset.type === 'folder';
-
-      switch (action) {
-        // --- Mobile Options Sheet Triggers ---
-        case 'trigger-mobile-rename':
-          // Close the mobile bottom sheet (Assuming this is still a separate HTML element for mobile UI)
-          closeModal('mobileOptionsModal');
-
+          break;
+        case 'edit':
           // Boom. Just instantiate and open!
           const renameModal = new RenameModal(
             itemId || this._mobileActionItem.id, // Use dataset ID or fallback to state
@@ -327,79 +286,10 @@ export class FileExplorer {
           );
           renameModal.open();
           break;
-
-        case 'trigger-mobile-delete':
-          closeModal('mobileOptionsModal');
-
-          // Assuming you create a DeleteModal subclass next!
-          const deleteModal = new DeleteModal(
-            itemId || this._mobileActionItem.id,
-            isFolder || this._mobileActionItem.isFolder,
-            this._allFolders,
-            this._allFiles,
-            () =>
-              UIManager.saveAndRefresh(
-                this._currentFolderId,
-                this._allFolders,
-                this._allFiles,
-              ),
-          );
-          deleteModal.open();
-          break;
-
-        case 'close-mobile-options':
-          closeModal('mobileOptionsModal');
-          break;
-
-        // --- Desktop Header Triggers (Assuming you have these buttons!) ---
-        case 'trigger-new-folder':
-          const newFolderModal = new CreateFolderModal(
-            this._currentFolderId,
-            this._allFolders,
-            this._allFiles,
-            () =>
-              UIManager.saveAndRefresh(
-                this._currentFolderId,
-                this._allFolders,
-                this._allFiles,
-              ),
-          );
-          newFolderModal.open();
-          break;
-
-        case 'trigger-new-file':
-          // Assuming you create a CreateFileModal subclass!
-          const newFileModal = new CreateFileModal(
-            this._currentFolderId,
-            this._allFolders,
-            this._allFiles,
-            () =>
-              UIManager.saveAndRefresh(
-                this._currentFolderId,
-                this._allFolders,
-                this._allFiles,
-              ),
-          );
-          newFileModal.open();
-          break;
-
-        // --- File Viewer Triggers ---
-        case 'download-file':
-          const targetId = target.dataset.id || this._activeFileId;
-          if (targetId) downloadFile(this._allFiles, targetId);
-          break;
-
-        case 'open-file-viewer':
-          // Assuming you convert your File Details popup into a BaseModal subclass!
-          const fileViewer = new FileViewerModal(
-            itemId || this._activeFileId,
-            this._allFiles,
-          );
-          fileViewer.open();
-          break;
       }
     });
   }
+
   private initBreadcrumbEvents() {
     const pathDisplay = document.getElementById(
       'folder-path-display',
