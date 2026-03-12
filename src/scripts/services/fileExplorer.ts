@@ -5,7 +5,7 @@ import { DeleteModal } from '../models/modals/deleteModal';
 import { FileViewerModal } from '../models/modals/fileViewerModal';
 import { RenameModal } from '../models/modals/renameModal';
 import { EditingState, MobileActionItem } from '../models/model';
-import { ROOT_FOLDER_ID } from '../utilities/_const';
+import { BREAD_CRUMB, ROOT_FOLDER_ID } from '../utilities/_const';
 import { initFiles, initFolders } from '../utilities/_initData';
 import {
   getIdFromUrl,
@@ -76,7 +76,7 @@ export class FileExplorer {
 
     // // 2. Draw the Breadcrumbs
     UIManager.renderBreadcrumbs(
-      'breadcrumb',
+      BREAD_CRUMB,
       this._currentFolderId,
       this._allFolders,
     );
@@ -84,7 +84,6 @@ export class FileExplorer {
   private setupEventListeners() {
     this.initToolbarEvents();
     this.initGridEvents();
-    this.initBreadcrumbEvents();
   }
 
   private initToolbarEvents() {
@@ -190,12 +189,11 @@ export class FileExplorer {
 
       const action = target.dataset.action;
       const itemId = target.dataset.id;
-      const itemName = target.dataset.name;
       const isFolder = target.dataset.type === 'folder';
 
       switch (action) {
         case 'open-folder':
-          if (itemName) {
+          if (itemId) {
             // Overwrite the class state with the newly returned folder!
             this._currentFolderId = handleFolderClick(
               itemId,
@@ -275,34 +273,6 @@ export class FileExplorer {
           renameModal.open();
           break;
       }
-    });
-  }
-
-  private initBreadcrumbEvents() {
-    const pathDisplay = document.getElementById(
-      'breadcrumb',
-    );
-
-    pathDisplay?.addEventListener('click', (event) => {
-      const target = (event.target as HTMLElement).closest(
-        '[data-path]',
-      ) as HTMLElement;
-      if (!target || !target.dataset.path) return;
-
-      // 1. Calculate the new folder
-      this._currentFolderId = getIdFromUrl();
-
-      // 3. Render BOTH the grid and the breadcrumbs! (Removed arrow function)
-      UIManager.refreshUI(
-        this._currentFolderId,
-        this._allFolders,
-        this._allFiles,
-      );
-      UIManager.renderBreadcrumbs(
-        'breadcrumb',
-        this._currentFolderId,
-        this._allFolders,
-      );
     });
   }
 }

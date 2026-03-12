@@ -6,6 +6,7 @@ import {
   generateBreadcrumbPath,
   getBreadcrumbPath,
 } from '../utilities/_navigate';
+import { BREAD_CRUMB } from '../utilities/_const';
 export class UIManager {
   /**
    * RefreshUI
@@ -18,9 +19,13 @@ export class UIManager {
     allFolders: Record<string, Folder>,
     allFiles: Record<string, File>,
   ) {
+    UIManager.renderBreadcrumbs(
+      BREAD_CRUMB,
+      currentFolderId,
+      allFolders,
+    );
     UIManager.renderLoadingState();
     await new Promise((resolve) => setTimeout(resolve, 400));
-
     // 1. FILTER: Search the dictionaries for items belonging to this folder
     // Object.values() turns our flat dictionary into an array we can filter
     const currentSubFolders = Object.values(allFolders).filter(
@@ -99,7 +104,7 @@ export class UIManager {
           : '';
 
         return `
-      <div class="m-list-row m-list-item" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}" data-name="${item.name}">
+      <div class="m-list-row m-list-item" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}">
         
         <div class="m-list-cell">
           <div class="m-mobile-label d-md-none">File Type</div>
@@ -155,11 +160,10 @@ export class UIManager {
         const isLast = index === pathArray.length - 1;
         const isRoot = index === 0 && folder.parentId === null; // Or whatever your root logic is
 
-
         // UX Upgrade: The current folder is bold text, NOT a clickable link
         if (isLast) {
           return `
-        <span class="text-dark fw-bold d-inline-flex align-items-center" aria-current="page">
+        <span class="d-inline-flex align-items-center" aria-current="page">
           ${folder.name}
         </span>
       `;
@@ -168,7 +172,7 @@ export class UIManager {
         // Previous folders are clickable links!
         return `
       <span 
-        class="text-primary is-clickable d-inline-flex align-items-center" 
+        class="d-inline-flex align-items-center" aria-current="page"
         style="cursor: pointer;"
         data-action="open-folder" 
         data-id="${folder.id}"
