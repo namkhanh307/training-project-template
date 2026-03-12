@@ -5,18 +5,26 @@ import { UIManager } from './uiManager';
 export function handleFolderClick(
   targetFolderId: string,
   allFolders: Record<string, Folder>,
-): Folder {
+): string { // 🔴 Change return type to string
+  
   const targetFolder = allFolders[targetFolderId];
-  if (!targetFolder) return allFolders[ROOT_FOLDER_ID]; // Fallback to root if ID is bad
+  
+  // Fallback to root if ID is bad
+  if (!targetFolder) {
+    console.warn('Folder not found, returning to root.');
+    updateUrlWithId(ROOT_FOLDER_ID);
+    return ROOT_FOLDER_ID; 
+  }
 
+  // Clear the new notification dot/sparkle
   targetFolder.isNew = false;
 
-  // Just put the ID in the URL!
+  // Update the browser URL
   updateUrlWithId(targetFolderId);
 
-  return targetFolder;
+  // Return just the ID for your class state to consume!
+  return targetFolderId;
 }
-
 // export function navigateFromBreadcrumb(
 //   rootFolder: Folder,
 //   targetPath: string,

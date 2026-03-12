@@ -1,5 +1,9 @@
 import { File, Folder } from '../models/entity';
-import { EditingState, MobileActionItem } from '../models/model';
+import {
+  EditingState,
+  MobileActionItem,
+  UniqueNameModel,
+} from '../models/model';
 import {
   generateID,
   generateUniqueFileName,
@@ -41,11 +45,18 @@ export async function processFileSelection(
   const filePromises = Array.from(files).map((selectedFile) => {
     return new Promise<File>((resolve) => {
       const reader = new FileReader();
-
+      const itemsDictionary = siblingFiles.reduce(
+        (dict, folder) => {
+          dict[folder.id] = folder;
+          return dict;
+        },
+        {} as Record<string, UniqueNameModel>,
+      );
       // Ensure the name is unique among files in THIS folder
       const safeUniqueName = generateUniqueFileName(
         selectedFile.name,
-        siblingFiles,
+        currentFolderId,
+        itemsDictionary,
       );
 
       // Safely extract the extension from the newly generated name
@@ -91,8 +102,8 @@ export async function processFileSelection(
   target.value = ''; // Reset the input field
 }
 export async function createNewFolderDesktop(
-  currentFolderId: string, // 🔴 Pass the ID instead of the whole nested object
-  allFolders: Record<string, Folder>, // 🔴 Pass the global dictionary
+  currentFolderId: string,
+  allFolders: Record<string, Folder>,
   refreshUI: () => Promise<void>,
 ) {
   // 1. Gather siblings to check for duplicate names
@@ -100,9 +111,19 @@ export async function createNewFolderDesktop(
   const siblingFolders = Object.values(allFolders).filter(
     (folder) => folder.parentId === currentFolderId,
   );
-
+  const itemsDictionary = siblingFolders.reduce(
+    (dict, folder) => {
+      dict[folder.id] = folder;
+      return dict;
+    },
+    {} as Record<string, UniqueNameModel>,
+  );
   // 2. Generate a safe name using the siblings
-  const folderName = generateUniqueName('New folder', siblingFolders);
+  const folderName = generateUniqueName(
+    'New folder',
+    currentFolderId,
+    itemsDictionary,
+  );
   const newId = generateID();
 
   // 3. Create the perfect flat object
@@ -152,7 +173,12 @@ export function handleFileClick(
     file.modified;
   document.getElementById('modalFileModifiedBy')!.innerText =
     file.modifiedBy;
-
+  const downloadBtn = document.querySelector(
+    '[data-modal-action="download-file"]',
+  ) as HTMLButtonElement;
+  if (downloadBtn) {
+    downloadBtn.dataset.id = file.id;
+  }
   openModal('fileModal');
 }
 export function downloadFile(
@@ -160,6 +186,7 @@ export function downloadFile(
   fileId: string,
 ) {
   const file = allFiles[fileId];
+  console.log('Attempting to download file with ID:', fileId);
   console.log('Attempting to download file:', file);
   if (!file || !file.data) {
     alert(
@@ -206,22 +233,24 @@ export function deleteItem(
 }
 export function openRenameModal(
   stateRef: EditingState,
+  itemId: string,
   oldName: string,
   isFolder: boolean,
 ) {
+  // Save all three pieces of data to your class memory!
+  stateRef.id = itemId; 
   stateRef.oldName = oldName;
   stateRef.isFolder = isFolder;
 
-  const input = document.getElementById(
-    'renameInput',
-  ) as HTMLInputElement;
+  const input = document.getElementById('renameInput') as HTMLInputElement;
 
   if (input) {
     input.value = oldName;
-    openModal('renameModal');
+    openModal('renameModal'); // (Make sure you have this helper imported)
 
     setTimeout(() => {
       input.focus();
+      // Highlight only the name, not the extension!
       if (!isFolder && oldName.includes('.')) {
         input.setSelectionRange(0, oldName.lastIndexOf('.'));
       } else {
@@ -231,8 +260,12 @@ export function openRenameModal(
   }
 }
 export function submitRename(
-  stateRef: EditingState,
-  currentFolder: Folder,
+  stateRef: EditingState, // { id, oldName, isFolder }
+  currentFolderId: string, // 🔴 Pass the ID
+  allFolders: Record<string, Folder>, // 🔴 Pass the flat folders
+  allFiles: Record<string, File>, // 🔴 Pass the flat files
+  saveAndRefreshUI: () => void, // Callback to save and redraw
+  closeModal: (modalId: string) => void,
 ) {
   const input = document.getElementById(
     'renameInput',
@@ -240,26 +273,30 @@ export function submitRename(
   const newName = input.value.trim();
   const { id, oldName, isFolder } = stateRef;
 
+  // 1. Bail out if nothing changed
   if (!newName || newName === oldName) {
     closeModal('renameModal');
     return;
   }
+
+  // 2. VALIDATION
   if (!isValidName(newName)) {
     alert(
-      'A file name cannot contain any of the following characters: \\ / : * ? " < > |',
+      'A name cannot contain any of the following characters: \\ / : * ? " < > |',
     );
     input.focus();
     return;
   }
 
-  const itemArray = isFolder
-    ? currentFolder.subFolders
-    : currentFolder.files;
+  // Pick the right dictionary to check based on what we are renaming
+  const activeDictionary = isFolder ? allFolders : allFiles;
+
+  // 3. Duplicate check using our refactored helper
   const duplicateFound = isNameDuplicate(
     newName,
-    itemArray,
-    true,
-    id,
+    currentFolderId,
+    activeDictionary,
+    id, // Pass the ID so it doesn't flag itself as a duplicate!
   );
 
   if (duplicateFound) {
@@ -268,15 +305,18 @@ export function submitRename(
     return;
   }
 
-  const target = itemArray.find((f) => f.name === oldName);
+  // 4. INSTANT LOOKUP: No more .find() loops!
+  const target = activeDictionary[id];
+
   if (target) {
+    // Just change the name
     target.name = newName;
-    if (isFolder) {
-      target.path =
-        currentFolder.path === '/'
-          ? `/${newName}`
-          : `${currentFolder.path}/${newName}`;
-    } else {
+
+    // 🔴 NOTICE: We completely deleted the `target.path` calculation!
+
+    // If it's a file, we still want to update the extension just in case
+    // they renamed "data.csv" to "data.txt"
+    if (!isFolder) {
       const lastDot = newName.lastIndexOf('.');
       (target as File).extension =
         lastDot > 0
@@ -285,8 +325,12 @@ export function submitRename(
     }
   }
 
-  UIManager.saveAndRefresh(currentFolder);
+  // 5. Save, Render, and Close!
+  saveAndRefreshUI();
   closeModal('renameModal');
+
+  // Clean up
+  input.value = '';
 }
 export function openMobileOptionsSheet(
   id: string,
@@ -317,16 +361,23 @@ export function openNewFolderMobile() {
   // 4. Try to focus the input automatically for the user
   setTimeout(() => input?.focus(), 100);
 }
-export function submitNewFolderMobile(currentFolder: Folder) {
+export function submitNewFolderMobile(
+  currentFolderId: string, // 🔴 Pass the ID
+  allFolders: Record<string, Folder>, // 🔴 Pass the flat dictionary
+  saveAndRefreshUI: () => void, // 🔴 Pass your UI updater
+  closeModal: (modalId: string) => void, // 🔴 Pass your modal closer
+) {
   const input = document.getElementById(
     'newFolderNameInput',
   ) as HTMLInputElement;
   let newName = input.value.trim();
 
-  // If they left it blank, default to "New folder"
+  // 1. Default fallback
   if (!newName) {
     newName = 'New folder';
   }
+
+  // 2. VALIDATION
   if (!isValidName(newName)) {
     alert(
       'A folder name cannot contain any of the following characters: \\ / : * ? " < > |',
@@ -334,11 +385,12 @@ export function submitNewFolderMobile(currentFolder: Folder) {
     input.focus();
     return;
   }
-  // Check if a folder with this name already exists
+
+  // Use our newly refactored dictionary-aware duplicate checker!
   const duplicateFound = isNameDuplicate(
     newName,
-    currentFolder.subFolders,
-    false,
+    currentFolderId,
+    allFolders,
   );
 
   if (duplicateFound) {
@@ -347,32 +399,35 @@ export function submitNewFolderMobile(currentFolder: Folder) {
     return;
   }
 
-  // Create the new folder object
+  const newId = generateID();
+
+  // 3. Create the perfect flat object
   const newFolder: Folder = {
+    id: newId,
+    parentId: currentFolderId, // 🔴 The magic link!
     name: newName,
-    path:
-      currentFolder.path === '/'
-        ? `/${newName}`
-        : `${currentFolder.path}/${newName}`,
-    subFolders: [],
-    files: [],
     modified: new Date().toISOString(),
     modifiedBy: 'You',
     isNew: true,
     type: 'folder',
-    id: generateID(),
+    maxSize: 0,
   };
 
-  // Add it to the top of the list
-  currentFolder.subFolders.unshift(newFolder);
+  // 4. INSTANT INSERT: Add it straight to the dictionary
+  allFolders[newId] = newFolder;
 
-  // Save state, redraw the grid, and close the modal
-  UIManager.saveAndRefresh(currentFolder);
+  // 5. Save state, redraw the grid, and close the modal
+  saveAndRefreshUI();
   closeModal('newFolderModal');
+
+  // Clean up the input box for the next time the modal opens
+  input.value = '';
 }
-export function saveFolderName(
-  currentFolder: Folder,
+export function submitNewFolder(
+  currentFolderId: string,
+  allFolders: Record<string, Folder>,
   inputElement: HTMLInputElement,
+  saveAndRefreshUI: () => void, // Pass your refresh callback
 ) {
   // 1. THE LOCK: Prevent Enter-key mashing
   if (inputElement.dataset.isSaving === 'true') return;
@@ -380,21 +435,23 @@ export function saveFolderName(
 
   const newName = inputElement.value.trim() || 'New folder';
 
-  // Find the temporary folder
-  const folderBeingEdited = currentFolder.subFolders.find(
-    (f) => f.isEditing,
+  // 2. Find the temporary folder in the flat dictionary
+  const folderBeingEdited = Object.values(allFolders).find(
+    (f) => f.parentId === currentFolderId && f.isEditing,
   );
+
   if (!folderBeingEdited) {
     inputElement.dataset.isSaving = 'false';
     return;
   }
 
-  // 2. VALIDATION
+  // 3. VALIDATION
   const isInvalid = !isValidName(newName);
   const isDuplicate = isNameDuplicate(
     newName,
-    currentFolder.subFolders,
-    false,
+    currentFolderId,
+    allFolders,
+    folderBeingEdited.id, // Pass the ID so it doesn't flag itself as a duplicate
   );
 
   if (isInvalid || isDuplicate) {
@@ -402,7 +459,7 @@ export function saveFolderName(
       ? 'A folder name cannot contain special characters like / : * ? " < > |'
       : 'A folder with this name already exists.';
 
-    alert(errorMsg); // Safe to use now!
+    alert(errorMsg);
 
     // Give focus back to the input so they can fix it
     setTimeout(() => {
@@ -414,20 +471,21 @@ export function saveFolderName(
     return;
   }
 
-  // 3. SUCCESS
+  // 4. SUCCESS: Just update the name and remove the flag!
+  // (Notice: We completely deleted the 'path' calculation!)
   folderBeingEdited.name = newName;
-  folderBeingEdited.path =
-    currentFolder.path === '/'
-      ? `/${newName}`
-      : `${currentFolder.path}/${newName}`;
-
   delete folderBeingEdited.isEditing;
 
-  // 4. RENDER
-  // Make sure your saveAndRefresh actually calls your UI update!
-  UIManager.saveAndRefresh(currentFolder);
+  // 5. RENDER & SAVE
+  // Because we mutated the object inside the dictionary, we just save and refresh!
+  saveAndRefreshUI();
 }
-export function submitNewFile(currentFolder: Folder) {
+export function submitNewFile(
+  currentFolderId: string,
+  allFiles: Record<string, File>,
+  saveAndRefreshUI: () => void,
+  closeModal: (modalId: string) => void,
+) {
   const input = document.getElementById(
     'newFileNameInput',
   ) as HTMLInputElement;
@@ -438,17 +496,7 @@ export function submitNewFile(currentFolder: Folder) {
     newName = 'New Document.txt';
   }
 
-  const duplicateFound = isNameDuplicate(
-    newName,
-    currentFolder.files,
-    true,
-  );
-
-  if (duplicateFound) {
-    alert('A file with this name already exists.');
-    input.focus();
-    return;
-  }
+  // 1. VALIDATION
   if (!isValidName(newName)) {
     alert(
       'A file name cannot contain any of the following characters: \\ / : * ? " < > |',
@@ -456,15 +504,32 @@ export function submitNewFile(currentFolder: Folder) {
     input.focus();
     return;
   }
-  // Extract the extension (e.g. from "data.xlsx" get "xlsx")
+
+  const duplicateFound = isNameDuplicate(
+    newName,
+    currentFolderId,
+    allFiles,
+  );
+
+  if (duplicateFound) {
+    alert('A file with this name already exists.');
+    input.focus();
+    return;
+  }
+
+  // 2. Extract the extension (e.g. from "data.xlsx" get "xlsx")
   const lastDotIndex = newName.lastIndexOf('.');
   const extension =
     lastDotIndex > 0
       ? newName.substring(lastDotIndex + 1).toLowerCase()
       : '';
 
-  // Create the dummy file object
+  const newFileId = generateID();
+
+  // 3. Create the flat file object
   const newFile: File = {
+    id: newFileId,
+    parentId: currentFolderId, // 🔴 The magic link!
     name: newName,
     extension: extension,
     modified: new Date().toISOString(),
@@ -472,17 +537,16 @@ export function submitNewFile(currentFolder: Folder) {
     isNew: true,
     data: '', // Empty base64 data since it's a blank file
     type: 'file',
-    path:
-      currentFolder.path === '/'
-        ? `/${currentFolder.name}`
-        : `${currentFolder.path}/${newName}`,
-    id: generateID(),
+    // 🔴 Notice: No 'path' property!
   };
 
-  // Push it to the top of the array
-  currentFolder.files.unshift(newFile);
+  // 4. INSTANT INSERT: Add to dictionary
+  allFiles[newFileId] = newFile;
 
-  // Save, Render, and Close!
-  UIManager.saveAndRefresh(currentFolder); // (Assuming this is your save helper)
+  // 5. Save, Render, and Close!
+  saveAndRefreshUI();
   closeModal('newFileModal');
+
+  // Clean up input for next time
+  input.value = '';
 }

@@ -14,7 +14,7 @@ import {
 } from '../utilities/_storageUtil';
 import { UIManager } from '../utilities/uiManager';
 import {
-  deleteItem, 
+  deleteItem,
   downloadFile,
   handleFileClick,
   openMobileOptionsSheet,
@@ -26,7 +26,7 @@ import {
   submitRename,
   triggerUpload,
 } from './crud';
-import { createNewFolderDesktop, saveFolderName } from './crud';
+import { createNewFolderDesktop, submitNewFolder } from './crud';
 
 export class FileExplorer {
   private _allFolders: Record<string, Folder> = initFolders;
@@ -139,14 +139,15 @@ export class FileExplorer {
           // 1. Hide the menu
           if (newMenu) newMenu.style.display = 'none';
           // 2. Call your existing inline folder creation method!
-          createNewFolderDesktop(this._currentFolderId,
-              this._allFolders,
-             () =>
-            UIManager.refreshUI(
-              this._currentFolderId,
-              this._allFolders,
-              this._allFiles,
-            ),
+          createNewFolderDesktop(
+            this._currentFolderId,
+            this._allFolders,
+            () =>
+              UIManager.refreshUI(
+                this._currentFolderId,
+                this._allFolders,
+                this._allFiles,
+              ),
           );
           break;
 
@@ -205,19 +206,27 @@ export class FileExplorer {
               itemId,
               this._allFolders,
             );
+            UIManager.refreshUI(this._currentFolderId, this._allFolders, this._allFiles)
           }
           break;
         case 'open-file':
-          if (itemId) handleFileClick(this._allFolders, this._allFiles, itemId);
+          if (itemId)
+            handleFileClick(this._allFolders, this._allFiles, itemId);
           break;
         case 'delete':
           if (itemId)
-            deleteItem(itemId, isFolder, this._allFolders, this._allFiles);
+            deleteItem(
+              itemId,
+              isFolder,
+              this._allFolders,
+              this._allFiles,
+            );
           break;
         case 'edit':
-          if (itemName)
+          if (itemId && itemName)
             openRenameModal(
               this._editingItemState,
+              itemId,
               itemName,
               isFolder,
             );
@@ -243,7 +252,7 @@ export class FileExplorer {
         if (target.id === 'new-folder-input') {
           if (event.key === 'Enter') {
             event.preventDefault(); // Stop the enter key from doing anything else
-            saveFolderName(this._currentFolderId, target);
+            submitNewFolder(this._currentFolderId, target);
           }
 
           // Bonus UX: Let them hit Escape to cancel!
@@ -272,11 +281,23 @@ export class FileExplorer {
       if (!target) return;
 
       const action = target.dataset.modalAction;
-
+      const itemId = target.dataset.id;
       switch (action) {
         // --- Rename Modal ---
         case 'submit-rename':
-          submitRename(this._editingItemState, this._currentFolderId);
+          submitRename(
+            this._editingItemState,
+            this._currentFolderId,
+            this._allFolders,
+            this._allFiles,
+            () =>
+              UIManager.saveAndRefresh(
+                this._currentFolderId,
+                this._allFolders,
+                this._allFiles,
+              ),
+            () => closeModal('renameModal'),
+          );
           break;
         case 'close-rename':
           closeModal('renameModal');
@@ -287,6 +308,7 @@ export class FileExplorer {
           closeModal('mobileOptionsModal');
           openRenameModal(
             this._editingItemState,
+            itemId,
             this._mobileActionItem.name,
             this._mobileActionItem.isFolder,
           );
@@ -305,9 +327,13 @@ export class FileExplorer {
 
         // --- File Viewer Modal ---
         case 'download-file':
-          const fileName =
-            document.getElementById('modalFileName')?.innerText;
-          if (fileName) downloadFile(this._currentFolderId, fileName);
+          // The target is the button they clicked.
+          // Because of step 3 above, this dataset.id now holds the real ID!
+          const targetId = target.dataset.id;
+          console.log(targetId);
+          if (targetId) {
+            downloadFile(this._allFiles, targetId);
+          }
           break;
         case 'close-file-modal':
           closeModal('fileModal');
@@ -337,7 +363,10 @@ export class FileExplorer {
           const target = event.target as HTMLElement;
           if (target.id === 'renameInput') {
             event.preventDefault();
-            submitRename(this._editingItemState, this._currentFolderId);
+            submitRename(
+              this._editingItemState,
+              this._currentFolderId,
+            );
           } else if (target.id === 'newFolderNameInput') {
             event.preventDefault();
             submitNewFolderMobile(this._currentFolderId); // Assuming you migrated your submitNewFolder logic!

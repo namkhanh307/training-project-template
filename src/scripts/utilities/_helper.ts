@@ -65,7 +65,7 @@ export function generateID(): string {
  * Checks if a file or folder name already exists.
  * * @param newName The text the user typed into the input
  * @param currentFolderId The ID of the folder to check
- * @param isEdit True if renaming, False if creating new
+ * @param itemsDictionary 
  * @param currentId The ID of the item being renamed (Only needed if isEdit is true)
  * @returns boolean (true if it's a duplicate, false if it's safe to use)
  */
