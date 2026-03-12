@@ -1,6 +1,6 @@
 import { File, Folder } from '../models/entity';
 import { ROOT_FOLDER_ID } from './_const';
-import { UIManager } from './uiManager';
+import { UIManager } from '../services/uiManager';
 
 export function handleFolderClick(
   targetFolderId: string,
@@ -94,4 +94,27 @@ export function generateBreadcrumbPath(
   }
 
   return breadcrumbTrail;
+}
+export function getBreadcrumbPath(
+  currentFolderId: string, 
+  allFolders: Record<string, Folder>
+): Folder[] {
+  const path: Folder[] = [];
+  let currentId: string | null = currentFolderId;
+
+  // We use a Set to prevent infinite loops just in case of bad data
+  const visited = new Set<string>();
+
+  while (currentId && allFolders[currentId] && !visited.has(currentId)) {
+    visited.add(currentId);
+    
+    const folder = allFolders[currentId];
+    
+    // .unshift() adds it to the FRONT of the array, so it reads Root -> Child
+    path.unshift(folder); 
+    
+    currentId = folder.parentId;
+  }
+
+  return path;
 }

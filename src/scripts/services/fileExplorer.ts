@@ -16,7 +16,7 @@ import {
   loadFromStorage,
   saveToStorage,
 } from '../utilities/_storageUtil';
-import { UIManager } from '../utilities/uiManager';
+import { UIManager } from './uiManager';
 import {
   processFileSelection,
   triggerUpload,
@@ -26,18 +26,7 @@ export class FileExplorer {
   private _allFolders: Record<string, Folder> = initFolders;
   private _allFiles: Record<string, File> = initFiles;
   private _currentFolderId: string;
-  private _activeFileId: string | null = null;
-  //State for modals
-  private _editingItemState: EditingState = {
-    id: '',
-    oldName: '',
-    isFolder: false,
-  };
-  private _mobileActionItem: MobileActionItem = {
-    id: '',
-    name: '',
-    isFolder: false,
-  };
+
 
   constructor() {
     // 1. Load the flat hashmaps from the hard drive
@@ -86,11 +75,11 @@ export class FileExplorer {
     );
 
     // // 2. Draw the Breadcrumbs
-    // updateBreadcrumbs(
-    //   'folder-path-display',
-    //   this._currentFolderIdId,
-    //   this._allFolders,
-    // );
+    UIManager.renderBreadcrumbs(
+      'breadcrumb',
+      this._currentFolderId,
+      this._allFolders,
+    );
   }
   private setupEventListeners() {
     this.initToolbarEvents();
@@ -271,8 +260,8 @@ export class FileExplorer {
         case 'edit':
           // Boom. Just instantiate and open!
           const renameModal = new RenameModal(
-            itemId || this._mobileActionItem.id, // Use dataset ID or fallback to state
-            isFolder || this._mobileActionItem.isFolder,
+            itemId,
+            isFolder,
             this._currentFolderId,
             this._allFolders,
             this._allFiles,
@@ -291,35 +280,29 @@ export class FileExplorer {
 
   private initBreadcrumbEvents() {
     const pathDisplay = document.getElementById(
-      'folder-path-display',
+      'breadcrumb',
     );
 
-    // pathDisplay?.addEventListener('click', (event) => {
-    //   const target = (event.target as HTMLElement).closest(
-    //     '[data-path]',
-    //   ) as HTMLElement;
-    //   if (!target || !target.dataset.path) return;
+    pathDisplay?.addEventListener('click', (event) => {
+      const target = (event.target as HTMLElement).closest(
+        '[data-path]',
+      ) as HTMLElement;
+      if (!target || !target.dataset.path) return;
 
-    //   // 1. Calculate the new folder
-    //   this._currentFolderId = navigateFromBreadcrumb(
-    //     this._rootFolder,
-    //     target.dataset.path,
-    //   );
+      // 1. Calculate the new folder
+      this._currentFolderId = getIdFromUrl();
 
-    //   // 2. Update the URL visually
-    //   updateUrlPath(this._currentFolderId.path || '/');
-
-    //   // 3. Render BOTH the grid and the breadcrumbs! (Removed arrow function)
-    //   UIManager.refreshUI(
-    //     this._currentFolderId.id,
-    //     this._allFolders,
-    //     this._allFiles,
-    //   );
-    //   UIManager.updateBreadcrumbs(
-    //     'folder-path-display',
-    //     this._currentFolderId.id,
-    //     this._allFolders,
-    //   );
-    // });
+      // 3. Render BOTH the grid and the breadcrumbs! (Removed arrow function)
+      UIManager.refreshUI(
+        this._currentFolderId,
+        this._allFolders,
+        this._allFiles,
+      );
+      UIManager.renderBreadcrumbs(
+        'breadcrumb',
+        this._currentFolderId,
+        this._allFolders,
+      );
+    });
   }
 }

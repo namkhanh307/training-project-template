@@ -1,8 +1,11 @@
 import { Row, File, Folder } from '../models/entity';
-import { getFileIconHTML } from './_helper';
-import { saveToStorage } from './_storageUtil';
-import { getRelativeTime } from './_helper';
-import { generateBreadcrumbPath } from './_navigate';
+import { getFileIconHTML } from '../utilities/_helper';
+import { saveToStorage } from '../utilities/_storageUtil';
+import { getRelativeTime } from '../utilities/_helper';
+import {
+  generateBreadcrumbPath,
+  getBreadcrumbPath,
+} from '../utilities/_navigate';
 export class UIManager {
   /**
    * RefreshUI
@@ -138,7 +141,7 @@ export class UIManager {
       })
       .join('');
   };
-  static updateBreadcrumbs(
+  static renderBreadcrumbs(
     containerId: string,
     currentFolderId: string,
     allFolders: Record<string, Folder>,
@@ -146,27 +149,28 @@ export class UIManager {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // 1. Get our perfect array of folders
-    const pathArray = generateBreadcrumbPath(
-      currentFolderId,
-      allFolders,
-    );
-
-    // 2. Map them into HTML
+    const pathArray = getBreadcrumbPath(currentFolderId, allFolders);
     const html = pathArray
       .map((folder, index) => {
         const isLast = index === pathArray.length - 1;
+        const isRoot = index === 0 && folder.parentId === null; // Or whatever your root logic is
 
-        // If it's the folder we are currently in, just show text (not clickable)
+
+        // UX Upgrade: The current folder is bold text, NOT a clickable link
         if (isLast) {
-          return `<span class="fw-bold text-dark">${folder.name}</span>`;
+          return `
+        <span class="text-dark fw-bold d-inline-flex align-items-center" aria-current="page">
+          ${folder.name}
+        </span>
+      `;
         }
 
-        // If it's a parent folder, make it a clickable link with the ID!
+        // Previous folders are clickable links!
         return `
       <span 
-        class="text-primary is-clickable" 
-        data-action="navigate-breadcrumb" 
+        class="text-primary is-clickable d-inline-flex align-items-center" 
+        style="cursor: pointer;"
+        data-action="open-folder" 
         data-id="${folder.id}"
       >
         ${folder.name}
@@ -175,11 +179,13 @@ export class UIManager {
     `;
       })
       .join('');
-
     container.innerHTML = html;
   }
+
   static renderLoadingState = (): void => {
-    const container = document.getElementById('unified-row-container');
+    const container = document.getElementById(
+      'unified-row-container',
+    );
 
     const spinnerHTML = `
       <div class="d-flex justify-content-center align-items-center w-100" style="height: 200px;">

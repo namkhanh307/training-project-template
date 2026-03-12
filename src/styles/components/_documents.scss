@@ -216,13 +216,13 @@ body {
   font-family: inherit;
   width: 80%;
 }
-.m-breadcrumb {
+.m-breadcrumbs {
   display: inline-block;
   color: inherit; /* Inherits the h1 text color */
   transition: color 0.2s;
 }
 
-.m-breadcrumb:hover {
+.m-breadcrumbs:hover {
   color: #0078d4; /* Your primary theme color */
   text-decoration: underline;
 }
@@ -233,7 +233,9 @@ body {
   font-size: 0.75rem; /* Make the arrow slightly smaller than the h1 text */
   opacity: 0.6;
 }
-
+.m-breadcrumbs::-webkit-scrollbar {
+  display: none;          /* Hides the scrollbar on Chrome/Safari */
+}
 .option-menu-mobile {
   display: none;
   position: absolute;

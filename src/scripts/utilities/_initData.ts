@@ -3,7 +3,7 @@ import { File, Folder } from '../models/entity';
 export let initFolders: Record<string, Folder> = {
   'cb875544839f44fc9947cd55e81b7ade': {
     id: 'cb875544839f44fc9947cd55e81b7ade',
-    name: 'Root',
+    name: 'Documents',
     parentId: null,
     type: 'folder',
     maxSize: 1000,
