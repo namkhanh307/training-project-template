@@ -1,5 +1,8 @@
+import { ROW_TYPE } from "../models/enum";
 import { RenameModel, UniqueNameModel } from "../models/model";
 import { SUPPORTED_ICONS } from "./_const";
+import { saveToStorage } from "./_storageUtil";
+import { File, Folder} from "../models/entity";
 
 const ready = (fn: ()=> void) => {
   if (document.readyState !== 'loading') {
@@ -10,6 +13,7 @@ const ready = (fn: ()=> void) => {
 };
 export default ready;
 
+//File Icon
 export function getFileIconHTML(extension: string): string {
   const safeExt = extension.toLowerCase();
 
@@ -95,6 +99,7 @@ export function isNameDuplicate(
     return item.name.toLowerCase() === formattedNewName;
   });
 }
+
 /**
  * Checks if a file or folder name contains forbidden special characters.
  * Forbidden characters: < > : " / \ | ? *
@@ -108,13 +113,7 @@ export function isValidName(name: string): boolean {
   // If the regex finds a match, it's invalid (returns false). Otherwise, it's safe (returns true).
   return !forbiddenChars.test(name);
 }
-/**
- * Generates a unique file name when upload a duplicate file name, preserving the extension.
- * Example: "Data.csv" -> "Data (1).csv"
- * * @param originalName The full uploaded file name (e.g., "Budget.xlsx")
- * @param existingItems The array of current files to check against
- * @returns A guaranteed unique file string
- */
+
 /**
  * Generates a unique name by appending (1), (2), etc., if the base name already exists.
  * @param baseName The default name you want to use (e.g., "New folder")
@@ -142,7 +141,9 @@ export function generateUniqueName(
   }
 
   return uniqueName;
-}/**
+}
+
+/**
  * Generates a unique file name when uploading a duplicate file, preserving the extension.
  * Example: "Data.csv" -> "Data (1).csv"
  * @param originalName The full uploaded file name (e.g., "Budget.xlsx")
@@ -180,4 +181,90 @@ export function generateUniqueFileName(
   }
 
   return uniqueName;
+}
+
+//File Upload
+export function triggerUpload() {
+  const fileInput = document.getElementById(
+    'fileInput',
+  ) as HTMLInputElement;
+  fileInput?.click();
+}
+
+export async function processFileSelection(
+  currentFolderId: string,
+  allFolders: Record<string, Folder>,
+  allFiles: Record<string, File>,
+  refreshUI: () => void,
+  event: Event,
+) {
+  const target = event.target as HTMLInputElement;
+  const files = target.files;
+
+  if (!files || files.length === 0) return;
+
+  // 1. Gather siblings to prevent duplicate names (e.g., "Budget (1).xlsx")
+  const siblingFiles = Object.values(allFiles).filter(
+    (file) => file.parentId === currentFolderId,
+  );
+
+  // 2. Map the files into an array of Promises
+  const filePromises = Array.from(files).map((selectedFile) => {
+    return new Promise<File>((resolve) => {
+      const reader = new FileReader();
+      const itemsDictionary = siblingFiles.reduce(
+        (dict, folder) => {
+          dict[folder.id] = folder;
+          return dict;
+        },
+        {} as Record<string, UniqueNameModel>,
+      );
+      // Ensure the name is unique among files in THIS folder
+      const safeUniqueName = generateUniqueFileName(
+        selectedFile.name,
+        currentFolderId,
+        itemsDictionary,
+      );
+
+      // Safely extract the extension from the newly generated name
+      const lastDotIndex = safeUniqueName.lastIndexOf('.');
+      const fileExtension =
+        lastDotIndex > 0
+          ? safeUniqueName.substring(lastDotIndex + 1).toLowerCase()
+          : '';
+
+      reader.onload = (e) => {
+        const newId = generateID();
+
+        resolve({
+          id: newId,
+          parentId: currentFolderId,
+          name: safeUniqueName,
+          extension: fileExtension,
+          modified: new Date().toISOString(),
+          modifiedBy: 'You',
+          isNew: true,
+          type: ROW_TYPE.FILE,
+          data: e.target?.result as string,
+        });
+      };
+
+      reader.readAsDataURL(selectedFile);
+    });
+  });
+
+  // 3. Wait for the hard drive to finish reading all files
+  const processedFiles = await Promise.all(filePromises);
+
+  // 4. INSTANT INSERT: Add them directly to the global dictionary
+  for (const newFile of processedFiles) {
+    allFiles[newFile.id] = newFile;
+  }
+
+  // 5. Save and Refresh
+  // Note: Update your save function to save your new flat dictionaries!
+  saveToStorage(allFolders, allFiles);
+  refreshUI();
+
+  target.value = ''; // Reset the input field
 }

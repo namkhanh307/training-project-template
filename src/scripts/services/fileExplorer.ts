@@ -9,7 +9,6 @@ import { BREAD_CRUMB, ROOT_FOLDER_ID } from '../utilities/_const';
 import { initFiles, initFolders } from '../utilities/_initData';
 import {
   getIdFromUrl,
-  handleFolderClick,
   updateUrlWithId,
 } from '../utilities/_navigate';
 import {
@@ -20,14 +19,13 @@ import { UIManager } from './uiManager';
 import {
   processFileSelection,
   triggerUpload,
-} from '../utilities/_fileUpload';
+} from '../utilities/_helper';
 import { ROW_TYPE } from '../models/enum';
 
 export class FileExplorer {
   private _allFolders: Record<string, Folder> = initFolders;
   private _allFiles: Record<string, File> = initFiles;
   private _currentFolderId: string;
-
 
   constructor() {
     // 1. Load the flat hashmaps from the hard drive
@@ -196,10 +194,19 @@ export class FileExplorer {
         case 'open-folder':
           if (itemId) {
             // Overwrite the class state with the newly returned folder!
-            this._currentFolderId = handleFolderClick(
-              itemId,
-              this._allFolders,
-            );
+            const targetFolder = this._allFolders[itemId];
+
+            // Fallback to root if ID is bad
+            if (!targetFolder) {
+              console.warn('Folder not found, returning to root.');
+              updateUrlWithId(ROOT_FOLDER_ID);
+              this._currentFolderId = ROOT_FOLDER_ID;
+            } else {
+              targetFolder.isNew = false;
+              // Update the browser URL
+              updateUrlWithId(itemId);
+              this._currentFolderId = itemId;
+            }
             UIManager.refreshUI(
               this._currentFolderId,
               this._allFolders,
