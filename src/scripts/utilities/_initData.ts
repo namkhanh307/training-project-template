@@ -26,7 +26,7 @@ export let initFolders: Record<string, Folder> = {
 export let initFiles: Record<string, File> = {
   '33d2b65071d146d0b858f0f0f0f0f0f0': {
     id: '33d2b65071d146d0b858f0f0f0f0f0f0',
-    name: 'Report.pdf',
+    name: 'Report',
     parentId: '22c1a54960c045cfaa0eefe6e966fcb4',
     type: ROW_TYPE.FILE,
     extension: 'pdf',

@@ -1,3 +1,5 @@
+import { UIManager } from "../../services/uiManager";
+
 export abstract class BaseModal {
   public isOpen: boolean = false;
   public title: string;
@@ -33,7 +35,7 @@ export abstract class BaseModal {
     this.isOpen = true;
     this.render(); // Inject the HTML
     this.bindEvents(); // Attach button listeners
-
+    UIManager.closeMobileMenu();
     if (this.modalElement) {
       this.modalElement.style.display = 'flex';
     }

@@ -272,23 +272,6 @@ export async function processFileSelection(
   target.value = ''; // Reset the input field
 }
 
-//Close mobile modal
-export function closeMobileMenu() {
-  const unifiedMenu = document.getElementById('unifiedMenu');
-
-  // Check if the menu is actually open (Bootstrap adds the 'show' class when it is open)
-  if (unifiedMenu && unifiedMenu.classList.contains('show')) {
-    // Find the hamburger button that controls this exact menu
-    const togglerBtn = document.querySelector(
-      '[data-bs-target="#unifiedMenu"]',
-    ) as HTMLButtonElement;
-
-    // Programmatically click it to trigger Bootstrap's smooth closing animation!
-    if (togglerBtn) {
-      togglerBtn.click();
-    }
-  }
-}
 export function getEmptyBase64Data(extension: string): string {
   // A lookup dictionary for the most common file types in your app
   const mimeTypes = MINE_TYPES;

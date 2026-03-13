@@ -48,55 +48,37 @@ export class CreateFileModal extends BaseModal {
     const input = document.getElementById(
       'new-file-input',
     ) as HTMLInputElement;
-    console.log(input);
-    let newName = input.value.trim();
+    let inputName = input.value.trim() || 'New Document.txt';
 
-    // Default fallback
-    if (!newName) {
-      newName = 'New Document.txt';
+    // 1. Split the name and the extension
+    let baseName = inputName;
+    let extension = '';
+    const lastDotIndex = inputName.lastIndexOf('.');
+
+    if (lastDotIndex > 0) {
+      baseName = inputName.substring(0, lastDotIndex);
+      extension = inputName.substring(lastDotIndex + 1).toLowerCase();
     }
 
-    // 1. Validation
-    if (!isValidName(newName)) {
-      alert('Invalid characters in name.');
-      return;
-    }
-
-    // Check against siblings in the same folder
-    if (
-      isNameDuplicate(newName, this.currentFolderId, this.allFiles)
-    ) {
-      alert('A file with this name already exists.');
-      return;
-    }
-
-    // 2. Extract Extension
-    const lastDotIndex = newName.lastIndexOf('.');
-    const extension =
-      lastDotIndex > 0
-        ? newName.substring(lastDotIndex + 1).toLowerCase()
-        : '';
-    const emptyBase64 = getEmptyBase64Data(extension);
-    // 3. Create the flat object
+    // 2. Create the flat object with separated data!
     const newId = generateID();
+    const emptyBase64 = getEmptyBase64Data(extension); // From our previous helper
+
     const newFile: File = {
       id: newId,
-      parentId: this.currentFolderId, 
-      name: newName,
-      extension: extension,
+      parentId: this.currentFolderId,
+      name: baseName, // 🔴 Only stores "Budget"
+      extension: extension, // 🔴 Only stores "xlsx"
       modified: new Date().toISOString(),
       modifiedBy: 'You',
       isNew: true,
-      data: emptyBase64, 
+      data: emptyBase64,
       type: ROW_TYPE.FILE,
     };
 
-    // 4. Save, refresh, and close
     this.allFiles[newId] = newFile;
-    // Assuming saveToStorage grabs both dictionaries from your main class
     saveToStorage(this.allFolders, this.allFiles);
     this.refreshUI();
-
     this.close();
   }
 }

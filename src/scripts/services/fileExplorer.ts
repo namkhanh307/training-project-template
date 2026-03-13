@@ -103,6 +103,7 @@ export class FileExplorer {
       switch (action) {
         case 'upload-file':
           triggerUpload();
+          UIManager.closeMobileMenu();
           break;
         case 'toggle-new-menu':
           // Toggle the dropdown visibility

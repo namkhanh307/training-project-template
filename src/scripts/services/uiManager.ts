@@ -1,5 +1,7 @@
 import { Row, File, Folder } from '../models/entity';
-import { getFileIconHTML } from '../utilities/_helper';
+import {
+  getFileIconHTML,
+} from '../utilities/_helper';
 import { saveToStorage } from '../utilities/_storageUtil';
 import { getRelativeTime } from '../utilities/_helper';
 import { getBreadcrumbPath } from '../utilities/_navigate';
@@ -25,6 +27,7 @@ export class UIManager {
       currentFolderId,
       allFolders,
     );
+    UIManager.closeMobileMenu();
     UIManager.renderLoadingState();
     await new Promise((resolve) => setTimeout(resolve, 400));
     // 1. FILTER: Search the dictionaries for items belonging to this folder
@@ -89,10 +92,13 @@ export class UIManager {
         // they are just the same 'item' object under the hood!
         const file = item as File;
         const folderItem = item as Folder;
-       
-        const nameDisplay = folderItem.isEditing
-          ? `<input type="text" id="new-folder-input" class="m-input-rename" value="${folderItem.name}" />`
-          : item.name;
+        const fileNameDisplay =
+          file.extension === ''
+            ? file.name
+            : `${file.name}.${file.extension}`;
+        const nameDisplay = isFolder
+          ? `${folderItem.name}`
+          : fileNameDisplay;
 
         const iconHTML = isFolder
           ? `<i class="fas fa-folder m-icon-folder"></i>`
@@ -183,7 +189,6 @@ export class UIManager {
       .join('');
     container.innerHTML = html;
   }
-
   static renderLoadingState = (): void => {
     const container = document.getElementById(UNIFIED_ROW_CONTAINER);
 
@@ -197,4 +202,21 @@ export class UIManager {
 
     if (container) container.innerHTML = spinnerHTML;
   };
+  //Close mobile modal
+  static closeMobileMenu() {
+    const unifiedMenu = document.getElementById('unifiedMenu');
+
+    // Check if the menu is actually open (Bootstrap adds the 'show' class when it is open)
+    if (unifiedMenu && unifiedMenu.classList.contains('show')) {
+      // Find the hamburger button that controls this exact menu
+      const togglerBtn = document.querySelector(
+        '[data-bs-target="#unifiedMenu"]',
+      ) as HTMLButtonElement;
+
+      // Programmatically click it to trigger Bootstrap's smooth closing animation!
+      if (togglerBtn) {
+        togglerBtn.click();
+      }
+    }
+  }
 }
