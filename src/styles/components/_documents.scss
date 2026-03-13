@@ -88,7 +88,7 @@ body {
   .m-toolbar-item {
     padding: 12px 20px;
     border-bottom: 1px solid #eee; // Mobile dividers
-    
+
     @media (min-width: 768px) {
       padding: 0;
       border-bottom: none;
@@ -130,10 +130,25 @@ body {
   display: flex;
   align-items: center;
   border-bottom: 1px solid #eee;
+  &:first-child {
+    background-color: $color-grey;
 
+    // 2. Push the icon to the right
+    .m-cell-content {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+    }
+  }
   @media (min-width: 768px) {
     border-bottom: none;
     display: block; // Let CSS Grid handle layout
+    &:first-child {
+      background-color: transparent;
+      .m-cell-content {
+        display: block;
+      }
+    }
   }
 
   // Label only visible on mobile
@@ -145,14 +160,13 @@ body {
     font-weight: bold;
     font-style: italic;
     color: black;
-    background-color: $color-grey;
   }
 
   // Actual content
   .m-cell-content {
     flex-grow: 1;
     padding: 10px;
-    
+
     @media (min-width: 768px) {
       padding: 0; // Remove mobile padding on desktop
     }
