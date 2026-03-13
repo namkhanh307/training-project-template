@@ -83,6 +83,7 @@ export class FileExplorer {
   private setupEventListeners() {
     this.initToolbarEvents();
     this.initGridEvents();
+    //this.initUploadListener();
   }
 
   private initToolbarEvents() {
@@ -151,29 +152,29 @@ export class FileExplorer {
           newFileModal.open();
           break;
       }
-      document.addEventListener('click', (event) => {
-        const target = event.target as HTMLElement;
-        if (!target.closest('[data-action="toggle-new-menu"]')) {
-          const menu = document.getElementById('newOptionsMenu');
-          if (menu) menu.style.display = 'none';
-        }
-      });
+    });
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('[data-action="toggle-new-menu"]')) {
+        const menu = document.getElementById('newOptionsMenu');
+        if (menu) menu.style.display = 'none';
+      }
+    });
 
-      // 2. Listener for the Hidden File Input (Unchanged and perfect!)
-      fileInput?.addEventListener('change', (event) => {
-        processFileSelection(
-          this._currentFolderId,
-          this._allFolders,
-          this._allFiles,
-          () =>
-            UIManager.refreshUI(
-              this._currentFolderId,
-              this._allFolders,
-              this._allFiles,
-            ),
-          event,
-        );
-      });
+    // 2. Listener for the Hidden File Input (Unchanged and perfect!)
+    fileInput?.addEventListener('change', (event) => {
+      processFileSelection(
+        this._currentFolderId,
+        this._allFolders,
+        this._allFiles,
+        () =>
+          UIManager.refreshUI(
+            this._currentFolderId,
+            this._allFolders,
+            this._allFiles,
+          ),
+        event,
+      );
     });
   }
   private initGridEvents() {
@@ -283,5 +284,30 @@ export class FileExplorer {
           break;
       }
     });
+  }
+  private initUploadListener() {
+    const fileInput = document.getElementById(
+      'fileInput',
+    ) as HTMLInputElement;
+    if (!fileInput) return;
+
+    // Remove any existing listener to prevent doubling up
+    fileInput.onchange = null;
+
+    // Attach the listener
+    fileInput.onchange = (event: Event) => {
+      processFileSelection(
+        this._currentFolderId,
+        this._allFolders,
+        this._allFiles,
+        () =>
+          UIManager.refreshUI(
+            this._currentFolderId,
+            this._allFolders,
+            this._allFiles,
+          ),
+        event,
+      );
+    };
   }
 }

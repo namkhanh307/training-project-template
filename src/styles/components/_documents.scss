@@ -130,28 +130,28 @@ body {
   display: flex;
   align-items: center;
   border-bottom: 1px solid #eee;
-  &:first-child {
-    background-color: $color-grey;
 
-    // 2. Push the icon to the right
+  // --- 1. FILE TYPE ROW (First Cell) ---
+  &:first-child {
+    background-color: $color-grey; // Only this row gets the grey background
+
     .m-cell-content {
       display: flex;
-      justify-content: flex-end;
+      justify-content: flex-end; // Pushes the File Icon to the right
       width: 100%;
     }
   }
-  @media (min-width: 768px) {
-    border-bottom: none;
-    display: block; // Let CSS Grid handle layout
-    &:first-child {
-      background-color: transparent;
-      .m-cell-content {
-        display: block;
-      }
+
+  // --- 2. NAME ROW (Second Cell) ---
+  &:nth-child(2) {
+    .m-cell-content {
+      display: flex;
+      align-items: center; // Vertically aligns sparkle and text
+      gap: 8px; // Keeps sparkle close to the text
     }
   }
 
-  // Label only visible on mobile
+  // --- MOBILE LABEL STYLES ---
   .m-mobile-label {
     width: 120px;
     min-width: 120px;
@@ -162,13 +162,32 @@ body {
     color: black;
   }
 
-  // Actual content
+  // --- GENERAL CONTENT STYLES ---
   .m-cell-content {
     flex-grow: 1;
     padding: 10px;
+  }
 
-    @media (min-width: 768px) {
-      padding: 0; // Remove mobile padding on desktop
+  // --- DESKTOP RESET (768px+) ---
+  @media (min-width: 768px) {
+    border-bottom: none;
+    display: block; // Return to Grid/Table layout
+
+    &:first-child {
+      background-color: transparent; // Remove grey on desktop
+      .m-cell-content {
+        display: block; // Reset flex alignment for desktop grid
+      }
+    }
+
+    &:nth-child(2) {
+      .m-cell-content {
+        display: block; // Reset flex alignment for desktop grid
+      }
+    }
+
+    .m-cell-content {
+      padding: 0;
     }
   }
 }

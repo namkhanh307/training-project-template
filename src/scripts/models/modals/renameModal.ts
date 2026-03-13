@@ -1,4 +1,7 @@
-import { isNameDuplicate } from '../../utilities/_helper';
+import {
+  isNameDuplicate,
+  isValidName,
+} from '../../utilities/_helper';
 import { saveToStorage } from '../../utilities/_storageUtil';
 import { File, Folder } from '../entity';
 import { BaseModal } from './baseModal';
@@ -62,7 +65,21 @@ export class RenameModal extends BaseModal {
       this.close();
       return;
     }
-
+    // 1. Validation (Using our refactored helper!)
+    if (!isValidName(inputName)) {
+      alert('Invalid characters in name.');
+      return;
+    }
+    if (
+      isNameDuplicate(
+        inputName,
+        this.currentFolderId,
+        this.allFolders,
+      )
+    ) {
+      alert('A folder with this name already exists.');
+      return;
+    }
     // 2. If it's a file, split the newly typed string!
     if (!this.isFolder) {
       const lastDotIndex = inputName.lastIndexOf('.');

@@ -235,13 +235,15 @@ export async function processFileSelection(
           ? safeUniqueName.substring(lastDotIndex + 1).toLowerCase()
           : '';
 
+      const fileName = safeUniqueName.substring(0, lastDotIndex);
+
       reader.onload = (e) => {
         const newId = generateID();
 
         resolve({
           id: newId,
           parentId: currentFolderId,
-          name: safeUniqueName,
+          name: fileName,
           extension: fileExtension,
           modified: new Date().toISOString(),
           modifiedBy: 'You',
