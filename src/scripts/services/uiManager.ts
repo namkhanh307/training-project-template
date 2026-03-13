@@ -2,10 +2,11 @@ import { Row, File, Folder } from '../models/entity';
 import { getFileIconHTML } from '../utilities/_helper';
 import { saveToStorage } from '../utilities/_storageUtil';
 import { getRelativeTime } from '../utilities/_helper';
+import { getBreadcrumbPath } from '../utilities/_navigate';
 import {
-  getBreadcrumbPath,
-} from '../utilities/_navigate';
-import { BREAD_CRUMB, UNIFIED_ROW_CONTAINER } from '../utilities/_const';
+  BREAD_CRUMB,
+  UNIFIED_ROW_CONTAINER,
+} from '../utilities/_const';
 import { ROW_TYPE } from '../models/enum';
 export class UIManager {
   /**
@@ -72,9 +73,7 @@ export class UIManager {
     this.refreshUI(currentFolderId, allFolders, allFiles);
   }
   static renderGrid = (data: Row[]): void => {
-    const container = document.getElementById(
-      UNIFIED_ROW_CONTAINER,
-    );
+    const container = document.getElementById(UNIFIED_ROW_CONTAINER);
     if (!container) return;
 
     if (!data || data.length === 0) {
@@ -86,12 +85,11 @@ export class UIManager {
       .map((item) => {
         // 1. THE FIX: Look at the exact 'type' string instead of guessing!
         const isFolder = item.type === ROW_TYPE.FOLDER;
-
         // 2. We keep these for TypeScript autocomplete, but remember
         // they are just the same 'item' object under the hood!
         const file = item as File;
         const folderItem = item as Folder;
-
+       
         const nameDisplay = folderItem.isEditing
           ? `<input type="text" id="new-folder-input" class="m-input-rename" value="${folderItem.name}" />`
           : item.name;
@@ -187,9 +185,7 @@ export class UIManager {
   }
 
   static renderLoadingState = (): void => {
-    const container = document.getElementById(
-      UNIFIED_ROW_CONTAINER,
-    );
+    const container = document.getElementById(UNIFIED_ROW_CONTAINER);
 
     const spinnerHTML = `
       <div class="d-flex justify-content-center align-items-center w-100" style="height: 200px;">
