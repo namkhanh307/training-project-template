@@ -1,10 +1,10 @@
-import { ROW_TYPE } from "../models/enum";
-import { RenameModel, UniqueNameModel } from "../models/model";
-import { SUPPORTED_ICONS } from "./_const";
-import { saveToStorage } from "./_storageUtil";
-import { File, Folder} from "../models/entity";
+import { ROW_TYPE } from '../models/enum';
+import { RenameModel, UniqueNameModel } from '../models/model';
+import { MINE_TYPES, SUPPORTED_ICONS } from './_const';
+import { saveToStorage } from './_storageUtil';
+import { File, Folder } from '../models/entity';
 
-const ready = (fn: ()=> void) => {
+const ready = (fn: () => void) => {
   if (document.readyState !== 'loading') {
     fn();
   } else {
@@ -29,11 +29,13 @@ export function getFileIconHTML(extension: string): string {
 // Time Helper
 export function getRelativeTime(dateString: string): string {
   const date = new Date(dateString);
-  
-  if (isNaN(date.getTime())) return dateString; 
+
+  if (isNaN(date.getTime())) return dateString;
 
   const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const diffInSeconds = Math.floor(
+    (now.getTime() - date.getTime()) / 1000,
+  );
 
   if (diffInSeconds < 60) return 'A few seconds ago';
   if (diffInSeconds < 3600) {
@@ -52,16 +54,17 @@ export function getRelativeTime(dateString: string): string {
     const months = Math.floor(diffInSeconds / 2592000);
     return months === 1 ? '1 month ago' : `${months} months ago`;
   }
-  
+
   const years = Math.floor(diffInSeconds / 31536000);
   return years === 1 ? '1 year ago' : `${years} years ago`;
 }
 
 //ID Helper
 export function generateID(): string {
-  return window.crypto && crypto.randomUUID 
-    ? crypto.randomUUID() 
-    : Date.now().toString(36) + Math.random().toString(36).substring(2);
+  return window.crypto && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Date.now().toString(36) +
+        Math.random().toString(36).substring(2);
 }
 
 //Naming Helper
@@ -69,7 +72,7 @@ export function generateID(): string {
  * Checks if a file or folder name already exists.
  * * @param newName The text the user typed into the input
  * @param currentFolderId The ID of the folder to check
- * @param itemsDictionary 
+ * @param itemsDictionary
  * @param currentId The ID of the item being renamed (Only needed if isEdit is true)
  * @returns boolean (true if it's a duplicate, false if it's safe to use)
  */
@@ -78,13 +81,12 @@ export function isNameDuplicate(
   newName: string,
   currentFolderId: string,
   itemsDictionary: Record<string, RenameModel>,
-  currentId?: string
+  currentId?: string,
 ): boolean {
   const formattedNewName = newName.trim().toLowerCase();
 
   // 1. Turn the dictionary into an array so we can loop over it
   return Object.values(itemsDictionary).some((item) => {
-    
     // 2. THE SIBLING CHECK: Ignore items in other folders!
     if (item.parentId !== currentFolderId) {
       return false;
@@ -92,7 +94,7 @@ export function isNameDuplicate(
 
     // 3. THE SELF CHECK: If editing, ignore the item we are renaming
     if (currentId && item.id === currentId) {
-      return false; 
+      return false;
     }
 
     // 4. THE MATCH: Do the names collide?
@@ -109,7 +111,7 @@ export function isNameDuplicate(
 export function isValidName(name: string): boolean {
   // This Regex looks for any of the standard forbidden file system characters
   const forbiddenChars = /[<>:"/\\|?*]/;
-  
+
   // If the regex finds a match, it's invalid (returns false). Otherwise, it's safe (returns true).
   return !forbiddenChars.test(name);
 }
@@ -124,11 +126,11 @@ export function isValidName(name: string): boolean {
 export function generateUniqueName(
   baseName: string,
   parentId: string,
-  itemsDictionary: Record<string, UniqueNameModel>
+  itemsDictionary: Record<string, UniqueNameModel>,
 ): string {
   let uniqueName = baseName;
   let counter = 1;
-  
+
   // 1. FILTER & MAP: Get ONLY the names of items that live in the same parent folder
   const siblingNames = Object.values(itemsDictionary)
     .filter((item) => item.parentId === parentId)
@@ -154,7 +156,7 @@ export function generateUniqueName(
 export function generateUniqueFileName(
   originalName: string,
   parentId: string,
-  itemsDictionary: Record<string,UniqueNameModel>
+  itemsDictionary: Record<string, UniqueNameModel>,
 ): string {
   // 1. Separate the base name and the extension
   const lastDotIndex = originalName.lastIndexOf('.');
@@ -168,7 +170,7 @@ export function generateUniqueFileName(
 
   let uniqueName = originalName;
   let counter = 1;
-  
+
   // 2. FILTER & MAP: Get ONLY the names of sibling files
   const siblingNames = Object.values(itemsDictionary)
     .filter((item) => item.parentId === parentId)
@@ -257,6 +259,7 @@ export async function processFileSelection(
   const processedFiles = await Promise.all(filePromises);
 
   // 4. INSTANT INSERT: Add them directly to the global dictionary
+  console.log(processedFiles);
   for (const newFile of processedFiles) {
     allFiles[newFile.id] = newFile;
   }
@@ -275,13 +278,24 @@ export function closeMobileMenu() {
 
   // Check if the menu is actually open (Bootstrap adds the 'show' class when it is open)
   if (unifiedMenu && unifiedMenu.classList.contains('show')) {
-    
     // Find the hamburger button that controls this exact menu
-    const togglerBtn = document.querySelector('[data-bs-target="#unifiedMenu"]') as HTMLButtonElement;
-    
+    const togglerBtn = document.querySelector(
+      '[data-bs-target="#unifiedMenu"]',
+    ) as HTMLButtonElement;
+
     // Programmatically click it to trigger Bootstrap's smooth closing animation!
     if (togglerBtn) {
       togglerBtn.click();
     }
   }
+}
+export function getEmptyBase64Data(extension: string): string {
+  // A lookup dictionary for the most common file types in your app
+  const mimeTypes = MINE_TYPES;
+  // Find the exact match, or fall back to a generic binary file type
+  const mimeType =
+    mimeTypes[extension.toLowerCase()] || 'application/octet-stream';
+
+  // Return the perfectly formatted empty base64 string!
+  return `data:${mimeType};base64,`;
 }

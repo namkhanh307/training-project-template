@@ -1,5 +1,6 @@
 import {
   generateID,
+  getEmptyBase64Data,
   isNameDuplicate,
   isValidName,
 } from '../../utilities/_helper';
@@ -47,6 +48,7 @@ export class CreateFileModal extends BaseModal {
     const input = document.getElementById(
       'new-file-input',
     ) as HTMLInputElement;
+    console.log(input);
     let newName = input.value.trim();
 
     // Default fallback
@@ -74,18 +76,18 @@ export class CreateFileModal extends BaseModal {
       lastDotIndex > 0
         ? newName.substring(lastDotIndex + 1).toLowerCase()
         : '';
-
+    const emptyBase64 = getEmptyBase64Data(extension);
     // 3. Create the flat object
     const newId = generateID();
     const newFile: File = {
       id: newId,
-      parentId: this.currentFolderId, // 🔴 The magic link!
+      parentId: this.currentFolderId, 
       name: newName,
       extension: extension,
       modified: new Date().toISOString(),
       modifiedBy: 'You',
       isNew: true,
-      data: '', // Empty file
+      data: emptyBase64, 
       type: ROW_TYPE.FILE,
     };
 

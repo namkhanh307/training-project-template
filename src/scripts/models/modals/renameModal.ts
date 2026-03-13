@@ -40,7 +40,14 @@ export class RenameModal extends BaseModal {
       </div>
     `;
   }
-
+  // Automatically focus the input when the modal opens
+  protected onOpen(): void {
+    const input = document.getElementById('rename-input') as HTMLInputElement;
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  }
   handleConfirm(): void {
     const input = document.getElementById('rename-input') as HTMLInputElement;
     const newName = input.value.trim();
