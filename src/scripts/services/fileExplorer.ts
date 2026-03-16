@@ -4,7 +4,6 @@ import { CreateFolderModal } from '../models/modals/createFolderModal';
 import { DeleteModal } from '../models/modals/deleteModal';
 import { FileViewerModal } from '../models/modals/fileViewerModal';
 import { RenameModal } from '../models/modals/renameModal';
-import { EditingState, MobileActionItem } from '../models/model';
 import { BREAD_CRUMB, ROOT_FOLDER_ID } from '../utilities/_const';
 import { initFiles, initFolders } from '../utilities/_initData';
 import {
