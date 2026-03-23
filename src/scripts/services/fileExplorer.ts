@@ -22,62 +22,96 @@ import {
 import { ROW_TYPE } from '../models/enum';
 
 export class FileExplorer {
-  private _allFolders: Record<string, Folder> = initFolders;
-  private _allFiles: Record<string, File> = initFiles;
-  private _currentFolderId: string;
+  // 1. STATE DIET: We removed the giant dictionaries!
+  private _currentFolderId: string | null = null;
+
+  // 2. NEW STATE: We track the path manually since we don't have all folders in memory.
+  private _breadcrumbPath: { id: string | null; name: string }[] = [];
 
   constructor() {
-    // 1. Load the flat hashmaps from the hard drive
-    const savedData = loadFromStorage();
+    // 1. ROUTING: Figure out where we are starting!
+    const idFromUrl = getIdFromUrl();
 
-    // 2. Assign them to your class properties
-    this._allFolders = savedData.folders;
-    this._allFiles = savedData.files;
-
-    // 2. ROUTING: Figure out where we are starting!
-    const idFromUrl = getIdFromUrl(); // e.g., returns 'fin-456' or null
-
-    // If the URL has an ID AND that folder actually exists in our database...
-    if (idFromUrl && this._allFolders[idFromUrl]) {
+    if (idFromUrl) {
       this._currentFolderId = idFromUrl;
+      // DEEP LINK FALLBACK: If a user refreshes the page on a nested folder,
+      // we don't know the exact path. We stub it out for now.
+      this._breadcrumbPath = [
+        { id: null, name: 'Root' },
+        { id: idFromUrl, name: 'Current Folder' },
+      ];
     } else {
-      // Otherwise, fallback to the Root folder!
-      // (Make sure 'ROOT_FOLDER_ID' matches the actual ID you gave your Root folder)
-      this._currentFolderId = ROOT_FOLDER_ID;
-      updateUrlWithId(this._currentFolderId); // Fix the URL bar
+      // Fallback to the Root folder! (null represents root in our new API logic)
+      this._currentFolderId = null;
+      this._breadcrumbPath = [{ id: null, name: 'Root' }];
+      updateUrlWithId(''); // Clear URL for root
     }
 
-    // 3. LISTENERS: Attach your UI click events
+    // 2. LISTENERS: Attach your UI click events
     this.setupEventListeners();
 
-    // 4. THE BACK BUTTON: Listen for browser navigation (popstate)
+    // 3. THE BACK BUTTON: Listen for browser navigation (popstate)
     window.addEventListener('popstate', () => {
       // When the user clicks Back, the URL changes. Read the new ID!
-      const poppedId = getIdFromUrl() || ROOT_FOLDER_ID;
+      const poppedId = getIdFromUrl() || null;
 
-      if (this._allFolders[poppedId]) {
-        this._currentFolderId = poppedId;
-        this.renderCurrentView(); // Redraw everything!
-      }
+      // Trigger our new central navigation method (pass true to indicate it's a browser "back" action)
+      this.navigateTo(poppedId, null, true);
     });
 
-    // 5. INITIAL RENDER: Draw the screen for the first time
+    // 4. INITIAL RENDER: Draw the screen for the first time
     this.renderCurrentView();
   }
-  private renderCurrentView() {
-    // 1. Draw the Grid
-    UIManager.refreshUI(
-      this._currentFolderId,
-      this._allFolders,
-      this._allFiles,
-    );
 
-    // // 2. Draw the Breadcrumbs
-    UIManager.renderBreadcrumbs(
-      BREAD_CRUMB,
-      this._currentFolderId,
-      this._allFolders,
-    );
+  /**
+   * The new central hub for moving around the app.
+   */
+  public async navigateTo(
+    folderId: string | null,
+    folderName: string | null,
+    isPopState = false,
+  ) {
+    this._currentFolderId = folderId;
+
+    if (!isPopState) {
+      // FORWARD NAVIGATION: User clicked a folder in the UI
+      if (folderId === null) {
+        this._breadcrumbPath = [{ id: null, name: 'Root' }];
+      } else if (folderName) {
+        this._breadcrumbPath.push({ id: folderId, name: folderName });
+      }
+      // Push the new ID to the browser URL bar
+      updateUrlWithId(folderId || '');
+    } else {
+      // BACKWARD NAVIGATION: User clicked the browser's Back button or a Breadcrumb
+      // Slice the breadcrumb array back to the point they navigated to
+      const pathIndex = this._breadcrumbPath.findIndex(
+        (p) => p.id === folderId,
+      );
+      if (pathIndex !== -1) {
+        this._breadcrumbPath = this._breadcrumbPath.slice(
+          0,
+          pathIndex + 1,
+        );
+      } else {
+        // Safe fallback if history gets weird
+        this._breadcrumbPath = [{ id: null, name: 'Root' }];
+      }
+    }
+
+    // Redraw the screen!
+    await this.renderCurrentView();
+  }
+
+  /**
+   * Renders the current state to the DOM
+   */
+  private async renderCurrentView() {
+    // 1. Draw the Grid (This is now async and fetches data inside the UIManager!)
+    await UIManager.refreshUI(this._currentFolderId);
+
+    // 2. Draw the Breadcrumbs (Passing the history stack directly)
+    UIManager.renderBreadcrumbs(BREAD_CRUMB, this._breadcrumbPath);
   }
   private setupEventListeners() {
     this.initToolbarEvents();
@@ -91,7 +125,6 @@ export class FileExplorer {
       'fileInput',
     ) as HTMLInputElement;
 
-    // 1. Router for all Toolbar Clicks
     desktopToolbar?.addEventListener('click', async (event) => {
       const target = (event.target as HTMLElement).closest(
         '[data-action]',
@@ -100,13 +133,15 @@ export class FileExplorer {
 
       const action = target.dataset.action;
       const newMenu = document.getElementById('newOptionsMenu');
+
       switch (action) {
         case 'upload-file':
+          // triggerUpload now needs to handle an API POST
           triggerUpload();
           UIManager.closeMobileMenu();
           break;
+
         case 'toggle-new-menu':
-          // Toggle the dropdown visibility
           if (newMenu) {
             newMenu.style.display =
               newMenu.style.display === 'block' ? 'none' : 'block';
@@ -114,44 +149,29 @@ export class FileExplorer {
           break;
 
         case 'trigger-new-folder':
-          // 1. Hide the dropdown menu
           if (newMenu) newMenu.style.display = 'none';
 
-          // 2. Instantiate our new OOP Modal and open it!
+          // Refactored Modal: Only needs current ID and a callback to refresh the UI
           const newFolderModal = new CreateFolderModal(
             this._currentFolderId,
-            this._allFolders,
-            this._allFiles,
-            () =>
-              UIManager.refreshUI(
-                this._currentFolderId,
-                this._allFolders,
-                this._allFiles,
-              ),
+            () => this.renderCurrentView(),
           );
           newFolderModal.open();
           break;
 
         case 'trigger-new-file':
-          // 1. Hide the dropdown menu
           if (newMenu) newMenu.style.display = 'none';
 
-          // 2. Instantiate our new OOP Modal and open it!
+          // Refactored Modal: Only needs current ID and a callback to refresh the UI
           const newFileModal = new CreateFileModal(
             this._currentFolderId,
-            this._allFolders,
-            this._allFiles,
-            () =>
-              UIManager.refreshUI(
-                this._currentFolderId,
-                this._allFolders,
-                this._allFiles,
-              ),
+            () => this.renderCurrentView(),
           );
           newFileModal.open();
           break;
       }
     });
+
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
       if (!target.closest('[data-action="toggle-new-menu"]')) {
@@ -160,153 +180,101 @@ export class FileExplorer {
       }
     });
 
-    // 2. Listener for the Hidden File Input (Unchanged and perfect!)
     fileInput?.addEventListener('change', (event) => {
-      processFileSelection(
-        this._currentFolderId,
-        this._allFolders,
-        this._allFiles,
-        () =>
-          UIManager.refreshUI(
-            this._currentFolderId,
-            this._allFolders,
-            this._allFiles,
-          ),
-        event,
+      // processFileSelection now needs to handle an API POST
+      processFileSelection(this._currentFolderId, event, () =>
+        this.renderCurrentView(),
       );
     });
   }
   private initGridEvents() {
     const mainContainer = document.querySelector('.l-main-container');
 
-    mainContainer?.addEventListener('click', (event) => {
+    mainContainer?.addEventListener('click', async (event) => {
       const target = (event.target as HTMLElement).closest(
         '[data-action]',
       ) as HTMLElement;
       if (!target) return;
 
-      event.stopPropagation(); // Prevent clicks from bubbling up to parent rows
+      event.stopPropagation();
 
       const action = target.dataset.action;
-      const itemId = target.dataset.id;
+      const itemId = target.dataset.id || null;
+      // Extract the name from the DOM so we can push it to the breadcrumb stack!
+      const itemName = target.dataset.name || 'Unknown';
       const isFolder = target.dataset.type === ROW_TYPE.FOLDER;
 
       switch (action) {
         case 'open-folder':
           if (itemId) {
-            // Overwrite the class state with the newly returned folder!
-            const targetFolder = this._allFolders[itemId];
-
-            // Fallback to root if ID is bad
-            if (!targetFolder) {
-              console.warn('Folder not found, returning to root.');
-              updateUrlWithId(ROOT_FOLDER_ID);
-              this._currentFolderId = ROOT_FOLDER_ID;
-            } else {
-              targetFolder.isNew = false;
-              // Update the browser URL
-              updateUrlWithId(itemId);
-              this._currentFolderId = itemId;
-            }
-            UIManager.refreshUI(
-              this._currentFolderId,
-              this._allFolders,
-              this._allFiles,
-            );
+            // ALL of your old URL/State logic is now handled by this one clean method
+            await this.navigateTo(itemId, itemName);
           }
           break;
+
         case 'open-file':
           if (itemId) {
-            const file = this._allFiles[itemId];
-            if (!file) {
-              console.error('File not found!');
-              return;
-            }
-            if (file.isNew) {
-              file.isNew = false;
+            // Note: If you have a "remove new shiny dot" requirement,
+            // you will need to trigger a PUT/PATCH request to the API here
+            // to update the file's 'isNew' status before opening the modal.
 
-              // Save to local storage and redraw the grid to remove the shiny "new" dot
-              saveToStorage(this._allFolders, this._allFiles);
-              UIManager.refreshUI(
-                this._currentFolderId,
-                this._allFolders,
-                this._allFiles,
-              );
-            }
-
-            // 2. Instantiate our new OOP Modal and open it!
-            // (Make sure you import FileViewerModal at the top of the file)
-            const fileViewer = new FileViewerModal(
-              itemId,
-              this._allFiles,
-            );
+            // Refactored Modal: Now fetches the file's data from the API by ID
+            const fileViewer = new FileViewerModal(itemId);
             fileViewer.open();
           }
           break;
-        case 'delete':
+
+case 'delete':
           if (itemId) {
-            // 1. Instantiate our new OOP Modal
-            // Make sure you have imported { DeleteModal } at the top of the file!
+            // We pass the itemName we grabbed from target.dataset.name
             const deleteModal = new DeleteModal(
               itemId,
+              itemName, 
               isFolder,
-              this._allFolders,
-              this._allFiles,
-              () =>
-                UIManager.refreshUI(
-                  this._currentFolderId,
-                  this._allFolders,
-                  this._allFiles,
-                ),
+              () => this.renderCurrentView()
             );
-
-            // 2. Open it! (The class will wait for the user to click Confirm before actually deleting anything)
             deleteModal.open();
           }
           break;
+
         case 'edit':
-          // Boom. Just instantiate and open!
-          const renameModal = new RenameModal(
-            itemId,
-            isFolder,
-            this._currentFolderId,
-            this._allFolders,
-            this._allFiles,
-            () =>
-              UIManager.saveAndRefresh(
-                this._currentFolderId,
-                this._allFolders,
-                this._allFiles,
-              ),
-          );
-          renameModal.open();
+          if (itemId) {
+            // RenameModal will also need the current name to pre-fill the input!
+            const renameModal = new RenameModal(
+              itemId,
+              itemName, 
+              isFolder,
+              () => this.renderCurrentView()
+            );
+            renameModal.open();
+          }
           break;
       }
     });
   }
-  private initUploadListener() {
-    const fileInput = document.getElementById(
-      'fileInput',
-    ) as HTMLInputElement;
-    if (!fileInput) return;
+  // private initUploadListener() {
+  //   const fileInput = document.getElementById(
+  //     'fileInput',
+  //   ) as HTMLInputElement;
+  //   if (!fileInput) return;
 
-    // Remove any existing listener to prevent doubling up
-    fileInput.onchange = null;
+  //   // Remove any existing listener to prevent doubling up
+  //   fileInput.onchange = null;
 
-    // Attach the listener
-    fileInput.onchange = (event: Event) => {
-      processFileSelection(
-        this._currentFolderId,
-        this._allFolders,
-        this._allFiles,
-        () =>
-          UIManager.refreshUI(
-            this._currentFolderId,
-            this._allFolders,
-            this._allFiles,
-          ),
-        event,
-      );
-    };
-  }
+  //   // Attach the listener
+  //   fileInput.onchange = (event: Event) => {
+  //     processFileSelection(
+  //       this._currentFolderId,
+  //       this._allFolders,
+  //       this._allFiles,
+  //       () =>
+  //         UIManager.refreshUI(
+  //           this._currentFolderId,
+  //           this._allFolders,
+  //           this._allFiles,
+  //         ),
+  //       event,
+  //     );
+  //   };
+  // }
 }

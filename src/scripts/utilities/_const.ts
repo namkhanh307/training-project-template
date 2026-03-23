@@ -25,3 +25,5 @@ export const MINE_TYPES: Record<string, string> = {
   jpg: 'image/jpeg',
   jpeg: 'image/jpeg',
 };
+
+export const BASE_URL = 'https://localhost:7029/api/'

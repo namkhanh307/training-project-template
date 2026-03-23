@@ -20,3 +20,20 @@ export interface Folder extends BaseEntity {
 }
 
 export type Row = File | Folder;
+export interface Item {
+  id: string;
+  name: string;
+  parentId: string | null;
+  extension: string; // Note the typo in your API "extenstion"
+  type: number; // 0 for File, 1 for Folder based on your JSON
+  modified: string;
+  modifiedBy: string;
+  dataPath: string | null;
+}
+
+export interface ApiResponse<T> {
+  list: T[];
+  pageSize: number;
+  pageNumber: number;
+  totalPages: number;
+}

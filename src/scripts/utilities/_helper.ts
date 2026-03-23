@@ -187,93 +187,83 @@ export function generateUniqueFileName(
 
 //File Upload
 export function triggerUpload() {
-  const fileInput = document.getElementById(
-    'fileInput',
-  ) as HTMLInputElement;
-  fileInput?.click();
+  const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+  if (fileInput) fileInput.click();
 }
 
+/**
+ * Reads the selected files, converts them to Base64, and POSTs them to the API.
+ */
 export async function processFileSelection(
-  currentFolderId: string,
-  allFolders: Record<string, Folder>,
-  allFiles: Record<string, File>,
-  refreshUI: () => void,
+  currentFolderId: string | null,
   event: Event,
+  refreshUI: () => void
 ) {
   const target = event.target as HTMLInputElement;
   const files = target.files;
 
   if (!files || files.length === 0) return;
 
-  // 1. Gather siblings to prevent duplicate names (e.g., "Budget (1).xlsx")
-  const siblingFiles = Object.values(allFiles).filter(
-    (file) => file.parentId === currentFolderId,
-  );
+  // Show a loading state in the UI while we upload
+  // (Assuming you have a UIManager.renderLoadingState() available)
+  const container = document.getElementById('unified-row-container');
+  if (container) container.innerHTML = '<p class="mt-4 text-center">Uploading files...</p>';
 
-  // 2. Map the files into an array of Promises
-  const filePromises = Array.from(files).map((selectedFile) => {
-    return new Promise<File>((resolve) => {
-      const reader = new FileReader();
-      const itemsDictionary = siblingFiles.reduce(
-        (dict, folder) => {
-          dict[folder.id] = folder;
-          return dict;
-        },
-        {} as Record<string, UniqueNameModel>,
-      );
-      // Ensure the name is unique among files in THIS folder
-      const safeUniqueName = generateUniqueFileName(
-        selectedFile.name,
-        currentFolderId,
-        itemsDictionary,
-      );
+  try {
+    // 1. Map the files into an array of Upload Promises
+    const uploadPromises = Array.from(files).map((selectedFile) => {
+      return new Promise<any>((resolve, reject) => {
+        const reader = new FileReader();
 
-      // Safely extract the extension from the newly generated name
-      const lastDotIndex = safeUniqueName.lastIndexOf('.');
-      const fileExtension =
-        lastDotIndex > 0
-          ? safeUniqueName.substring(lastDotIndex + 1).toLowerCase()
-          : '';
+        // Safely extract the extension
+        const lastDotIndex = selectedFile.name.lastIndexOf('.');
+        const fileExtension = lastDotIndex > 0 ? selectedFile.name.substring(lastDotIndex).toLowerCase() : '';
+        const fileName = lastDotIndex > 0 ? selectedFile.name.substring(0, lastDotIndex) : selectedFile.name;
 
-      const fileName = safeUniqueName.substring(0, lastDotIndex);
+        reader.onload = async (e) => {
+          try {
+            // 2. Construct the JSON payload for your API
+            // Note: Adjust property names if your API expects something different
+            const payload = {
+              name: fileName,
+              parentId: currentFolderId, // null for Root
+              extenstion: fileExtension, // Note: using your API's exact spelling 'extenstion'
+              type: 0, // 0 = File
+              dataPath: e.target?.result as string // Base64 data
+            };
 
-      reader.onload = (e) => {
-        const newId = generateID();
+            // 3. Fire the POST request to the API
+            const response = await fetch('{{baseUrl}}api/Items', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
 
-        resolve({
-          id: newId,
-          parentId: currentFolderId,
-          name: fileName,
-          extension: fileExtension,
-          modified: new Date().toISOString(),
-          modifiedBy: 'You',
-          isNew: true,
-          type: ROW_TYPE.FILE,
-          data: e.target?.result as string,
-        });
-      };
+            if (!response.ok) throw new Error(`Failed to upload ${fileName}`);
+            
+            resolve(await response.json());
+          } catch (error) {
+            reject(error);
+          }
+        };
 
-      reader.readAsDataURL(selectedFile);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(selectedFile); // Triggers the onload block above
+      });
     });
-  });
 
-  // 3. Wait for the hard drive to finish reading all files
-  const processedFiles = await Promise.all(filePromises);
+    // 4. Wait for ALL files to finish uploading to the server
+    await Promise.all(uploadPromises);
 
-  // 4. INSTANT INSERT: Add them directly to the global dictionary
-  console.log(processedFiles);
-  for (const newFile of processedFiles) {
-    allFiles[newFile.id] = newFile;
+  } catch (error) {
+    console.error("Upload Error:", error);
+    alert("One or more files failed to upload. Please try again.");
+  } finally {
+    // 5. Clean up and Refresh the UI
+    target.value = ''; // Reset the hidden input field so you can upload the same file twice if needed
+    refreshUI(); // Redraw the grid with the new truth from the server!
   }
-
-  // 5. Save and Refresh
-  // Note: Update your save function to save your new flat dictionaries!
-  saveToStorage(allFolders, allFiles);
-  refreshUI();
-
-  target.value = ''; // Reset the input field
 }
-
 export function getEmptyBase64Data(extension: string): string {
   // A lookup dictionary for the most common file types in your app
   const mimeTypes = MINE_TYPES;
@@ -284,3 +274,9 @@ export function getEmptyBase64Data(extension: string): string {
   // Return the perfectly formatted empty base64 string!
   return `data:${mimeType};base64,`;
 }
+export const normalizeArrayToRecord = <T extends { id: string }>(items: T[]): Record<string, T> => {
+  return items.reduce((dictionary, item) => {
+    dictionary[item.id] = item;
+    return dictionary;
+  }, {} as Record<string, T>);
+};

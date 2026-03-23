@@ -1,7 +1,5 @@
 import { Row, File, Folder } from '../models/entity';
-import {
-  getFileIconHTML,
-} from '../utilities/_helper';
+import { getFileIconHTML } from '../utilities/_helper';
 import { saveToStorage } from '../utilities/_storageUtil';
 import { getRelativeTime } from '../utilities/_helper';
 import { getBreadcrumbPath } from '../utilities/_navigate';
@@ -10,6 +8,7 @@ import {
   UNIFIED_ROW_CONTAINER,
 } from '../utilities/_const';
 import { ROW_TYPE } from '../models/enum';
+import { fetchFolderContents } from './apiService';
 export class UIManager {
   /**
    * RefreshUI
@@ -17,64 +16,50 @@ export class UIManager {
    * @param allFolders
    * @param allFiles
    */
-  static async refreshUI(
-    currentFolderId: string,
-    allFolders: Record<string, Folder>,
-    allFiles: Record<string, File>,
-  ) {
-    UIManager.renderBreadcrumbs(
-      BREAD_CRUMB,
-      currentFolderId,
-      allFolders,
-    );
+  static async refreshUI(folderId: string | null) {
     UIManager.closeMobileMenu();
     UIManager.renderLoadingState();
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    // 1. FILTER: Search the dictionaries for items belonging to this folder
-    // Object.values() turns our flat dictionary into an array we can filter
-    const currentSubFolders = Object.values(allFolders).filter(
-      (folder) => folder.parentId === currentFolderId,
-    );
 
-    const currentSubFiles = Object.values(allFiles).filter(
-      (file) => file.parentId === currentFolderId,
-    );
+    try {
+      // 1. FETCH: Get ONLY the items for this specific folder from the API
+      // Note: Assuming fetchFolderContents is the API call we discussed earlier
+      const response = await fetchFolderContents(folderId);
+      const allItems = response.list; // The array from your API payload
 
-    // 2. Combine folders and files into one array for the grid
-    const allItems = [...currentSubFolders, ...currentSubFiles];
+      // 2. SORT: Apply your exact sorting logic dynamically
+      allItems.sort((a: { type: ROW_TYPE; modified: string | number | Date; }, b: { type: ROW_TYPE; modified: string | number | Date; }) => {
+        // Group Folders First
+        const isFolderA = a.type === ROW_TYPE.FOLDER ? 1 : 0;
+        const isFolderB = b.type === ROW_TYPE.FOLDER ? 1 : 0;
 
-    // 3. Sort the array dynamically
-    allItems.sort((a, b) => {
-      // Rule A: Group Folders First (Using our new 'type' property!)
-      const isFolderA = a.type === ROW_TYPE.FOLDER ? 1 : 0;
-      const isFolderB = b.type === ROW_TYPE.FOLDER ? 1 : 0;
+        if (isFolderA !== isFolderB) {
+          return isFolderB - isFolderA;
+        }
 
-      if (isFolderA !== isFolderB) {
-        return isFolderB - isFolderA; // Puts folders (1) before files (0)
+        // Sort by Newest Modified Date
+        const dateA = new Date(a.modified).getTime();
+        const dateB = new Date(b.modified).getTime();
+
+        const validDateA = isNaN(dateA) ? 0 : dateA;
+        const validDateB = isNaN(dateB) ? 0 : dateB;
+
+        return validDateB - validDateA;
+      });
+
+      // 3. RENDER: The grid is now populated with fresh server data
+      UIManager.renderGrid(allItems);
+    } catch (error) {
+      console.error('Error fetching folder contents:', error);
+      const container = document.getElementById(
+        UNIFIED_ROW_CONTAINER,
+      );
+      if (container) {
+        container.innerHTML =
+          '<p class="mt-4 text-center text-danger">Failed to load folder contents.</p>';
       }
-
-      // Rule B: Sort by Newest Modified Date
-      const dateA = new Date(a.modified).getTime();
-      const dateB = new Date(b.modified).getTime();
-
-      // Fallback for old data: treat invalid dates as '0' (oldest possible)
-      const validDateA = isNaN(dateA) ? 0 : dateA;
-      const validDateB = isNaN(dateB) ? 0 : dateB;
-
-      return validDateB - validDateA; // Descending order (Newest first)
-    });
-
-    // 4. Render the newly sorted array
-    UIManager.renderGrid(allItems);
+    }
   }
-  static saveAndRefresh(
-    currentFolderId: string,
-    allFolders: Record<string, Folder>,
-    allFiles: Record<string, File>,
-  ) {
-    saveToStorage(allFolders, allFiles);
-    this.refreshUI(currentFolderId, allFolders, allFiles);
-  }
+
   static renderGrid = (data: Row[]): void => {
     const container = document.getElementById(UNIFIED_ROW_CONTAINER);
     if (!container) return;
@@ -150,43 +135,40 @@ export class UIManager {
       })
       .join('');
   };
+  // Note: pathArray is now passed in directly from your app's state
   static renderBreadcrumbs(
     containerId: string,
-    currentFolderId: string,
-    allFolders: Record<string, Folder>,
+    pathArray: { id: string | null; name: string }[],
   ) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const pathArray = getBreadcrumbPath(currentFolderId, allFolders);
     const html = pathArray
       .map((folder, index) => {
         const isLast = index === pathArray.length - 1;
-        const isRoot = index === 0 && folder.parentId === null; // Or whatever your root logic is
 
-        // UX Upgrade: The current folder is bold text, NOT a clickable link
         if (isLast) {
           return `
-        <span class="d-inline-flex align-items-center" aria-current="page">
-          ${folder.name}
-        </span>
-      `;
+            <span class="d-inline-flex align-items-center fw-bold" aria-current="page">
+              ${folder.name}
+            </span>
+          `;
         }
 
-        // Previous folders are clickable links!
         return `
-      <span 
-        class="d-inline-flex align-items-center" aria-current="page"
-        style="cursor: pointer;"
-        data-action="open-folder" 
-        data-id="${folder.id}"
-      >
-        ${folder.name}
-      </span>
-      <span class="mx-2 text-muted">/</span>
-    `;
+          <span 
+            class="d-inline-flex align-items-center text-primary" 
+            style="cursor: pointer;"
+            data-action="open-folder" 
+            data-id="${folder.id || ''}"
+          >
+            ${folder.name}
+          </span>
+          <span class="mx-2 text-muted">/</span>
+        `;
       })
       .join('');
+
     container.innerHTML = html;
   }
   static renderLoadingState = (): void => {
@@ -217,6 +199,25 @@ export class UIManager {
       if (togglerBtn) {
         togglerBtn.click();
       }
+    }
+  }
+  /**
+   * Executes an API call (Create/Update/Delete) and refreshes the current folder view.
+   * @param apiAction A promise representing the API call (e.g., deleteItem(id))
+   * @param currentFolderId The folder currently being viewed
+   */
+  static async executeActionAndRefresh(
+    apiAction: Promise<any>,
+    currentFolderId: string | null,
+  ) {
+    UIManager.renderLoadingState(); // Show spinner while saving
+    try {
+      await apiAction; // Wait for the backend to confirm the change
+      await this.refreshUI(currentFolderId); // Re-fetch the updated folder contents
+    } catch (error) {
+      console.error('Action failed:', error);
+      alert('Something went wrong. Please try again.');
+      await this.refreshUI(currentFolderId); // Reload anyway to ensure UI matches DB
     }
   }
 }

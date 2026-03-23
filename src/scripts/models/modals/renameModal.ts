@@ -8,110 +8,119 @@ import { BaseModal } from './baseModal';
 
 export class RenameModal extends BaseModal {
   private itemId: string;
+  private currentName: string;
   private isFolder: boolean;
-  private currentFolderId: string;
-  private allFolders: Record<string, Folder>;
-  private allFiles: Record<string, File>;
   private refreshUI: () => void;
 
   constructor(
     itemId: string,
+    currentName: string, // Passed in from the grid click event!
     isFolder: boolean,
-    currentFolderId: string,
-    allFolders: Record<string, Folder>,
-    allFiles: Record<string, File>,
     refreshUI: () => void,
   ) {
     super('Rename Item');
     this.itemId = itemId;
+    this.currentName = currentName;
     this.isFolder = isFolder;
-    this.currentFolderId = currentFolderId;
-    this.allFolders = allFolders;
-    this.allFiles = allFiles;
     this.refreshUI = refreshUI;
   }
 
   renderContent(): string {
-    const activeDict = this.isFolder
-      ? this.allFolders
-      : this.allFiles;
-    const target = activeDict[this.itemId];
-
-    // 1. Stitch it together for the input box
-    const currentName =
-      !this.isFolder && (target as File).extension
-        ? `${target.name}.${(target as File).extension}`
-        : target.name;
-
     return `
       <div class="form-group">
         <label>New Name</label>
-        <input type="text" id="rename-input" class="form-control" value="${currentName}" />
+        <input type="text" id="rename-input" class="form-control" value="${this.currentName}" />
       </div>
+      <div id="rename-error" class="text-danger mt-2" style="display: none;"></div>
     `;
   }
 
-  handleConfirm(): void {
-    const input = document.getElementById(
-      'rename-input',
-    ) as HTMLInputElement;
-    const inputName = input.value.trim();
-    const activeDict = this.isFolder
-      ? this.allFolders
-      : this.allFiles;
-    const targetItem = activeDict[this.itemId];
+  // Automatically focus and select the text when the modal opens
+  protected onOpen(): void {
+    const input = document.getElementById('rename-input') as HTMLInputElement;
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  }
 
-    if (!inputName) {
-      this.close();
+  async handleConfirm(): Promise<void> {
+    const input = document.getElementById('rename-input') as HTMLInputElement;
+    const errorDiv = document.getElementById('rename-error') as HTMLElement;
+    const inputName = input.value.trim();
+
+    // 1. Basic Frontend Validation
+    if (!inputName || inputName === this.currentName) {
+      this.close(); // Nothing changed, just close it
       return;
     }
-    // 1. Validation (Using our refactored helper!)
+    
+    // isValidName stays, but isNameDuplicate is removed (the backend handles duplicates now!)
     if (!isValidName(inputName)) {
-      alert('Invalid characters in name.');
+      if (errorDiv) {
+        errorDiv.textContent = 'Invalid characters in name.';
+        errorDiv.style.display = 'block';
+      }
       return;
     }
-    if (
-      isNameDuplicate(
-        inputName,
-        this.currentFolderId,
-        this.allFolders,
-      )
-    ) {
-      alert('A folder with this name already exists.');
-      return;
-    }
-    // 2. If it's a file, split the newly typed string!
+
+    // 2. Parse the name and extension just like your original logic
+    let newBaseName = inputName;
+    let newExtension = '';
+
     if (!this.isFolder) {
       const lastDotIndex = inputName.lastIndexOf('.');
 
       if (lastDotIndex > 0) {
         // They typed a dot (e.g., "Report.pdf")
-        targetItem.name = inputName.substring(0, lastDotIndex);
-        (targetItem as File).extension = inputName
-          .substring(lastDotIndex + 1)
-          .toLowerCase();
-      } else {
-        // They deleted the dot entirely (e.g., "Report")
-        targetItem.name = inputName;
-        (targetItem as File).extension = ''; // Wipe out the old extension!
+        newBaseName = inputName.substring(0, lastDotIndex);
+        // Note: Check if your API expects the dot. Your earlier JSON had ".pdf".
+        // If it needs the dot, change this to inputName.substring(lastDotIndex)
+        newExtension = inputName.substring(lastDotIndex + 1).toLowerCase(); 
       }
-    } else {
-      // It's a folder, just save the name
-      targetItem.name = inputName;
     }
 
-    saveToStorage(this.allFolders, this.allFiles);
-    this.refreshUI();
-    this.close();
-  }
-  // Automatically focus the input when the modal opens
-  protected onOpen(): void {
-    const input = document.getElementById(
-      'rename-input',
-    ) as HTMLInputElement;
-    if (input) {
-      input.focus();
-      input.select();
+    // 3. Build the payload for the API
+    const payload: any = {
+      id: this.itemId,
+      name: newBaseName,
+      type: this.isFolder ? 1 : 0, 
+    };
+
+    // Only attach the extension field if it's a file
+    if (!this.isFolder) {
+      payload.extenstion = newExtension; // Note: using the 'extenstion' typo from your API
+    }
+
+    try {
+      // Disable input while saving
+      if (input) input.disabled = true;
+      if (errorDiv) errorDiv.style.display = 'none';
+
+      // 4. Send the PUT request to the server
+      const response = await fetch(`{{baseUrl}}api/Items/${this.itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Server rejected request. The name might be taken.');
+      }
+
+      // 5. Success! Redraw the screen and close the modal
+      this.refreshUI();
+      this.close();
+
+    } catch (error) {
+      console.error('Failed to rename item:', error);
+      if (errorDiv) {
+        errorDiv.textContent = 'Failed to rename. A file or folder with this name might already exist.';
+        errorDiv.style.display = 'block';
+      }
+    } finally {
+      // Re-enable input so they can try again if it failed
+      if (input) input.disabled = false;
     }
   }
 }
