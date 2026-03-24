@@ -1,4 +1,3 @@
-import { CreateFileModal } from '../models/modals/createFileModal';
 import { CreateFolderModal } from '../models/modals/createFolderModal';
 import { DeleteModal } from '../models/modals/deleteModal';
 import { FileViewerModal } from '../models/modals/fileViewerModal';

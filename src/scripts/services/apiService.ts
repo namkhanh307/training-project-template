@@ -1,4 +1,9 @@
-import { GetItemsRes, PagingRes } from '../models/entity';
+import {
+  GetItemsRes,
+  PagingRes,
+  PostFolderReq,
+  RenameItemReq,
+} from '../models/model';
 import { BASE_URL, END_POINT } from '../utilities/_const';
 
 // api.ts
@@ -10,7 +15,6 @@ export const getItems = async (
   pageNumber: number = 1,
   pageSize: number = 50,
 ): Promise<PagingRes<GetItemsRes>> => {
-  // Convert null to empty string for the API query parameter
   const queryId = parentId ? parentId : '';
 
   const response = await fetch(
@@ -20,8 +24,6 @@ export const getItems = async (
   if (!response.ok) {
     throw new Error(`Failed to fetch items: ${response.statusText}`);
   }
-
-  // Parse the JSON and cast it to your strict interface
   const data = await response.json();
   return data as PagingRes<GetItemsRes>;
 };
@@ -29,11 +31,35 @@ export const getItems = async (
 export const getItemById = async (
   id: string,
 ): Promise<GetItemsRes> => {
-
   const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}/${id}`);
   if (!response.ok) throw new Error('Failed to fetch file details');
-
-  // Parse the JSON and cast it to your strict interface
   const data = await response.json();
   return data as GetItemsRes;
+};
+
+export const postFolder = async (payload: PostFolderReq) => {
+  const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return response;
+};
+export const deleteItem = async (id: string) => {
+  const response = await fetch(
+    `${BASE_URL}${END_POINT.ITEMS}/${id}`,
+    {
+      method: 'DELETE',
+    },
+  );
+  return response;
+};
+
+export const renameItem = async (payload: RenameItemReq) => {
+  const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return response;
 };

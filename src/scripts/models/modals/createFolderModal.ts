@@ -1,7 +1,9 @@
+import { postFolder } from '../../services/apiService';
 import { BASE_URL, END_POINT } from '../../utilities/_const';
 import {
   isValidName,
 } from '../../utilities/_helper';
+import { PostFolderReq } from '../model';
 import { BaseModal } from './baseModal';
 
 export class CreateFolderModal extends BaseModal {
@@ -54,11 +56,10 @@ export class CreateFolderModal extends BaseModal {
     }
 
     // 2. Build the API Payload
-    const payload = {
+    const payload: PostFolderReq = {
       name: newName,
       parentId: this.currentFolderId, 
       organizationId: '112d268e-9c46-485d-b4a2-2ad8e5569d81'
-      // extenstion and dataPath are omitted or can be explicitly sent as null
     };
 
     try {
@@ -67,12 +68,7 @@ export class CreateFolderModal extends BaseModal {
       if (errorDiv) errorDiv.style.display = 'none';
 
       // 3. Send the POST request to the server
-      const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
+      const response = await postFolder(payload);
       if (!response.ok) {
         // If the backend says the name is a duplicate, it should return a 400 or 409 status code
         throw new Error(`Server rejected request: ${response.statusText}`);

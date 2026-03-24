@@ -1,19 +1,6 @@
-import { File, Folder } from "./entity";
+import { ItemType } from "./enum";
 
-export interface EditingState {
-  id: string;
-  oldName: string;
-  isFolder: boolean;
-}
-export interface MobileActionItem {
-  id: string;
-  name: string;
-  isFolder: boolean;
-}
-export interface StorageState {
-  folders: Record<string, Folder>;
-  files: Record<string, File>;
-}
+
 export interface RenameModel{
   id: string; 
   name: string; 
@@ -22,4 +9,42 @@ export interface RenameModel{
 export interface UniqueNameModel{
   name: string;
   parentId: string | null;
+}
+
+export interface PagingRes<T> {
+  list: T[];
+  pageSize: number;
+  pageNumber: number;
+  totalPages: number;
+}
+
+export interface BaseGetRes {
+  id: string;
+  modified: string | null;
+  modifiedBy: string | null;
+  deleted: string | null;
+  deletedBy: string | null;
+}
+
+export interface GetItemsRes extends BaseGetRes {
+  name: string;
+  parentId: string | null;
+  extension: string;
+  organizationId: string;
+  path: string;
+  depth: number;
+  inheritPermission: boolean;
+  type: ItemType;
+  dataPath: string | null;
+}
+
+export interface PostFolderReq{
+  name: string;
+  parentId: string | null;
+  organizationId: string;
+}
+
+export interface RenameItemReq{
+  id: string;
+  newName: string;
 }

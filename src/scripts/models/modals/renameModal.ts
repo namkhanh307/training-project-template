@@ -1,8 +1,8 @@
-import { BASE_URL, END_POINT } from '../../utilities/_const';
+import { renameItem } from '../../services/apiService';
 import {
   isValidName,
 } from '../../utilities/_helper';
-import { File, Folder } from '../entity';
+import { RenameItemReq } from '../model';
 import { BaseModal } from './baseModal';
 
 export class RenameModal extends BaseModal {
@@ -80,15 +80,10 @@ export class RenameModal extends BaseModal {
     }
 
     // 3. Build the payload for the API
-    const payload: any = {
+    const payload: RenameItemReq = {
       id: this.itemId,
       newName: newBaseName,
     };
-
-    // Only attach the extension field if it's a file
-    if (!this.isFolder) {
-      payload.extenstion = newExtension; // Note: using the 'extenstion' typo from your API
-    }
 
     try {
       // Disable input while saving
@@ -96,11 +91,7 @@ export class RenameModal extends BaseModal {
       if (errorDiv) errorDiv.style.display = 'none';
 
       // 4. Send the PUT request to the server
-      const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const response = await renameItem(payload)
 
       if (!response.ok) {
         throw new Error('Server rejected request. The name might be taken.');

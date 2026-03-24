@@ -1,6 +1,5 @@
 import { RenameModel, UniqueNameModel } from '../models/model';
-import { BASE_URL, MINE_TYPES, SUPPORTED_ICONS } from './_const';
-import { File, Folder } from '../models/entity';
+import { BASE_URL, END_POINT, MINE_TYPES, SUPPORTED_ICONS } from './_const';
 
 const ready = (fn: () => void) => {
   if (document.readyState !== 'loading') {
@@ -225,7 +224,7 @@ export async function processFileSelection(
       formData.append('File', selectedFile); 
 
       // 3. Fire the POST request to the new endpoint
-      return fetch(`${BASE_URL}Items/uploadFile`, {
+      return fetch(`${BASE_URL}${END_POINT.ITEMS}/uploadFile`, {
         method: 'POST',
         // CRITICAL: Do NOT set the 'Content-Type' header here.
         // The browser automatically sets it to 'multipart/form-data' and 
