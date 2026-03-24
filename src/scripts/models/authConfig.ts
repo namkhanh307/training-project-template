@@ -6,10 +6,10 @@ export const msalConfig: Configuration = {
     clientId: 'fd2809ee-0a9c-409e-b510-36b5beceb707',
     authority:
       'https://login.microsoftonline.com/d09600d6-acac-480e-84d9-7b68daf22e3c',
-    redirectUri: 'http://localhost:3000',
+    redirectUri: 'http://localhost:3000/',
   },
   cache: {
-    cacheLocation: 'sessionStorage',
+    cacheLocation: 'localStorage', // Changed from sessionStorage
   },
 };
 

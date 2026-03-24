@@ -14,7 +14,10 @@ import {
 } from '../utilities/_helper';
 import { ItemType } from '../models/enum';
 import { getItemById } from './apiService';
-import { AccountInfo, PublicClientApplication } from '@azure/msal-browser';
+import {
+  AccountInfo,
+  PublicClientApplication,
+} from '@azure/msal-browser';
 import { loginRequest, msalConfig } from '../models/authConfig';
 
 export class FileExplorer {
@@ -22,6 +25,7 @@ export class FileExplorer {
   private _breadcrumbPath: { id: string | null; name: string }[] = [];
 
   constructor() {
+    console.log('1. RAW URL ON BOOT:', window.location.href);
     // 1. Attach listeners immediately (Synchronous)
     this.setupEventListeners();
 
@@ -123,8 +127,6 @@ export class FileExplorer {
    */
   private async renderCurrentView() {
     // 1. Draw the Grid (This is now async and fetches data inside the UIManager!)
-    console.log('inside renderCurrentView');
-    console.log(this._currentFolderId);
     await UIManager.refreshUI(this._currentFolderId);
 
     // 2. Draw the Breadcrumbs (Passing the history stack directly)
@@ -198,31 +200,57 @@ export class FileExplorer {
       'apiResponse',
     ) as HTMLPreElement;
 
-    // Initialize MSAL (Required for msal-browser v3+)
-    async function initializeAuth() {
+    // ==========================================
+    // 1. THE POPUP DEFENDER
+    // ==========================================
+    // If this window has an 'opener', it means we are inside the tiny Microsoft popup.
+    if (window.opener) {
+      console.log(
+        'Inside popup window. Waiting for MSAL to process and close...',
+      );
+      msalInstance.initialize();
+      // Do NOT execute anything else. MSAL will read the URL and close this window in a millisecond.
+    } else {
+      // We are in the normal, main browser tab. Boot up the app!
+      initializeMainApp();
+    }
+
+    // ==========================================
+    // 2. MAIN WINDOW LOGIC
+    // ==========================================
+    async function initializeMainApp() {
       await msalInstance.initialize();
 
-      // Check if user is already logged in from a previous session
+      // Simply check local cache to see if we have a keycard
       const accounts = msalInstance.getAllAccounts();
       if (accounts.length > 0) {
         currentAccount = accounts[0];
-        updateUI();
+      }
+
+      updateUI();
+
+      // ONLY initialize your heavy Bootstrap/File Explorer logic down here,
+      // safely protected from the authentication flow.
+      if (currentAccount) {
+        console.log('User is authenticated! Ready to load folders.');
+        // initializeFolders();
       }
     }
 
-    // Login
-    async function signIn() {
+    async function signIn(e: Event) {
+      e.preventDefault();
       try {
+        // Back to the trusty popup!
         const response = await msalInstance.loginPopup(loginRequest);
         currentAccount = response.account;
         updateUI();
       } catch (error) {
-        console.error('Login failed:', error);
+        console.error('Popup login failed:', error);
       }
     }
 
-    // Logout
-    async function signOut() {
+    async function signOut(e: Event) {
+      e.preventDefault();
       if (!currentAccount) return;
       try {
         await msalInstance.logoutPopup({
@@ -235,21 +263,17 @@ export class FileExplorer {
       }
     }
 
-    // Fetch Token & Call API
     async function callApi() {
       if (!currentAccount) return;
 
       try {
-        // 1. Get the token (Silently if possible, popup if needed)
         const tokenResponse = await msalInstance.acquireTokenSilent({
           ...loginRequest,
           account: currentAccount,
         });
 
-        // 2. Call your .NET API
-        // Make sure this matches your actual .NET running port!
         const response = await fetch(
-          'https://localhost:7029/api/AuthTest/me',
+          'https://localhost:7029/api/Auth/me',
           {
             headers: {
               Authorization: `Bearer ${tokenResponse.accessToken}`,
@@ -260,15 +284,10 @@ export class FileExplorer {
         const data = await response.json();
         apiResponse.textContent = JSON.stringify(data, null, 2);
       } catch (error) {
-        console.error(
-          'API Call failed. You might need to login again.',
-          error,
-        );
-        apiResponse.textContent = 'Error calling API. Check console.';
+        console.error('API Call failed.', error);
       }
     }
 
-    // Update UI state
     function updateUI() {
       if (currentAccount) {
         loginBtn.classList.add('hidden');
@@ -286,9 +305,6 @@ export class FileExplorer {
     loginBtn.addEventListener('click', signIn);
     logoutBtn.addEventListener('click', signOut);
     callApiBtn.addEventListener('click', callApi);
-
-    // Boot up the app
-    initializeAuth();
   }
   private initGridEvents() {
     const mainContainer = document.querySelector('.l-main-container');

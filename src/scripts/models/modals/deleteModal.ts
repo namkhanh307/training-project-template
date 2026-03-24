@@ -57,7 +57,6 @@ export class DeleteModal extends BaseModal {
       // 1. Send the DELETE request to the server
       // Note: We append the itemId directly to the URL based on standard REST conventions
       const response = await deleteItem(this.itemId);
-      console.log(response);
       if (!response.ok) {
         throw new Error(`Server rejected request: ${response.statusText}`);
       }

@@ -22,7 +22,6 @@ export class UIManager {
       // Note: Assuming fetchFolderContents is the API call we discussed earlier
       const response = await getItems(folderId);
       const allItems = response.list; // The array from your API payload
-      console.log(allItems);
       // 2. SORT: Apply your exact sorting logic dynamically
       allItems.sort((a, b) => {
         // Group Folders First
@@ -138,12 +137,10 @@ export class UIManager {
   ) {
     const container = document.getElementById(containerId);
     if (!container) return;
-        //console.log("navigate to root", pathArray[0].id)
 
     const html = pathArray
       .map((folder, index) => {
         const isLast = index === pathArray.length - 1;
-        console.log("navigate to root", folder.id)
         if (isLast) {
           return `
             <span class="d-inline-flex align-items-center fw-bold" aria-current="page">

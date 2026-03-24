@@ -7,7 +7,6 @@ export async function login() {
     try {
         // This triggers the popup!
         const response: AuthenticationResult = await msalInstance.loginPopup(loginRequest);
-        console.log("Logged in:", response.account);
         return response.account;
     } catch (error) {
         console.error("Login failed", error);
