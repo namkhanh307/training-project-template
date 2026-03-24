@@ -14,46 +14,66 @@ import {
   triggerUpload,
 } from '../utilities/_helper';
 import { ItemType } from '../models/enum';
+import { getItemById } from './apiService';
 
 export class FileExplorer {
-  // 1. STATE DIET: We removed the giant dictionaries!
   private _currentFolderId: string | null = null;
-
-  // 2. NEW STATE: We track the path manually since we don't have all folders in memory.
   private _breadcrumbPath: { id: string | null; name: string }[] = [];
 
   constructor() {
-    // 1. ROUTING: Figure out where we are starting!
-    const idFromUrl = getIdFromUrl();
-
-    if (idFromUrl) {
-      this._currentFolderId = idFromUrl;
-      // DEEP LINK FALLBACK: If a user refreshes the page on a nested folder,
-      // we don't know the exact path. We stub it out for now.
-      this._breadcrumbPath = [
-        { id: null, name: 'Root' },
-        { id: idFromUrl, name: 'Current Folder' },
-      ];
-    } else {
-      // Fallback to the Root folder! (null represents root in our new API logic)
-      this._currentFolderId = null;
-      this._breadcrumbPath = [{ id: null, name: 'Root' }];
-      updateUrlWithId(''); // Clear URL for root
-    }
-
-    // 2. LISTENERS: Attach your UI click events
+    // 1. Attach listeners immediately (Synchronous)
     this.setupEventListeners();
 
-    // 3. THE BACK BUTTON: Listen for browser navigation (popstate)
+    // 2. THE BACK BUTTON: Listen for browser navigation (popstate)
     window.addEventListener('popstate', () => {
-      // When the user clicks Back, the URL changes. Read the new ID!
       const poppedId = getIdFromUrl() || null;
-
-      // Trigger our new central navigation method (pass true to indicate it's a browser "back" action)
       this.navigateTo(poppedId, null, true);
     });
 
-    // 4. INITIAL RENDER: Draw the screen for the first time
+    // 3. Kick off the asynchronous routing and rendering
+    this.initializeRoute();
+  }
+
+  /**
+   * Handles the initial URL parsing and data fetching.
+   */
+  private async initializeRoute() {
+    // Optional: Show a loading spinner immediately while we figure out the route
+    // UIManager.renderLoadingState();
+
+    const idFromUrl = getIdFromUrl();
+
+    try {
+      if (idFromUrl) {
+        this._currentFolderId = idFromUrl;
+
+        // Because we are in an async method, we can safely await the API!
+        const currentFolder = await getItemById(idFromUrl);
+
+        this._breadcrumbPath = [
+          { id: null, name: 'Documents' },
+          { id: idFromUrl, name: currentFolder.name }, // Set real name from DB
+        ];
+      } else {
+        // Fallback to Root
+        this._currentFolderId = null;
+        this._breadcrumbPath = [{ id: null, name: 'Documents' }];
+        updateUrlWithId('');
+      }
+    } catch (error) {
+      console.error(
+        'Failed to load initial folder. Falling back to Root.',
+        error,
+      );
+
+      // CRITICAL: If the user bookmarks a folder that later gets deleted,
+      // the API will fail. We catch the error and force them back to the safe Root folder.
+      this._currentFolderId = null;
+      this._breadcrumbPath = [{ id: null, name: 'Documents' }];
+      updateUrlWithId('');
+    }
+
+    // 4. Finally, draw the screen now that we have the data!
     this.renderCurrentView();
   }
 
@@ -102,7 +122,7 @@ export class FileExplorer {
    */
   private async renderCurrentView() {
     // 1. Draw the Grid (This is now async and fetches data inside the UIManager!)
-    console.log("inside renderCurrentView");
+    console.log('inside renderCurrentView');
     console.log(this._currentFolderId);
     await UIManager.refreshUI(this._currentFolderId);
 
@@ -112,7 +132,7 @@ export class FileExplorer {
   private setupEventListeners() {
     this.initToolbarEvents();
     this.initGridEvents();
-    //this.initUploadListener();
+    this.initBreadCrumbEvents();
   }
 
   private initToolbarEvents() {
@@ -178,8 +198,11 @@ export class FileExplorer {
 
     fileInput?.addEventListener('change', (event) => {
       // processFileSelection now needs to handle an API POST
-      processFileSelection(this._currentFolderId, '112d268e-9c46-485d-b4a2-2ad8e5569d81', event, () =>
-        this.renderCurrentView(),
+      processFileSelection(
+        this._currentFolderId,
+        '112d268e-9c46-485d-b4a2-2ad8e5569d81',
+        event,
+        () => this.renderCurrentView(),
       );
     });
   }
@@ -198,7 +221,8 @@ export class FileExplorer {
       const itemId = target.dataset.id || null;
       // Extract the name from the DOM so we can push it to the breadcrumb stack!
       const itemName = target.dataset.name || 'Unknown';
-      const isFolder = target.dataset.type === ItemType.Folder.toString();
+      const isFolder =
+        target.dataset.type === ItemType.Folder.toString();
 
       switch (action) {
         case 'open-folder':
@@ -248,29 +272,31 @@ export class FileExplorer {
       }
     });
   }
-  // private initUploadListener() {
-  //   const fileInput = document.getElementById(
-  //     'fileInput',
-  //   ) as HTMLInputElement;
-  //   if (!fileInput) return;
+  private initBreadCrumbEvents() {
+    const bcContainer = document.querySelector('#breadcrumb');
 
-  //   // Remove any existing listener to prevent doubling up
-  //   fileInput.onchange = null;
+    bcContainer?.addEventListener('click', async (event) => {
+      const target = (event.target as HTMLElement).closest(
+        '[data-action]',
+      ) as HTMLElement;
+      if (!target) return;
 
-  //   // Attach the listener
-  //   fileInput.onchange = (event: Event) => {
-  //     processFileSelection(
-  //       this._currentFolderId,
-  //       this._allFolders,
-  //       this._allFiles,
-  //       () =>
-  //         UIManager.refreshUI(
-  //           this._currentFolderId,
-  //           this._allFolders,
-  //           this._allFiles,
-  //         ),
-  //       event,
-  //     );
-  //   };
-  // }
+      event.stopPropagation();
+
+      const action = target.dataset.action;
+      const itemId = target.dataset.id || null;
+      // Extract the name from the DOM so we can push it to the breadcrumb stack!
+      const itemName = target.dataset.name || 'Unknown';
+      const isFolder =
+        target.dataset.type === ItemType.Folder.toString();
+
+      switch (action) {
+        case 'open-folder':
+          if (itemId) {
+            await this.navigateTo(itemId, itemName);
+          }
+          break;
+      }
+    });
+  }
 }

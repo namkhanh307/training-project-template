@@ -150,10 +150,9 @@ export class UIManager {
             </span>
           `;
         }
-
         return `
           <span 
-            class="d-inline-flex align-items-center text-primary" 
+            class="d-inline-flex align-items-center fw-bold" aria-current="page"" 
             style="cursor: pointer;"
             data-action="open-folder" 
             data-id="${folder.id || ''}"

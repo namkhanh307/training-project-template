@@ -1,6 +1,5 @@
 
-import { BASE_URL, END_POINT } from "../../utilities/_const";
-import { File } from "../entity";
+import { getItemById } from "../../services/apiService";
 import { BaseModal } from "./baseModal";
 export class FileViewerModal extends BaseModal {
   private fileId: string;
@@ -29,12 +28,7 @@ export class FileViewerModal extends BaseModal {
     if (!container) return;
 
     try {
-      // Fetch the file's metadata from the API
-      // (Assuming your API supports GET /api/Items/{id})
-      const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}/${this.fileId}`);
-      if (!response.ok) throw new Error('Failed to fetch file details');
-      
-      this.fileDetails = await response.json();
+      this.fileDetails = await getItemById(this.fileId);
       const file = this.fileDetails;
       
       const formattedDate = new Date(file.modified).toLocaleDateString();
