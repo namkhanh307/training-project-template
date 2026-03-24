@@ -1,19 +1,13 @@
-import { Folder, File } from '../models/entity';
 import { CreateFileModal } from '../models/modals/createFileModal';
 import { CreateFolderModal } from '../models/modals/createFolderModal';
 import { DeleteModal } from '../models/modals/deleteModal';
 import { FileViewerModal } from '../models/modals/fileViewerModal';
 import { RenameModal } from '../models/modals/renameModal';
-import { BREAD_CRUMB, ROOT_FOLDER_ID } from '../utilities/_const';
-import { initFiles, initFolders } from '../utilities/_initData';
+import { BREAD_CRUMB } from '../utilities/_const';
 import {
   getIdFromUrl,
   updateUrlWithId,
 } from '../utilities/_navigate';
-import {
-  loadFromStorage,
-  saveToStorage,
-} from '../utilities/_storageUtil';
 import { UIManager } from './uiManager';
 import {
   processFileSelection,
@@ -182,7 +176,7 @@ export class FileExplorer {
 
     fileInput?.addEventListener('change', (event) => {
       // processFileSelection now needs to handle an API POST
-      processFileSelection(this._currentFolderId, event, () =>
+      processFileSelection(this._currentFolderId, '112d268e-9c46-485d-b4a2-2ad8e5569d81', event, () =>
         this.renderCurrentView(),
       );
     });
@@ -224,14 +218,14 @@ export class FileExplorer {
           }
           break;
 
-case 'delete':
+        case 'delete':
           if (itemId) {
             // We pass the itemName we grabbed from target.dataset.name
             const deleteModal = new DeleteModal(
               itemId,
-              itemName, 
+              itemName,
               isFolder,
-              () => this.renderCurrentView()
+              () => this.renderCurrentView(),
             );
             deleteModal.open();
           }
@@ -242,9 +236,9 @@ case 'delete':
             // RenameModal will also need the current name to pre-fill the input!
             const renameModal = new RenameModal(
               itemId,
-              itemName, 
+              itemName,
               isFolder,
-              () => this.renderCurrentView()
+              () => this.renderCurrentView(),
             );
             renameModal.open();
           }

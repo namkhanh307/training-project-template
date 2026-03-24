@@ -1,11 +1,8 @@
+import { BASE_URL, END_POINT } from '../../utilities/_const';
 import {
-  generateID,
-  isNameDuplicate,
   isValidName,
 } from '../../utilities/_helper';
-import { saveToStorage } from '../../utilities/_storageUtil';
 import { File, Folder } from '../entity';
-import { ROW_TYPE } from '../enum';
 import { BaseModal } from './baseModal';
 
 export class CreateFolderModal extends BaseModal {
@@ -27,9 +24,6 @@ export class CreateFolderModal extends BaseModal {
       <div class="form-group">
         <label>Folder Name</label>
         <input type="text" id="new-folder-input" class="form-control" placeholder="New folder" />
-        
-        <label class="mt-2">Maximum size (MB)</label>
-        <input type="number" id="new-folder-maxSize" class="form-control" placeholder="500" />
       </div>
       <div id="create-folder-error" class="text-danger mt-2" style="display: none;"></div>
     `;
@@ -45,13 +39,10 @@ export class CreateFolderModal extends BaseModal {
 
   async handleConfirm(): Promise<void> {
     const nameInput = document.getElementById('new-folder-input') as HTMLInputElement;
-    const sizeInput = document.getElementById('new-folder-maxSize') as HTMLInputElement;
     const errorDiv = document.getElementById('create-folder-error') as HTMLElement;
 
     let newName = nameInput.value.trim() || 'New folder';
     // Parse the size, fallback to 500 if empty or invalid
-    let maxSize = parseInt(sizeInput.value, 10);
-    if (isNaN(maxSize)) maxSize = 500; 
 
     // 1. Basic Frontend Validation (Syntax only, not duplication!)
     // Assuming isValidName just checks for bad characters like / \ : * ? " < > |
@@ -66,20 +57,18 @@ export class CreateFolderModal extends BaseModal {
     // 2. Build the API Payload
     const payload = {
       name: newName,
-      parentId: this.currentFolderId, // null represents Root
-      type: 1, // 1 = Folder based on your earlier JSON
-      maxSize: maxSize // Add this so your API can store the limit!
+      parentId: this.currentFolderId, 
+      organizationId: '112d268e-9c46-485d-b4a2-2ad8e5569d81'
       // extenstion and dataPath are omitted or can be explicitly sent as null
     };
 
     try {
       // Disable inputs while waiting for the network
       if (nameInput) nameInput.disabled = true;
-      if (sizeInput) sizeInput.disabled = true;
       if (errorDiv) errorDiv.style.display = 'none';
 
       // 3. Send the POST request to the server
-      const response = await fetch('{{baseUrl}}api/Items', {
+      const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -104,7 +93,6 @@ export class CreateFolderModal extends BaseModal {
     } finally {
       // Re-enable inputs so the user can fix the name and try again
       if (nameInput) nameInput.disabled = false;
-      if (sizeInput) sizeInput.disabled = false;
     }
   }
 }

@@ -1,12 +1,7 @@
 import {
-  generateID,
   getEmptyBase64Data,
-  isNameDuplicate,
-  isValidName,
 } from '../../utilities/_helper';
-import { saveToStorage } from '../../utilities/_storageUtil';
 import { File, Folder } from '../entity';
-import { ROW_TYPE } from '../enum';
 import { BaseModal } from './baseModal';
 
 export class CreateFileModal extends BaseModal {

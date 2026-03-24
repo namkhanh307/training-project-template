@@ -27,3 +27,7 @@ export const MINE_TYPES: Record<string, string> = {
 };
 
 export const BASE_URL = 'https://localhost:7029/api/'
+
+export const END_POINT = {
+  ITEMS: "Items"
+}

@@ -1,10 +1,7 @@
 import { Row, File, Folder } from '../models/entity';
 import { getFileIconHTML } from '../utilities/_helper';
-import { saveToStorage } from '../utilities/_storageUtil';
 import { getRelativeTime } from '../utilities/_helper';
-import { getBreadcrumbPath } from '../utilities/_navigate';
 import {
-  BREAD_CRUMB,
   UNIFIED_ROW_CONTAINER,
 } from '../utilities/_const';
 import { ROW_TYPE } from '../models/enum';
@@ -80,7 +77,7 @@ export class UIManager {
         const fileNameDisplay =
           file.extension === ''
             ? file.name
-            : `${file.name}.${file.extension}`;
+            : `${file.name}${file.extension}`;
         const nameDisplay = isFolder
           ? `${folderItem.name}`
           : fileNameDisplay;

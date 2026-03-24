@@ -1,7 +1,5 @@
-import { ROW_TYPE } from '../models/enum';
 import { RenameModel, UniqueNameModel } from '../models/model';
-import { MINE_TYPES, SUPPORTED_ICONS } from './_const';
-import { saveToStorage } from './_storageUtil';
+import { BASE_URL, MINE_TYPES, SUPPORTED_ICONS } from './_const';
 import { File, Folder } from '../models/entity';
 
 const ready = (fn: () => void) => {
@@ -196,6 +194,7 @@ export function triggerUpload() {
  */
 export async function processFileSelection(
   currentFolderId: string | null,
+  organizationId: string, // Added this since your BE requires it!
   event: Event,
   refreshUI: () => void
 ) {
@@ -204,51 +203,41 @@ export async function processFileSelection(
 
   if (!files || files.length === 0) return;
 
-  // Show a loading state in the UI while we upload
-  // (Assuming you have a UIManager.renderLoadingState() available)
+  // Show a loading state in the UI
   const container = document.getElementById('unified-row-container');
   if (container) container.innerHTML = '<p class="mt-4 text-center">Uploading files...</p>';
 
   try {
     // 1. Map the files into an array of Upload Promises
     const uploadPromises = Array.from(files).map((selectedFile) => {
-      return new Promise<any>((resolve, reject) => {
-        const reader = new FileReader();
+      
+      // 2. Build the multipart/form-data payload
+      const formData = new FormData();
+      
+      // Match the exact property names from your C# UploadFileReq class
+      formData.append('OrganizationId', organizationId);
+      
+      if (currentFolderId) {
+        formData.append('ParentId', currentFolderId);
+      }
+      
+      // Append the raw binary file. 'File' must match the IFormFile property name.
+      formData.append('File', selectedFile); 
 
-        // Safely extract the extension
-        const lastDotIndex = selectedFile.name.lastIndexOf('.');
-        const fileExtension = lastDotIndex > 0 ? selectedFile.name.substring(lastDotIndex).toLowerCase() : '';
-        const fileName = lastDotIndex > 0 ? selectedFile.name.substring(0, lastDotIndex) : selectedFile.name;
-
-        reader.onload = async (e) => {
-          try {
-            // 2. Construct the JSON payload for your API
-            // Note: Adjust property names if your API expects something different
-            const payload = {
-              name: fileName,
-              parentId: currentFolderId, // null for Root
-              extenstion: fileExtension, // Note: using your API's exact spelling 'extenstion'
-              type: 0, // 0 = File
-              dataPath: e.target?.result as string // Base64 data
-            };
-
-            // 3. Fire the POST request to the API
-            const response = await fetch('{{baseUrl}}api/Items', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) throw new Error(`Failed to upload ${fileName}`);
-            
-            resolve(await response.json());
-          } catch (error) {
-            reject(error);
-          }
-        };
-
-        reader.onerror = (err) => reject(err);
-        reader.readAsDataURL(selectedFile); // Triggers the onload block above
+      // 3. Fire the POST request to the new endpoint
+      return fetch(`${BASE_URL}Items/uploadFile`, {
+        method: 'POST',
+        // CRITICAL: Do NOT set the 'Content-Type' header here.
+        // The browser automatically sets it to 'multipart/form-data' and 
+        // generates the unique boundary string when you pass a FormData object.
+        body: formData
+      }).then(response => {
+        if (!response.ok) {
+           throw new Error(`Failed to upload ${selectedFile.name}`);
+        }
+        // Your backend returns Ok(), which doesn't have a JSON body, 
+        // so we don't need to call response.json() here.
+        return response; 
       });
     });
 
@@ -260,8 +249,8 @@ export async function processFileSelection(
     alert("One or more files failed to upload. Please try again.");
   } finally {
     // 5. Clean up and Refresh the UI
-    target.value = ''; // Reset the hidden input field so you can upload the same file twice if needed
-    refreshUI(); // Redraw the grid with the new truth from the server!
+    target.value = ''; // Reset the input field
+    refreshUI(); // Redraw the grid
   }
 }
 export function getEmptyBase64Data(extension: string): string {

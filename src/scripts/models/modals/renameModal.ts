@@ -1,8 +1,7 @@
+import { BASE_URL, END_POINT } from '../../utilities/_const';
 import {
-  isNameDuplicate,
   isValidName,
 } from '../../utilities/_helper';
-import { saveToStorage } from '../../utilities/_storageUtil';
 import { File, Folder } from '../entity';
 import { BaseModal } from './baseModal';
 
@@ -83,8 +82,7 @@ export class RenameModal extends BaseModal {
     // 3. Build the payload for the API
     const payload: any = {
       id: this.itemId,
-      name: newBaseName,
-      type: this.isFolder ? 1 : 0, 
+      newName: newBaseName,
     };
 
     // Only attach the extension field if it's a file
@@ -98,7 +96,7 @@ export class RenameModal extends BaseModal {
       if (errorDiv) errorDiv.style.display = 'none';
 
       // 4. Send the PUT request to the server
-      const response = await fetch(`{{baseUrl}}api/Items/${this.itemId}`, {
+      const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

@@ -1,4 +1,5 @@
 
+import { BASE_URL, END_POINT } from "../../utilities/_const";
 import { File } from "../entity";
 import { BaseModal } from "./baseModal";
 export class FileViewerModal extends BaseModal {
@@ -30,7 +31,7 @@ export class FileViewerModal extends BaseModal {
     try {
       // Fetch the file's metadata from the API
       // (Assuming your API supports GET /api/Items/{id})
-      const response = await fetch(`{{baseUrl}}api/Items/${this.fileId}`);
+      const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}/${this.fileId}`);
       if (!response.ok) throw new Error('Failed to fetch file details');
       
       this.fileDetails = await response.json();

@@ -1,4 +1,4 @@
-import { saveToStorage } from "../../utilities/_storageUtil";
+import { BASE_URL, END_POINT } from "../../utilities/_const";
 import { File, Folder } from "../entity";
 import { ROW_TYPE } from "../enum";
 import { BaseModal } from "./baseModal";
@@ -56,10 +56,10 @@ export class DeleteModal extends BaseModal {
 
       // 1. Send the DELETE request to the server
       // Note: We append the itemId directly to the URL based on standard REST conventions
-      const response = await fetch(`{{baseUrl}}api/Items/${this.itemId}`, {
+      const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}/${this.itemId}`, {
         method: 'DELETE',
       });
-
+      console.log(response);
       if (!response.ok) {
         throw new Error(`Server rejected request: ${response.statusText}`);
       }
