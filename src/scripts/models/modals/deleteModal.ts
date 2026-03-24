@@ -24,7 +24,7 @@ export class DeleteModal extends BaseModal {
 
   // 1. Context-aware HTML using our direct properties
   renderContent(): string {
-    const typeName = this.isFolder ? ROW_TYPE.FOLDER : ROW_TYPE.FILE;
+    const typeName = this.isFolder ? ItemType.Folder : ItemType.File;
 
     return `
       <div class="alert alert-danger mb-0">

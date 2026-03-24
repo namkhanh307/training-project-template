@@ -1,39 +1,47 @@
-import { ROW_TYPE } from "./enum";
+import { ItemType } from './enum';
 
 export interface BaseEntity {
   id: string;
+  modified: string | null;
+  modifiedBy: string | null;
+  deleted: string | null;
+  deletedBy: string | null;
+}
+export interface Item extends BaseEntity {
   name: string;
   parentId: string | null;
-  modified: string;
-  modifiedBy: string;
-  isNew: boolean;
-  type: ROW_TYPE
-  isEditing?: boolean;
-}
-export interface File extends BaseEntity {
   extension: string;
-  data: string; // Base64
-}
-
-export interface Folder extends BaseEntity {
-  maxSize: number;
-}
-
-export type Row = File | Folder;
-export interface Item {
-  id: string;
-  name: string;
-  parentId: string | null;
-  extension: string; // Note the typo in your API "extenstion"
-  type: number; // 0 for File, 1 for Folder based on your JSON
-  modified: string;
-  modifiedBy: string;
+  organizationId: string;
+  path: string;
+  depth: number;
+  inheritPermission: boolean;
+  type: ItemType;
   dataPath: string | null;
 }
 
-export interface ApiResponse<T> {
+export interface PagingRes<T> {
   list: T[];
   pageSize: number;
   pageNumber: number;
   totalPages: number;
+}
+
+export interface BaseGetRes {
+  id: string;
+  modified: string | null;
+  modifiedBy: string | null;
+  deleted: string | null;
+  deletedBy: string | null;
+}
+
+export interface GetItemsRes extends BaseGetRes {
+  name: string;
+  parentId: string | null;
+  extension: string;
+  organizationId: string;
+  path: string;
+  depth: number;
+  inheritPermission: boolean;
+  type: ItemType;
+  dataPath: string | null;
 }

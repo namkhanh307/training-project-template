@@ -13,7 +13,7 @@ import {
   processFileSelection,
   triggerUpload,
 } from '../utilities/_helper';
-import { ROW_TYPE } from '../models/enum';
+import { ItemType } from '../models/enum';
 
 export class FileExplorer {
   // 1. STATE DIET: We removed the giant dictionaries!
@@ -102,6 +102,8 @@ export class FileExplorer {
    */
   private async renderCurrentView() {
     // 1. Draw the Grid (This is now async and fetches data inside the UIManager!)
+    console.log("inside renderCurrentView");
+    console.log(this._currentFolderId);
     await UIManager.refreshUI(this._currentFolderId);
 
     // 2. Draw the Breadcrumbs (Passing the history stack directly)
@@ -196,7 +198,7 @@ export class FileExplorer {
       const itemId = target.dataset.id || null;
       // Extract the name from the DOM so we can push it to the breadcrumb stack!
       const itemName = target.dataset.name || 'Unknown';
-      const isFolder = target.dataset.type === ROW_TYPE.FOLDER;
+      const isFolder = target.dataset.type === ItemType.Folder.toString();
 
       switch (action) {
         case 'open-folder':

@@ -1,4 +1,4 @@
-export enum ROW_TYPE {
-    FOLDER = 'folder',
-    FILE = 'file'
+export enum ItemType {
+  File,
+  Folder
 }

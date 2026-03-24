@@ -1,11 +1,11 @@
-import { Row, File, Folder } from '../models/entity';
 import { getFileIconHTML } from '../utilities/_helper';
 import { getRelativeTime } from '../utilities/_helper';
 import {
   UNIFIED_ROW_CONTAINER,
 } from '../utilities/_const';
-import { ROW_TYPE } from '../models/enum';
-import { fetchFolderContents } from './apiService';
+import { getItems } from './apiService';
+import { ItemType } from '../models/enum';
+import { Item } from '../models/entity';
 export class UIManager {
   /**
    * RefreshUI
@@ -20,14 +20,14 @@ export class UIManager {
     try {
       // 1. FETCH: Get ONLY the items for this specific folder from the API
       // Note: Assuming fetchFolderContents is the API call we discussed earlier
-      const response = await fetchFolderContents(folderId);
+      const response = await getItems(folderId);
       const allItems = response.list; // The array from your API payload
-
+      console.log(allItems);
       // 2. SORT: Apply your exact sorting logic dynamically
-      allItems.sort((a: { type: ROW_TYPE; modified: string | number | Date; }, b: { type: ROW_TYPE; modified: string | number | Date; }) => {
+      allItems.sort((a, b) => {
         // Group Folders First
-        const isFolderA = a.type === ROW_TYPE.FOLDER ? 1 : 0;
-        const isFolderB = b.type === ROW_TYPE.FOLDER ? 1 : 0;
+        const isFolderA = a.type === ItemType.Folder ? 1 : 0;
+        const isFolderB = b.type === ItemType.Folder ? 1 : 0;
 
         if (isFolderA !== isFolderB) {
           return isFolderB - isFolderA;
@@ -57,7 +57,7 @@ export class UIManager {
     }
   }
 
-  static renderGrid = (data: Row[]): void => {
+  static renderGrid = (data: Item[]): void => {
     const container = document.getElementById(UNIFIED_ROW_CONTAINER);
     if (!container) return;
 
@@ -69,23 +69,22 @@ export class UIManager {
     container.innerHTML = data
       .map((item) => {
         // 1. THE FIX: Look at the exact 'type' string instead of guessing!
-        const isFolder = item.type === ROW_TYPE.FOLDER;
+        const isFolder = item.type === ItemType.Folder;
         // 2. We keep these for TypeScript autocomplete, but remember
         // they are just the same 'item' object under the hood!
-        const file = item as File;
-        const folderItem = item as Folder;
+
         const fileNameDisplay =
-          file.extension === ''
-            ? file.name
-            : `${file.name}${file.extension}`;
+          item.extension === ''
+            ? item.name
+            : `${item.name}${item.extension}`;
         const nameDisplay = isFolder
-          ? `${folderItem.name}`
+          ? `${item.name}`
           : fileNameDisplay;
 
         const iconHTML = isFolder
           ? `<i class="fas fa-folder m-icon-folder"></i>`
-          : getFileIconHTML(file.extension);
-        const sparkleHTML = file.isNew
+          : getFileIconHTML(item.extension);
+        const sparkleHTML = true
           ? `<svg class="m-sparkle"><use href="src/files/icons.svg#icon-sparkle"></use></svg>`
           : '';
 
@@ -106,21 +105,21 @@ export class UIManager {
 
         <div class="m-list-cell">
           <div class="m-mobile-label d-md-none">Modified</div>
-          <div class="m-cell-content m-text-secondary">${getRelativeTime(file.modified)}</div>
+          <div class="m-cell-content m-text-secondary">${getRelativeTime(item.modified)}</div>
         </div>
 
         <div class="m-list-cell">
           <div class="m-mobile-label d-md-none">Modified By</div>
-          <div class="m-cell-content m-text-secondary">${file.modifiedBy}</div>
+          <div class="m-cell-content m-text-secondary">${item.modifiedBy}</div>
         </div>
 
         <div class="m-list-cell">
           <div class="m-mobile-label d-md-none">Actions</div>
           <div class="m-cell-content d-flex gap-2 justify-content-start justify-content-md-center">
-            <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? ROW_TYPE.FOLDER : ROW_TYPE.FILE}">
+            <svg class="m-icon-custom is-clickable" data-action="edit" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? ItemType.Folder : ItemType.File}">
               <use href="src/files/icons.svg#icon-edit"></use>
             </svg>
-            <svg class="m-icon-custom is-clickable" data-action="delete" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? ROW_TYPE.FOLDER : ROW_TYPE.FILE}">
+            <svg class="m-icon-custom is-clickable" data-action="delete" data-id="${item.id}" data-name="${item.name}" data-type="${isFolder ? ItemType.Folder : ItemType.File}">
               <use href="src/files/icons.svg#icon-delete"></use>
             </svg>
           </div>
