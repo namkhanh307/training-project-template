@@ -89,7 +89,7 @@ export class UIManager {
           : '';
 
         return `
-      <div class="m-list-row m-list-item" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}">
+      <div class="m-list-row m-list-item" data-action="${isFolder ? 'open-folder' : 'open-file'}" data-id="${item.id}" data-name="${item.name}">
         
         <div class="m-list-cell">
           <div class="m-mobile-label d-md-none">File Type</div>
@@ -138,11 +138,12 @@ export class UIManager {
   ) {
     const container = document.getElementById(containerId);
     if (!container) return;
+        //console.log("navigate to root", pathArray[0].id)
 
     const html = pathArray
       .map((folder, index) => {
         const isLast = index === pathArray.length - 1;
-
+        console.log("navigate to root", folder.id)
         if (isLast) {
           return `
             <span class="d-inline-flex align-items-center fw-bold" aria-current="page">
@@ -155,6 +156,7 @@ export class UIManager {
             class="d-inline-flex align-items-center fw-bold" aria-current="page"" 
             style="cursor: pointer;"
             data-action="open-folder" 
+            data-name="${folder.name}"
             data-id="${folder.id || ''}"
           >
             ${folder.name}

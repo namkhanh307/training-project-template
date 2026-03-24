@@ -1,7 +1,6 @@
 import {
   getEmptyBase64Data,
 } from '../../utilities/_helper';
-import { File, Folder } from '../entity';
 import { BaseModal } from './baseModal';
 
 export class CreateFileModal extends BaseModal {

@@ -109,7 +109,7 @@ export class FileExplorer {
         );
       } else {
         // Safe fallback if history gets weird
-        this._breadcrumbPath = [{ id: null, name: 'Root' }];
+        this._breadcrumbPath = [{ id: null, name: 'Documents' }];
       }
     }
 
@@ -148,7 +148,7 @@ export class FileExplorer {
       if (!target) return;
 
       const action = target.dataset.action;
-      const newMenu = document.getElementById('newOptionsMenu');
+      //const newMenu = document.getElementById('newOptionsMenu');
 
       switch (action) {
         case 'upload-file':
@@ -157,16 +157,7 @@ export class FileExplorer {
           UIManager.closeMobileMenu();
           break;
 
-        case 'toggle-new-menu':
-          if (newMenu) {
-            newMenu.style.display =
-              newMenu.style.display === 'block' ? 'none' : 'block';
-          }
-          break;
-
-        case 'trigger-new-folder':
-          if (newMenu) newMenu.style.display = 'none';
-
+        case 'new-folder':
           // Refactored Modal: Only needs current ID and a callback to refresh the UI
           const newFolderModal = new CreateFolderModal(
             this._currentFolderId,
@@ -174,25 +165,6 @@ export class FileExplorer {
           );
           newFolderModal.open();
           break;
-
-        case 'trigger-new-file':
-          if (newMenu) newMenu.style.display = 'none';
-
-          // Refactored Modal: Only needs current ID and a callback to refresh the UI
-          const newFileModal = new CreateFileModal(
-            this._currentFolderId,
-            () => this.renderCurrentView(),
-          );
-          newFileModal.open();
-          break;
-      }
-    });
-
-    document.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('[data-action="toggle-new-menu"]')) {
-        const menu = document.getElementById('newOptionsMenu');
-        if (menu) menu.style.display = 'none';
       }
     });
 
@@ -273,6 +245,7 @@ export class FileExplorer {
     });
   }
   private initBreadCrumbEvents() {
+    // 1. THE FIX: Use '#' to select by ID, or use getElementById!
     const bcContainer = document.querySelector('#breadcrumb');
 
     bcContainer?.addEventListener('click', async (event) => {
@@ -284,16 +257,18 @@ export class FileExplorer {
       event.stopPropagation();
 
       const action = target.dataset.action;
-      const itemId = target.dataset.id || null;
-      // Extract the name from the DOM so we can push it to the breadcrumb stack!
+
+      // 2. THE FIX: Grab the raw string. If it's empty (""), convert it to null for your API.
+      const rawId = target.dataset.id;
+      const itemId = rawId === '' ? null : rawId;
+
       const itemName = target.dataset.name || 'Unknown';
-      const isFolder =
-        target.dataset.type === ItemType.Folder.toString();
 
       switch (action) {
         case 'open-folder':
-          if (itemId) {
-            await this.navigateTo(itemId, itemName);
+          // 3. THE FIX: Check against undefined so that 'null' (Root) is allowed to pass!
+          if (itemId !== undefined) {
+            await this.navigateTo(itemId, itemName, true); // Note: You might want to pass true here so navigateTo knows it's a backward breadcrumb click!
           }
           break;
       }

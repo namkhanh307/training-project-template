@@ -1,6 +1,5 @@
 import { BASE_URL, END_POINT } from "../../utilities/_const";
-import { File, Folder } from "../entity";
-import { ROW_TYPE } from "../enum";
+import { ItemType } from "../enum";
 import { BaseModal } from "./baseModal";
 
 export class DeleteModal extends BaseModal {
@@ -28,7 +27,7 @@ export class DeleteModal extends BaseModal {
 
     return `
       <div class="alert alert-danger mb-0">
-        <p class="mb-2">Are you sure you want to delete the ${typeName.toLowerCase()} <strong>"${this.itemName}"</strong>?</p>
+        <p class="mb-2">Are you sure you want to delete the ${typeName.toString().toLowerCase()} <strong>"${this.itemName}"</strong>?</p>
         ${
           this.isFolder 
             ? '<p class="mb-0 small"><i class="fas fa-exclamation-triangle me-1"></i> This will also permanently delete all files and sub-folders inside it!</p>' 

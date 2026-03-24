@@ -2,7 +2,6 @@ import { BASE_URL, END_POINT } from '../../utilities/_const';
 import {
   isValidName,
 } from '../../utilities/_helper';
-import { File, Folder } from '../entity';
 import { BaseModal } from './baseModal';
 
 export class CreateFolderModal extends BaseModal {
