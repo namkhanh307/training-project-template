@@ -14,6 +14,8 @@ import {
 } from '../utilities/_helper';
 import { ItemType } from '../models/enum';
 import { getItemById } from './apiService';
+import { AccountInfo, PublicClientApplication } from '@azure/msal-browser';
+import { loginRequest, msalConfig } from '../models/authConfig';
 
 export class FileExplorer {
   private _currentFolderId: string | null = null;
@@ -176,6 +178,117 @@ export class FileExplorer {
         () => this.renderCurrentView(),
       );
     });
+    const msalInstance = new PublicClientApplication(msalConfig);
+    let currentAccount: AccountInfo | null = null;
+
+    // DOM Elements
+    const loginBtn = document.getElementById(
+      'loginBtn',
+    ) as HTMLButtonElement;
+    const logoutBtn = document.getElementById(
+      'logoutBtn',
+    ) as HTMLButtonElement;
+    const callApiBtn = document.getElementById(
+      'callApiBtn',
+    ) as HTMLButtonElement;
+    const apiSection = document.getElementById(
+      'api-section',
+    ) as HTMLDivElement;
+    const apiResponse = document.getElementById(
+      'apiResponse',
+    ) as HTMLPreElement;
+
+    // Initialize MSAL (Required for msal-browser v3+)
+    async function initializeAuth() {
+      await msalInstance.initialize();
+
+      // Check if user is already logged in from a previous session
+      const accounts = msalInstance.getAllAccounts();
+      if (accounts.length > 0) {
+        currentAccount = accounts[0];
+        updateUI();
+      }
+    }
+
+    // Login
+    async function signIn() {
+      try {
+        const response = await msalInstance.loginPopup(loginRequest);
+        currentAccount = response.account;
+        updateUI();
+      } catch (error) {
+        console.error('Login failed:', error);
+      }
+    }
+
+    // Logout
+    async function signOut() {
+      if (!currentAccount) return;
+      try {
+        await msalInstance.logoutPopup({
+          mainWindowRedirectUri: '/',
+        });
+        currentAccount = null;
+        updateUI();
+      } catch (error) {
+        console.error('Logout failed:', error);
+      }
+    }
+
+    // Fetch Token & Call API
+    async function callApi() {
+      if (!currentAccount) return;
+
+      try {
+        // 1. Get the token (Silently if possible, popup if needed)
+        const tokenResponse = await msalInstance.acquireTokenSilent({
+          ...loginRequest,
+          account: currentAccount,
+        });
+
+        // 2. Call your .NET API
+        // Make sure this matches your actual .NET running port!
+        const response = await fetch(
+          'https://localhost:7029/api/AuthTest/me',
+          {
+            headers: {
+              Authorization: `Bearer ${tokenResponse.accessToken}`,
+            },
+          },
+        );
+
+        const data = await response.json();
+        apiResponse.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        console.error(
+          'API Call failed. You might need to login again.',
+          error,
+        );
+        apiResponse.textContent = 'Error calling API. Check console.';
+      }
+    }
+
+    // Update UI state
+    function updateUI() {
+      if (currentAccount) {
+        loginBtn.classList.add('hidden');
+        logoutBtn.classList.remove('hidden');
+        apiSection.classList.remove('hidden');
+      } else {
+        loginBtn.classList.remove('hidden');
+        logoutBtn.classList.add('hidden');
+        apiSection.classList.add('hidden');
+        apiResponse.textContent = 'API Data will appear here...';
+      }
+    }
+
+    // Event Listeners
+    loginBtn.addEventListener('click', signIn);
+    logoutBtn.addEventListener('click', signOut);
+    callApiBtn.addEventListener('click', callApi);
+
+    // Boot up the app
+    initializeAuth();
   }
   private initGridEvents() {
     const mainContainer = document.querySelector('.l-main-container');

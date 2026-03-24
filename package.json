@@ -18,8 +18,8 @@
     "@babel/cli": "^7.24.0",
     "@babel/core": "^7.24.0",
     "@babel/eslint-parser": "^7.24.0",
-    "@babel/plugin-transform-object-rest-spread": "^7.24.0",
     "@babel/plugin-transform-object-assign": "^7.24.0",
+    "@babel/plugin-transform-object-rest-spread": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
     "@types/lodash": "^4.17.0",
     "autoprefixer": "^10.4.19",
@@ -57,6 +57,7 @@
     "webpack-merge": "^6.0.1"
   },
   "dependencies": {
+    "@azure/msal-browser": "^5.6.1",
     "webpack-remove-empty-scripts": "^1.0.4"
   }
 }
