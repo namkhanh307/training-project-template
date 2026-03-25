@@ -5,11 +5,15 @@ const path = require('path');
 const { globSync } = require('glob');
 const LiveReloadPlugin = require('webpack-livereload-plugin');
 const webpack = require('webpack');
-const CopyPlugin = require('copy-webpack-plugin');
 
 const getEntries = function () {
-  return globSync('./src/{scripts/pages,styles/pages}/**/!(_)*.{scss,ts,js}')
-    .map(entry => './' + entry.replace(/\\/g, '/').replace(/^\.\//, ''))
+  return globSync(
+    './src/{scripts/pages,styles/pages}/**/!(_)*.{scss,ts,js}',
+  )
+    .map(
+      (entry) =>
+        './' + entry.replace(/\\/g, '/').replace(/^\.\//, ''),
+    )
     .reduce((entries, entry) => {
       const key = entry
         .split('/')
@@ -108,20 +112,22 @@ const commonConfig = {
       },
     ],
   },
+
   plugins: [
     new RemoveEmptyScriptsPlugin(),
-    new MiniCssExtractPlugin({ ... }),
-    new LiveReloadPlugin({ ... }),
-    new ESLintPlugin({ ... }),
-    new webpack.ProgressPlugin(),
-
-    // ADD THIS:
-    new CopyPlugin({
-      patterns: [
-        { from: 'blank.html', to: 'blank.html' },
-      ],
+    new MiniCssExtractPlugin({
+      filename: 'css/[name].css',
+      chunkFilename: '[id].css',
     }),
-  ]
+    new LiveReloadPlugin({
+      protocol: 'http',
+    }),
+    new ESLintPlugin({
+      extensions: ['js'],
+      fix: true,
+    }),
+    new webpack.ProgressPlugin(),
+  ],
 };
 
 module.exports = commonConfig;

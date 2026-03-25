@@ -13,19 +13,25 @@ import {
   triggerUpload,
 } from '../utilities/_helper';
 import { ItemType } from '../models/enum';
-import { getItemById, getItemPath, getItems } from './apiService';
+import { getItemById, getItemPath } from './apiService';
 import {
   AccountInfo,
   PublicClientApplication,
 } from '@azure/msal-browser';
 import { loginRequest, msalConfig } from '../models/authConfig';
-import { GetPathsRes, MinimalItem } from '../models/model';
+import { GetPathsRes } from '../models/model';
 
 export class FileExplorer {
   private _currentFolderId: string | null = null;
   private _breadcrumbPath: GetPathsRes[] = [];
+  private _msalInstance = new PublicClientApplication(msalConfig);
+  private _currentAccount: AccountInfo | null = null;
+  private _msalReady: Promise<void>; // ← ADD THIS
+
   constructor() {
     console.log('1. RAW URL ON BOOT:', window.location.href);
+    this._msalReady = this.initializeMsal();
+
     // 1. Attach listeners immediately (Synchronous)
     this.setupEventListeners();
 
@@ -35,10 +41,122 @@ export class FileExplorer {
       this.navigateTo(poppedId, null, true);
     });
 
-    // 3. Kick off the asynchronous routing and rendering
-    this.initializeRoute();
+    this._msalReady.then(() => {
+      this.initializeRoute();
+    });
+  }
+  private async initializeMsal() {
+    await this._msalInstance.initialize();
+    console.log('MSAL ready');
+
+    const accounts = this._msalInstance.getAllAccounts();
+    if (accounts.length > 0) {
+      this._currentAccount = accounts[0];
+      console.log(
+        'Already authenticated:',
+        this._currentAccount.username,
+      );
+    }
+    this.updateUI();
   }
 
+  private async signIn(e: Event) {
+    e.preventDefault();
+    await this._msalReady;
+    try {
+      let response;
+      const accounts = this._msalInstance.getAllAccounts();
+
+      if (accounts.length > 0) {
+        try {
+          response = await this._msalInstance.acquireTokenSilent({
+            ...loginRequest,
+            account: accounts[0],
+          });
+        } catch {
+          response = await this._msalInstance.acquireTokenPopup({
+            ...loginRequest,
+            account: accounts[0],
+          });
+        }
+      } else {
+        response = await this._msalInstance.loginPopup({
+          ...loginRequest,
+        });
+      }
+
+      this._currentAccount = response.account;
+      this.updateUI();
+    } catch (error) {
+      console.error('--> Auth FAILED:', error);
+    }
+  }
+  private async signOut(e: Event) {
+    e.preventDefault();
+    if (!this._currentAccount) return;
+    try {
+      await this._msalInstance.logoutPopup({
+        mainWindowRedirectUri: '/',
+      });
+      this._currentAccount = null;
+      this.updateUI();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  }
+
+  private async callApi() {
+    if (!this._currentAccount) return;
+    try {
+      const tokenResponse =
+        await this._msalInstance.acquireTokenSilent({
+          ...loginRequest,
+          account: this._currentAccount,
+        });
+      const response = await fetch(
+        'https://localhost:7029/api/Auth/me',
+        {
+          headers: {
+            Authorization: `Bearer ${tokenResponse.accessToken}`,
+          },
+        },
+      );
+      const data = await response.json();
+      const apiResponse = document.getElementById(
+        'apiResponse',
+      ) as HTMLPreElement;
+      apiResponse.textContent = JSON.stringify(data, null, 2);
+    } catch (error) {
+      console.error('API Call failed.', error);
+    }
+  }
+
+  private updateUI() {
+    const loginBtn = document.getElementById(
+      'loginBtn',
+    ) as HTMLButtonElement;
+    const logoutBtn = document.getElementById(
+      'logoutBtn',
+    ) as HTMLButtonElement;
+    const apiSection = document.getElementById(
+      'api-section',
+    ) as HTMLDivElement;
+    const apiResponse = document.getElementById(
+      'apiResponse',
+    ) as HTMLPreElement;
+
+    if (this._currentAccount) {
+      loginBtn.classList.add('hidden');
+      logoutBtn.classList.remove('hidden');
+      apiSection.classList.remove('hidden');
+    } else {
+      loginBtn.classList.remove('hidden');
+      logoutBtn.classList.add('hidden');
+      apiSection.classList.add('hidden');
+      if (apiResponse)
+        apiResponse.textContent = 'API Data will appear here...';
+    }
+  }
   /**
    * Handles the initial URL parsing and data fetching.
    */
@@ -126,7 +244,6 @@ export class FileExplorer {
     }
     await this.renderCurrentView();
   }
-
   /**
    * Renders the current state to the DOM
    */
@@ -141,8 +258,19 @@ export class FileExplorer {
     this.initToolbarEvents();
     this.initGridEvents();
     this.initBreadCrumbEvents();
+    this.initAuthEvents(); // ← separate, clean
   }
-
+  private initAuthEvents() {
+    document
+      .getElementById('loginBtn')
+      ?.addEventListener('click', (e) => this.signIn(e));
+    document
+      .getElementById('logoutBtn')
+      ?.addEventListener('click', (e) => this.signOut(e));
+    document
+      .getElementById('callApiBtn')
+      ?.addEventListener('click', () => this.callApi());
+  }
   private initToolbarEvents() {
     const desktopToolbar = document.querySelector('.l-toolbar');
     const fileInput = document.getElementById(
@@ -185,151 +313,6 @@ export class FileExplorer {
         () => this.renderCurrentView(),
       );
     });
-    const msalInstance = new PublicClientApplication(msalConfig);
-    let currentAccount: AccountInfo | null = null;
-
-    // DOM Elements
-    const loginBtn = document.getElementById(
-      'loginBtn',
-    ) as HTMLButtonElement;
-    const logoutBtn = document.getElementById(
-      'logoutBtn',
-    ) as HTMLButtonElement;
-    const callApiBtn = document.getElementById(
-      'callApiBtn',
-    ) as HTMLButtonElement;
-    const apiSection = document.getElementById(
-      'api-section',
-    ) as HTMLDivElement;
-    const apiResponse = document.getElementById(
-      'apiResponse',
-    ) as HTMLPreElement;
-
-    // ==========================================
-    // 1. THE POPUP DEFENDER
-    // ==========================================
-    // If this window has an 'opener', it means we are inside the tiny Microsoft popup.
-    console.log('--- APP BOOTSTRAP STARTED ---');
-    console.log('1. Window opener exists?', !!window.opener);
-    console.log('2. Window name:', window.name);
-    console.log('3. Current URL:', window.location.href);
-    if (window.opener && window.name.startsWith('msal.')) {
-      console.log(
-        '--> POPUP DETECTED. Halting all JS execution completely.',
-      );
-      // Do absolutely NOTHING.
-      // Do NOT initialize MSAL. Do NOT run handleRedirectPromise.
-      // The main window will read the URL hash and close this window automatically.
-    } else {
-      console.log('--> MAIN WINDOW DETECTED. Booting normal app...');
-      initializeMainApp();
-    }
-
-    // ==========================================
-    // 2. MAIN WINDOW LOGIC
-    // ==========================================
-    async function initializeMainApp() {
-      await msalInstance.initialize();
-
-      // Simply check local cache to see if we have a keycard
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        currentAccount = accounts[0];
-      }
-
-      updateUI();
-
-      // ONLY initialize your heavy Bootstrap/File Explorer logic down here,
-      // safely protected from the authentication flow.
-      if (currentAccount) {
-        console.log('User is authenticated! Ready to load folders.');
-        // initializeFolders();
-      }
-    }
-
-    async function signIn(e: Event) {
-      e.preventDefault();
-      console.log(
-        '--> Login button clicked. Triggering MSAL loginPopup...',
-      );
-
-      try {
-        // We override the redirectUri JUST for this popup request
-        const response = await msalInstance.loginPopup({
-          ...loginRequest,
-          redirectUri: 'http://localhost:3000/blank.html',
-        });
-
-        console.log(
-          '--> loginPopup SUCCESS! Received response:',
-          response,
-        );
-        currentAccount = response.account;
-        updateUI();
-      } catch (error) {
-        console.error(
-          '--> loginPopup FAILED or was cancelled:',
-          error,
-        );
-      }
-    }
-
-    async function signOut(e: Event) {
-      e.preventDefault();
-      if (!currentAccount) return;
-      try {
-        await msalInstance.logoutPopup({
-          mainWindowRedirectUri: '/',
-        });
-        currentAccount = null;
-        updateUI();
-      } catch (error) {
-        console.error('Logout failed:', error);
-      }
-    }
-
-    async function callApi() {
-      if (!currentAccount) return;
-
-      try {
-        const tokenResponse = await msalInstance.acquireTokenSilent({
-          ...loginRequest,
-          account: currentAccount,
-        });
-
-        const response = await fetch(
-          'https://localhost:7029/api/Auth/me',
-          {
-            headers: {
-              Authorization: `Bearer ${tokenResponse.accessToken}`,
-            },
-          },
-        );
-
-        const data = await response.json();
-        apiResponse.textContent = JSON.stringify(data, null, 2);
-      } catch (error) {
-        console.error('API Call failed.', error);
-      }
-    }
-
-    function updateUI() {
-      if (currentAccount) {
-        loginBtn.classList.add('hidden');
-        logoutBtn.classList.remove('hidden');
-        apiSection.classList.remove('hidden');
-      } else {
-        loginBtn.classList.remove('hidden');
-        logoutBtn.classList.add('hidden');
-        apiSection.classList.add('hidden');
-        apiResponse.textContent = 'API Data will appear here...';
-      }
-    }
-
-    // Event Listeners
-    loginBtn.addEventListener('click', signIn);
-    logoutBtn.addEventListener('click', signOut);
-    callApiBtn.addEventListener('click', callApi);
   }
   private initGridEvents() {
     const mainContainer = document.querySelector('.l-main-container');
