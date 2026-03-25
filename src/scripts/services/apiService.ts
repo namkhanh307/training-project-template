@@ -71,7 +71,7 @@ export const postFolder = async (payload: PostFolderReq) => {
   }
 
   // If successful, return the data
-  return response.json(); 
+  return response; 
 };
 export const deleteItem = async (id: string) => {
   const response = await fetch(

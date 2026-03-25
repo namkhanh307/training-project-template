@@ -47,6 +47,7 @@ export interface PostFolderReq{
 export interface RenameItemReq{
   id: string;
   newName: string;
+  type: ItemType
 }
 export type LinkedListNode<T> = T & {
     prev: LinkedListNode<T> | null;

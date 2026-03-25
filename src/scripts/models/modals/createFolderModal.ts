@@ -1,18 +1,13 @@
 import { postFolder } from '../../services/apiService';
-import { BASE_URL, END_POINT } from '../../utilities/_const';
-import {
-  isValidName,
-} from '../../utilities/_helper';
-import { MinimalItem, PostFolderReq } from '../model';
+import { isValidName } from '../../utilities/_helper';
+import { PostFolderReq } from '../model';
 import { BaseModal } from './baseModal';
 
 export class CreateFolderModal extends BaseModal {
   private currentFolderId: string | null;
   private refreshUI: () => void;
-  constructor(
-    currentFolderId: string | null,
-    refreshUI: () => void,
-  ) {
+
+  constructor(currentFolderId: string | null, refreshUI: () => void) {
     super('Create New Folder'); // Pass title to BaseModal
     this.currentFolderId = currentFolderId;
     this.refreshUI = refreshUI;
@@ -31,15 +26,21 @@ export class CreateFolderModal extends BaseModal {
 
   // Automatically focus the input when the modal opens
   protected onOpen(): void {
-    const input = document.getElementById('new-folder-input') as HTMLInputElement;
+    const input = document.getElementById(
+      'new-folder-input',
+    ) as HTMLInputElement;
     if (input) {
       input.focus();
     }
   }
 
   async handleConfirm(): Promise<void> {
-    const nameInput = document.getElementById('new-folder-input') as HTMLInputElement;
-    const errorDiv = document.getElementById('create-folder-error') as HTMLElement;
+    const nameInput = document.getElementById(
+      'new-folder-input',
+    ) as HTMLInputElement;
+    const errorDiv = document.getElementById(
+      'create-folder-error',
+    ) as HTMLElement;
 
     let newName = nameInput.value.trim() || 'New folder';
 
@@ -51,39 +52,46 @@ export class CreateFolderModal extends BaseModal {
       return;
     }
 
-    // 2. Build the API Payload
     const payload: PostFolderReq = {
       name: newName,
-      parentId: this.currentFolderId, 
-      organizationId: '112d268e-9c46-485d-b4a2-2ad8e5569d81'
+      parentId: this.currentFolderId,
+      organizationId: '112d268e-9c46-485d-b4a2-2ad8e5569d81',
     };
 
     try {
-      // Disable inputs while waiting for the network
       if (nameInput) nameInput.disabled = true;
       if (errorDiv) errorDiv.style.display = 'none';
 
-      // 3. Send the POST request to the server
       const response = await postFolder(payload);
+
+      // Handle non-200 responses
       if (!response.ok) {
-        // If the backend says the name is a duplicate, it should return a 400 or 409 status code
-        throw new Error(`Server rejected request: ${response.statusText}`);
+        // Parse the ASP.NET ProblemDetails JSON
+        const errorData = await response.json();
+        // Throw the parsed object directly to the catch block
+        throw errorData;
       }
 
-      // 4. Success! Tell the main grid to fetch the new view, then close.
+      // Success!
       this.refreshUI();
       this.close();
+    } catch (error: any) {
+      // 1. We removed the console.error() here to stop double-logging in the console
 
-    } catch (error) {
-      console.error('Failed to create folder:', error);
       if (errorDiv) {
-        // We catch the error here and show it instead of using alert()
-        errorDiv.textContent = 'Failed to create folder. The name might already exist or the server is busy.';
+        // 2. Extract the 'detail' property from the C# ProblemDetails object
+        // If it doesn't exist, fall back to a generic message
+        const displayMessage =
+          error.detail || error.message || 'Failed to create folder.';
+
+        errorDiv.textContent = displayMessage; // Shows: "This name is already existed..."
         errorDiv.style.display = 'block';
       }
     } finally {
-      // Re-enable inputs so the user can fix the name and try again
-      if (nameInput) nameInput.disabled = false;
+      if (nameInput) {
+        nameInput.disabled = false;
+        nameInput.focus();
+      }
     }
   }
 }

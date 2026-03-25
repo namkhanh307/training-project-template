@@ -1,7 +1,6 @@
 import { renameItem } from '../../services/apiService';
-import {
-  isValidName,
-} from '../../utilities/_helper';
+import { isValidName } from '../../utilities/_helper';
+import { ItemType } from '../enum';
 import { RenameItemReq } from '../model';
 import { BaseModal } from './baseModal';
 
@@ -36,7 +35,9 @@ export class RenameModal extends BaseModal {
 
   // Automatically focus and select the text when the modal opens
   protected onOpen(): void {
-    const input = document.getElementById('rename-input') as HTMLInputElement;
+    const input = document.getElementById(
+      'rename-input',
+    ) as HTMLInputElement;
     if (input) {
       input.focus();
       input.select();
@@ -44,8 +45,12 @@ export class RenameModal extends BaseModal {
   }
 
   async handleConfirm(): Promise<void> {
-    const input = document.getElementById('rename-input') as HTMLInputElement;
-    const errorDiv = document.getElementById('rename-error') as HTMLElement;
+    const input = document.getElementById(
+      'rename-input',
+    ) as HTMLInputElement;
+    const errorDiv = document.getElementById(
+      'rename-error',
+    ) as HTMLElement;
     const inputName = input.value.trim();
 
     // 1. Basic Frontend Validation
@@ -53,8 +58,7 @@ export class RenameModal extends BaseModal {
       this.close(); // Nothing changed, just close it
       return;
     }
-    
-    // isValidName stays, but isNameDuplicate is removed (the backend handles duplicates now!)
+
     if (!isValidName(inputName)) {
       if (errorDiv) {
         errorDiv.textContent = 'Invalid characters in name.';
@@ -63,26 +67,11 @@ export class RenameModal extends BaseModal {
       return;
     }
 
-    // 2. Parse the name and extension just like your original logic
-    let newBaseName = inputName;
-    let newExtension = '';
-
-    if (!this.isFolder) {
-      const lastDotIndex = inputName.lastIndexOf('.');
-
-      if (lastDotIndex > 0) {
-        // They typed a dot (e.g., "Report.pdf")
-        newBaseName = inputName.substring(0, lastDotIndex);
-        // Note: Check if your API expects the dot. Your earlier JSON had ".pdf".
-        // If it needs the dot, change this to inputName.substring(lastDotIndex)
-        newExtension = inputName.substring(lastDotIndex + 1).toLowerCase(); 
-      }
-    }
-
     // 3. Build the payload for the API
     const payload: RenameItemReq = {
       id: this.itemId,
-      newName: newBaseName,
+      newName: inputName,
+      type: this.isFolder ? ItemType.Folder : ItemType.File
     };
 
     try {
@@ -91,20 +80,26 @@ export class RenameModal extends BaseModal {
       if (errorDiv) errorDiv.style.display = 'none';
 
       // 4. Send the PUT request to the server
-      const response = await renameItem(payload)
+      const response = await renameItem(payload);
 
       if (!response.ok) {
-        throw new Error('Server rejected request. The name might be taken.');
+        const errorData = await response.json();
+        // Throw the parsed object directly to the catch block
+        throw errorData;
       }
 
       // 5. Success! Redraw the screen and close the modal
       this.refreshUI();
       this.close();
-
     } catch (error) {
       console.error('Failed to rename item:', error);
       if (errorDiv) {
-        errorDiv.textContent = 'Failed to rename. A file or folder with this name might already exist.';
+        // 2. Extract the 'detail' property from the C# ProblemDetails object
+        // If it doesn't exist, fall back to a generic message
+        const displayMessage =
+          error.detail || error.message || 'Failed to create folder.';
+
+        errorDiv.textContent = displayMessage; // Shows: "This name is already existed..."
         errorDiv.style.display = 'block';
       }
     } finally {
