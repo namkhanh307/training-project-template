@@ -1,4 +1,4 @@
-import { LinkedListNode, RenameModel, UniqueNameModel } from '../models/model';
+import { LinkedListNode, MinimalItem, RenameModel, UniqueNameModel } from '../models/model';
 import { BASE_URL, END_POINT, MINE_TYPES, SUPPORTED_ICONS } from './_const';
 
 const ready = (fn: () => void) => {
@@ -64,34 +64,6 @@ export function generateID(): string {
         Math.random().toString(36).substring(2);
 }
 
-export interface MinimalItem {
-  id: string;
-  name: string;
-}
-
-/**
- * Checks if a file or folder name already exists in the current folder cache.
- * @param newName The text the user typed into the input
- * @param currentFolderItems The cached array of items in the current view
- * @param currentId The ID of the item being renamed (optional)
- */
-export function isNameDuplicate(
-  newName: string,
-  currentFolderItems: MinimalItem[], 
-  currentId?: string,
-): boolean {
-  const formattedNewName = newName.trim().toLowerCase();
-
-  return currentFolderItems.some((item) => {
-    // 1. THE SELF CHECK: If editing, ignore the item we are renaming
-    if (currentId && item.id === currentId) {
-      return false;
-    }
-
-    // 2. THE MATCH: Do the names collide?
-    return item.name.toLowerCase() === formattedNewName;
-  });
-}
 
 /**
  * Checks if a file or folder name contains forbidden special characters.

@@ -3,13 +3,12 @@ import { BASE_URL, END_POINT } from '../../utilities/_const';
 import {
   isValidName,
 } from '../../utilities/_helper';
-import { PostFolderReq } from '../model';
+import { MinimalItem, PostFolderReq } from '../model';
 import { BaseModal } from './baseModal';
 
 export class CreateFolderModal extends BaseModal {
   private currentFolderId: string | null;
   private refreshUI: () => void;
-
   constructor(
     currentFolderId: string | null,
     refreshUI: () => void,
@@ -43,14 +42,6 @@ export class CreateFolderModal extends BaseModal {
     const errorDiv = document.getElementById('create-folder-error') as HTMLElement;
 
     let newName = nameInput.value.trim() || 'New folder';
-    // Parse the size, fallback to 500 if empty or invalid
-    if(!isNameDuplicate()){
-      if (errorDiv) {
-        errorDiv.textContent = 'This name is existed in current folder';
-        errorDiv.style.display = 'block';
-      }
-      return;
-    }
 
     if (!isValidName(newName)) {
       if (errorDiv) {

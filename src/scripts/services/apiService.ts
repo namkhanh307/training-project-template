@@ -1,4 +1,5 @@
 import {
+  ErrorResponse,
   GetItemsRes,
   GetPathsRes,
   PagingRes,
@@ -43,13 +44,34 @@ export const getItemPath = async (id: string): Promise<GetPathsRes[]> => {
   if(!response.ok) throw new Error('Failed to fecth path details');
   return await response.json() as GetPathsRes[];
 }
+
 export const postFolder = async (payload: PostFolderReq) => {
   const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  return response;
+
+  // 1. Check if the backend returned an error (4xx or 5xx)
+  if (!response.ok) {
+    let errorData: ErrorResponse;
+    try {
+      // 2. Try to parse the clean JSON error your middleware generated
+      errorData = await response.json();
+    } catch {
+      // Fallback if the server crashes and doesn't return JSON
+      errorData = { 
+        statusCode: response.status, 
+        message: 'An unexpected server error occurred.', 
+        details: null 
+      };
+    }
+    // 3. Throw the parsed object to be caught by the UI
+    throw errorData;
+  }
+
+  // If successful, return the data
+  return response.json(); 
 };
 export const deleteItem = async (id: string) => {
   const response = await fetch(

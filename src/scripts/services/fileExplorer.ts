@@ -24,7 +24,6 @@ import { GetPathsRes, MinimalItem } from '../models/model';
 export class FileExplorer {
   private _currentFolderId: string | null = null;
   private _breadcrumbPath: GetPathsRes[] = [];
-  private _currentFolderCache: MinimalItem[] = [];
   constructor() {
     console.log('1. RAW URL ON BOOT:', window.location.href);
     // 1. Attach listeners immediately (Synchronous)
@@ -125,16 +124,6 @@ export class FileExplorer {
       // We ONLY skip this if the user clicked the browser's native Back arrow.
       updateUrlWithId(folderId || '');
     }
-    // 2. Fetch the items from your Database via API
-    const itemsFromApi = await getItems(folderId);
-
-    // 3. Update the Cache!
-    // We only save the id and name to keep memory usage tiny.
-    this._currentFolderCache = itemsFromApi.list.map((item) => ({
-      id: item.id,
-      name: item.name,
-    }));
-    // 3. Redraw the screen!
     await this.renderCurrentView();
   }
 
@@ -180,7 +169,7 @@ export class FileExplorer {
           // Refactored Modal: Only needs current ID and a callback to refresh the UI
           const newFolderModal = new CreateFolderModal(
             this._currentFolderId,
-            () => this.renderCurrentView(),
+            () => this.renderCurrentView()
           );
           newFolderModal.open();
           break;

@@ -1,5 +1,4 @@
 import { deleteItem } from "../../services/apiService";
-import { BASE_URL, END_POINT } from "../../utilities/_const";
 import { ItemType } from "../enum";
 import { BaseModal } from "./baseModal";
 
