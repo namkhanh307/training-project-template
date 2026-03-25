@@ -1,4 +1,4 @@
-import { RenameModel, UniqueNameModel } from '../models/model';
+import { LinkedListNode, RenameModel, UniqueNameModel } from '../models/model';
 import { BASE_URL, END_POINT, MINE_TYPES, SUPPORTED_ICONS } from './_const';
 
 const ready = (fn: () => void) => {
@@ -64,37 +64,31 @@ export function generateID(): string {
         Math.random().toString(36).substring(2);
 }
 
-//Naming Helper
+export interface MinimalItem {
+  id: string;
+  name: string;
+}
+
 /**
- * Checks if a file or folder name already exists.
- * * @param newName The text the user typed into the input
- * @param currentFolderId The ID of the folder to check
- * @param itemsDictionary
- * @param currentId The ID of the item being renamed (Only needed if isEdit is true)
- * @returns boolean (true if it's a duplicate, false if it's safe to use)
+ * Checks if a file or folder name already exists in the current folder cache.
+ * @param newName The text the user typed into the input
+ * @param currentFolderItems The cached array of items in the current view
+ * @param currentId The ID of the item being renamed (optional)
  */
-// Note: We use a generic Record so you can pass EITHER allFolders OR allFiles into this!
 export function isNameDuplicate(
   newName: string,
-  currentFolderId: string,
-  itemsDictionary: Record<string, RenameModel>,
+  currentFolderItems: MinimalItem[], 
   currentId?: string,
 ): boolean {
   const formattedNewName = newName.trim().toLowerCase();
 
-  // 1. Turn the dictionary into an array so we can loop over it
-  return Object.values(itemsDictionary).some((item) => {
-    // 2. THE SIBLING CHECK: Ignore items in other folders!
-    if (item.parentId !== currentFolderId) {
-      return false;
-    }
-
-    // 3. THE SELF CHECK: If editing, ignore the item we are renaming
+  return currentFolderItems.some((item) => {
+    // 1. THE SELF CHECK: If editing, ignore the item we are renaming
     if (currentId && item.id === currentId) {
       return false;
     }
 
-    // 4. THE MATCH: Do the names collide?
+    // 2. THE MATCH: Do the names collide?
     return item.name.toLowerCase() === formattedNewName;
   });
 }
@@ -268,3 +262,19 @@ export const normalizeArrayToRecord = <T extends { id: string }>(items: T[]): Re
     return dictionary;
   }, {} as Record<string, T>);
 };
+
+// Frontend takes your ordered array and wires up the linked list
+// 1. Define a type that combines your base item with the new pointers
+
+// 2. Explicitly type the input and the return type
+export function buildDoublyLinkedList<T>(items: T[]): LinkedListNode<T>[] {
+    // Cast the array so TS knows we are about to mutate it with new properties
+    const linkedItems = items as LinkedListNode<T>[];
+
+    for (let i = 0; i < linkedItems.length; i++) {
+        linkedItems[i].prev = i > 0 ? linkedItems[i - 1] : null;
+        linkedItems[i].next = i < linkedItems.length - 1 ? linkedItems[i + 1] : null;
+    }
+    
+    return linkedItems;
+}

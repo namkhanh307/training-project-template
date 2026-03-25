@@ -48,3 +48,16 @@ export interface RenameItemReq{
   id: string;
   newName: string;
 }
+export type LinkedListNode<T> = T & {
+    prev: LinkedListNode<T> | null;
+    next: LinkedListNode<T> | null;
+};
+
+export interface GetPathsRes{
+  id: string | null;
+  name: string;
+}
+export interface MinimalItem {
+  id: string;
+  name: string;
+}

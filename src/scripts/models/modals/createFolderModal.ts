@@ -44,9 +44,14 @@ export class CreateFolderModal extends BaseModal {
 
     let newName = nameInput.value.trim() || 'New folder';
     // Parse the size, fallback to 500 if empty or invalid
+    if(!isNameDuplicate()){
+      if (errorDiv) {
+        errorDiv.textContent = 'This name is existed in current folder';
+        errorDiv.style.display = 'block';
+      }
+      return;
+    }
 
-    // 1. Basic Frontend Validation (Syntax only, not duplication!)
-    // Assuming isValidName just checks for bad characters like / \ : * ? " < > |
     if (!isValidName(newName)) {
       if (errorDiv) {
         errorDiv.textContent = 'Invalid characters in folder name.';

@@ -1,5 +1,6 @@
 import {
   GetItemsRes,
+  GetPathsRes,
   PagingRes,
   PostFolderReq,
   RenameItemReq,
@@ -37,6 +38,11 @@ export const getItemById = async (
   return data as GetItemsRes;
 };
 
+export const getItemPath = async (id: string): Promise<GetPathsRes[]> => {
+  const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}/path/${id}`);
+  if(!response.ok) throw new Error('Failed to fecth path details');
+  return await response.json() as GetPathsRes[];
+}
 export const postFolder = async (payload: PostFolderReq) => {
   const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}`, {
     method: 'POST',

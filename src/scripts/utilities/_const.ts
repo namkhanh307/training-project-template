@@ -31,3 +31,5 @@ export const BASE_URL = 'https://localhost:7029/api/'
 export const END_POINT = {
   ITEMS: "Items"
 }
+
+export const ROOT_FOLDER = 'Documents';

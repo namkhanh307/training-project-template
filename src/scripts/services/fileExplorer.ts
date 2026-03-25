@@ -2,7 +2,7 @@ import { CreateFolderModal } from '../models/modals/createFolderModal';
 import { DeleteModal } from '../models/modals/deleteModal';
 import { FileViewerModal } from '../models/modals/fileViewerModal';
 import { RenameModal } from '../models/modals/renameModal';
-import { BREAD_CRUMB } from '../utilities/_const';
+import { BREAD_CRUMB, ROOT_FOLDER } from '../utilities/_const';
 import {
   getIdFromUrl,
   updateUrlWithId,
@@ -13,17 +13,18 @@ import {
   triggerUpload,
 } from '../utilities/_helper';
 import { ItemType } from '../models/enum';
-import { getItemById } from './apiService';
+import { getItemById, getItemPath, getItems } from './apiService';
 import {
   AccountInfo,
   PublicClientApplication,
 } from '@azure/msal-browser';
 import { loginRequest, msalConfig } from '../models/authConfig';
+import { GetPathsRes, MinimalItem } from '../models/model';
 
 export class FileExplorer {
   private _currentFolderId: string | null = null;
-  private _breadcrumbPath: { id: string | null; name: string }[] = [];
-
+  private _breadcrumbPath: GetPathsRes[] = [];
+  private _currentFolderCache: MinimalItem[] = [];
   constructor() {
     console.log('1. RAW URL ON BOOT:', window.location.href);
     // 1. Attach listeners immediately (Synchronous)
@@ -43,45 +44,49 @@ export class FileExplorer {
    * Handles the initial URL parsing and data fetching.
    */
   private async initializeRoute() {
-    // Optional: Show a loading spinner immediately while we figure out the route
-    // UIManager.renderLoadingState();
-
     const idFromUrl = getIdFromUrl();
 
     try {
       if (idFromUrl) {
         this._currentFolderId = idFromUrl;
 
-        // Because we are in an async method, we can safely await the API!
+        // 1. Fetch the current item (you already have this)
         const currentFolder = await getItemById(idFromUrl);
+        // 2. NEW: Fetch the entire breadcrumb lineage from the backend.
+        // This API should return an array like:
+        // [{ id: '123', name: 'Folder A' }, { id: '456', name: 'Folder B' }]
+        if (currentFolder.depth >= 2) {
+          const ancestors = await getItemPath(idFromUrl);
+          // 3. Reconstruct the full path!
+          this._breadcrumbPath = [
+            { id: null, name: ROOT_FOLDER },
+            ...ancestors,
+            { id: idFromUrl, name: currentFolder.name },
+          ];
+        } else {
+          this._breadcrumbPath = [
+            { id: null, name: ROOT_FOLDER },
+            { id: idFromUrl, name: currentFolder.name },
+          ];
+        }
 
-        this._breadcrumbPath = [
-          { id: null, name: 'Documents' },
-          { id: idFromUrl, name: currentFolder.name }, // Set real name from DB
-        ];
+        // Note: If your API returns the current folder inside the 'ancestors' array too,
+        // you can just do: this._breadcrumbPath = [{ id: null, name: ROOT_FOLDER }, ...ancestors];
       } else {
         // Fallback to Root
         this._currentFolderId = null;
-        this._breadcrumbPath = [{ id: null, name: 'Documents' }];
+        this._breadcrumbPath = [{ id: null, name: ROOT_FOLDER }];
         updateUrlWithId('');
       }
     } catch (error) {
-      console.error(
-        'Failed to load initial folder. Falling back to Root.',
-        error,
-      );
-
-      // CRITICAL: If the user bookmarks a folder that later gets deleted,
-      // the API will fail. We catch the error and force them back to the safe Root folder.
+      console.error('Failed to load initial folder.', error);
       this._currentFolderId = null;
-      this._breadcrumbPath = [{ id: null, name: 'Documents' }];
+      this._breadcrumbPath = [{ id: null, name: ROOT_FOLDER }];
       updateUrlWithId('');
     }
 
-    // 4. Finally, draw the screen now that we have the data!
     this.renderCurrentView();
   }
-
   /**
    * The new central hub for moving around the app.
    */
@@ -92,33 +97,44 @@ export class FileExplorer {
   ) {
     this._currentFolderId = folderId;
 
-    if (!isPopState) {
-      // FORWARD NAVIGATION: User clicked a folder in the UI
+    // 1. MANAGE THE BREADCRUMB ARRAY
+    // Check if the folder is already in our path
+    const pathIndex = this._breadcrumbPath.findIndex(
+      (p) => p.id === folderId,
+    );
+
+    if (pathIndex !== -1) {
+      // BACKWARD NAVIGATION (User clicked a Breadcrumb OR the Browser Back button)
+      // Slice the array back to this exact folder
+      this._breadcrumbPath = this._breadcrumbPath.slice(
+        0,
+        pathIndex + 1,
+      );
+    } else {
+      // FORWARD NAVIGATION (User clicked a folder in the main UI)
       if (folderId === null) {
-        this._breadcrumbPath = [{ id: null, name: 'Root' }];
+        this._breadcrumbPath = [{ id: null, name: ROOT_FOLDER }];
       } else if (folderName) {
         this._breadcrumbPath.push({ id: folderId, name: folderName });
       }
-      // Push the new ID to the browser URL bar
-      updateUrlWithId(folderId || '');
-    } else {
-      // BACKWARD NAVIGATION: User clicked the browser's Back button or a Breadcrumb
-      // Slice the breadcrumb array back to the point they navigated to
-      const pathIndex = this._breadcrumbPath.findIndex(
-        (p) => p.id === folderId,
-      );
-      if (pathIndex !== -1) {
-        this._breadcrumbPath = this._breadcrumbPath.slice(
-          0,
-          pathIndex + 1,
-        );
-      } else {
-        // Safe fallback if history gets weird
-        this._breadcrumbPath = [{ id: null, name: 'Documents' }];
-      }
     }
 
-    // Redraw the screen!
+    // 2. MANAGE THE URL
+    if (!isPopState) {
+      // We push the new URL for BOTH forward clicks AND breadcrumb clicks!
+      // We ONLY skip this if the user clicked the browser's native Back arrow.
+      updateUrlWithId(folderId || '');
+    }
+    // 2. Fetch the items from your Database via API
+    const itemsFromApi = await getItems(folderId);
+
+    // 3. Update the Cache!
+    // We only save the id and name to keep memory usage tiny.
+    this._currentFolderCache = itemsFromApi.list.map((item) => ({
+      id: item.id,
+      name: item.name,
+    }));
+    // 3. Redraw the screen!
     await this.renderCurrentView();
   }
 
@@ -394,9 +410,9 @@ export class FileExplorer {
 
       switch (action) {
         case 'open-folder':
-          // 3. THE FIX: Check against undefined so that 'null' (Root) is allowed to pass!
           if (itemId !== undefined) {
-            await this.navigateTo(itemId, itemName, true); // Note: You might want to pass true here so navigateTo knows it's a backward breadcrumb click!
+            // FIX: Removed 'true'. Let it default to false so the URL updates!
+            await this.navigateTo(itemId, itemName);
           }
           break;
       }
