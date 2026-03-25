@@ -1,5 +1,15 @@
-import { LinkedListNode, MinimalItem, RenameModel, UniqueNameModel } from '../models/model';
-import { BASE_URL, END_POINT, MINE_TYPES, SUPPORTED_ICONS } from './_const';
+import {
+  LinkedListNode,
+  MinimalItem,
+  RenameModel,
+  UniqueNameModel,
+} from '../models/model';
+import {
+  BASE_URL,
+  END_POINT,
+  MINE_TYPES,
+  SUPPORTED_ICONS,
+} from './_const';
 
 const ready = (fn: () => void) => {
   if (document.readyState !== 'loading') {
@@ -64,7 +74,6 @@ export function generateID(): string {
         Math.random().toString(36).substring(2);
 }
 
-
 /**
  * Checks if a file or folder name contains forbidden special characters.
  * Forbidden characters: < > : " / \ | ? *
@@ -77,35 +86,6 @@ export function isValidName(name: string): boolean {
 
   // If the regex finds a match, it's invalid (returns false). Otherwise, it's safe (returns true).
   return !forbiddenChars.test(name);
-}
-
-/**
- * Generates a unique name by appending (1), (2), etc., if the base name already exists.
- * @param baseName The default name you want to use (e.g., "New folder")
- * @param parentId The ID of the folder where this new item will live
- * @param itemsDictionary The global dictionary of all folders (or files)
- * @returns A guaranteed unique string
- */
-export function generateUniqueName(
-  baseName: string,
-  parentId: string,
-  itemsDictionary: Record<string, UniqueNameModel>,
-): string {
-  let uniqueName = baseName;
-  let counter = 1;
-
-  // 1. FILTER & MAP: Get ONLY the names of items that live in the same parent folder
-  const siblingNames = Object.values(itemsDictionary)
-    .filter((item) => item.parentId === parentId)
-    .map((item) => item.name.toLowerCase());
-
-  // 2. Keep incrementing the counter until we find a name that isn't in the list
-  while (siblingNames.includes(uniqueName.toLowerCase())) {
-    uniqueName = `${baseName} (${counter})`;
-    counter++;
-  }
-
-  return uniqueName;
 }
 
 /**
@@ -150,7 +130,9 @@ export function generateUniqueFileName(
 
 //File Upload
 export function triggerUpload() {
-  const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+  const fileInput = document.getElementById(
+    'fileInput',
+  ) as HTMLInputElement;
   if (fileInput) fileInput.click();
 }
 
@@ -161,7 +143,7 @@ export async function processFileSelection(
   currentFolderId: string | null,
   organizationId: string, // Added this since your BE requires it!
   event: Event,
-  refreshUI: () => void
+  refreshUI: () => void,
 ) {
   const target = event.target as HTMLInputElement;
   const files = target.files;
@@ -170,48 +152,47 @@ export async function processFileSelection(
 
   // Show a loading state in the UI
   const container = document.getElementById('unified-row-container');
-  if (container) container.innerHTML = '<p class="mt-4 text-center">Uploading files...</p>';
+  if (container)
+    container.innerHTML =
+      '<p class="mt-4 text-center">Uploading files...</p>';
 
   try {
-    // 1. Map the files into an array of Upload Promises
-    const uploadPromises = Array.from(files).map((selectedFile) => {
-      
-      // 2. Build the multipart/form-data payload
-      const formData = new FormData();
-      
-      // Match the exact property names from your C# UploadFileReq class
-      formData.append('OrganizationId', organizationId);
-      
-      if (currentFolderId) {
-        formData.append('ParentId', currentFolderId);
-      }
-      
-      // Append the raw binary file. 'File' must match the IFormFile property name.
-      formData.append('File', selectedFile); 
+    const totalFiles = files.length;
+    let completed = 0;
 
-      // 3. Fire the POST request to the new endpoint
+    const uploadPromises = Array.from(files).map((selectedFile) => {
+      const formData = new FormData();
+      formData.append('OrganizationId', organizationId);
+      if (currentFolderId)
+        formData.append('ParentId', currentFolderId);
+      formData.append('Files', selectedFile);
+
       return fetch(`${BASE_URL}${END_POINT.ITEMS}/uploadFile`, {
         method: 'POST',
-        // CRITICAL: Do NOT set the 'Content-Type' header here.
-        // The browser automatically sets it to 'multipart/form-data' and 
-        // generates the unique boundary string when you pass a FormData object.
-        body: formData
-      }).then(response => {
-        if (!response.ok) {
-           throw new Error(`Failed to upload ${selectedFile.name}`);
+        body: formData,
+      }).then((response) => {
+        if (!response.ok) throw new Error(selectedFile.name);
+
+        // Optional: Update UI progress
+        completed++;
+        if (container) {
+          container.innerHTML = `<p class="mt-4 text-center">Uploading (${completed}/${totalFiles})...</p>`;
         }
-        // Your backend returns Ok(), which doesn't have a JSON body, 
-        // so we don't need to call response.json() here.
-        return response; 
+        return response;
       });
     });
 
-    // 4. Wait for ALL files to finish uploading to the server
-    await Promise.all(uploadPromises);
+    const results = await Promise.allSettled(uploadPromises);
 
+    // Check if any failed
+    const failures = results.filter((r) => r.status === 'rejected');
+    if (failures.length > 0) {
+      console.error('Some files failed:', failures);
+      alert(`${failures.length} file(s) failed to upload.`);
+    }
   } catch (error) {
-    console.error("Upload Error:", error);
-    alert("One or more files failed to upload. Please try again.");
+    console.error('Upload Error:', error);
+    alert('One or more files failed to upload. Please try again.');
   } finally {
     // 5. Clean up and Refresh the UI
     target.value = ''; // Reset the input field
@@ -228,25 +209,33 @@ export function getEmptyBase64Data(extension: string): string {
   // Return the perfectly formatted empty base64 string!
   return `data:${mimeType};base64,`;
 }
-export const normalizeArrayToRecord = <T extends { id: string }>(items: T[]): Record<string, T> => {
-  return items.reduce((dictionary, item) => {
-    dictionary[item.id] = item;
-    return dictionary;
-  }, {} as Record<string, T>);
+export const normalizeArrayToRecord = <T extends { id: string }>(
+  items: T[],
+): Record<string, T> => {
+  return items.reduce(
+    (dictionary, item) => {
+      dictionary[item.id] = item;
+      return dictionary;
+    },
+    {} as Record<string, T>,
+  );
 };
 
 // Frontend takes your ordered array and wires up the linked list
 // 1. Define a type that combines your base item with the new pointers
 
 // 2. Explicitly type the input and the return type
-export function buildDoublyLinkedList<T>(items: T[]): LinkedListNode<T>[] {
-    // Cast the array so TS knows we are about to mutate it with new properties
-    const linkedItems = items as LinkedListNode<T>[];
+export function buildDoublyLinkedList<T>(
+  items: T[],
+): LinkedListNode<T>[] {
+  // Cast the array so TS knows we are about to mutate it with new properties
+  const linkedItems = items as LinkedListNode<T>[];
 
-    for (let i = 0; i < linkedItems.length; i++) {
-        linkedItems[i].prev = i > 0 ? linkedItems[i - 1] : null;
-        linkedItems[i].next = i < linkedItems.length - 1 ? linkedItems[i + 1] : null;
-    }
-    
-    return linkedItems;
+  for (let i = 0; i < linkedItems.length; i++) {
+    linkedItems[i].prev = i > 0 ? linkedItems[i - 1] : null;
+    linkedItems[i].next =
+      i < linkedItems.length - 1 ? linkedItems[i + 1] : null;
+  }
+
+  return linkedItems;
 }

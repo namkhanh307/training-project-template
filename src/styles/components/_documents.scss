@@ -248,3 +248,10 @@ body {
   min-width: 150px;
   background-color: $color-grey;
 }
+.text-truncate-filename {
+  display: block;      /* Ensure it's a block-level element */
+  white-space: nowrap; /* Prevent wrapping to a new line */
+  overflow: hidden;    /* Hide the overflow */
+  text-overflow: ellipsis; /* Add the "..." */
+  max-width: 100%;     /* Ensure it doesn't exceed its parent */
+}

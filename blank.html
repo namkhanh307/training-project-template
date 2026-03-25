@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Authenticating...</title>
+  </head>
+  <body>
+    <script>
+      // The main window polls this popup's URL.
+      // Once it sees the auth code, it reads it and closes this window.
+      // We just need to stay alive — nothing else needed.
+      setTimeout(() => window.close(), 3000);
+    </script>
+  </body>
+</html>

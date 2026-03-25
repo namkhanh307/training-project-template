@@ -5,11 +5,13 @@ export abstract class BaseModal {
   public title: string;
   protected confirmText: string = 'Confirm';
   protected cancelText: string = 'Cancel';
+  protected secondaryText?: string;
   protected modalElement: HTMLElement | null;
   // 🔴 1. Create stable references for our events so we can delete them later
   private boundHandleConfirm: (e: Event) => void;
   private boundClose: (e: Event) => void;
   private boundKeyPress: (e: KeyboardEvent) => void;
+  private boundHandleSecondary: (e: Event) => void;
   constructor(title: string) {
     this.title = title;
     // Assume you have a single <div id="dynamic-modal"> in your HTML
@@ -30,6 +32,10 @@ export abstract class BaseModal {
         e.preventDefault();
         this.handleConfirm();
       }
+    };
+    this.boundHandleSecondary = (e: Event) => {
+      e.preventDefault();
+      this.handleSecondary();
     };
   }
 
@@ -69,6 +75,15 @@ export abstract class BaseModal {
           ${this.renderContent()} 
           <div class="m-modal-footer d-flex gap-2 justify-content-end mt-3">
             <button class="btn btn-secondary" id="modal-cancel-btn">${this.cancelText}</button>
+            ${
+              this.secondaryText
+                ? `
+                <button class="btn btn-outline-primary" id="modal-secondary-btn">
+                  ${this.secondaryText}
+                </button>
+              `
+                : ''
+            }
             <button class="btn btn-primary" id="modal-confirm-btn">${this.confirmText}</button>
           </div>
         </div>
@@ -80,11 +95,17 @@ export abstract class BaseModal {
     const confirmBtn = document.getElementById('modal-confirm-btn');
     const cancelBtn = document.getElementById('modal-cancel-btn');
     const cancelX = document.getElementById('modal-cancel-x');
-
+    const secondaryBtn = document.getElementById(
+      'modal-secondary-btn',
+    );
     // Attach using our stable references
     confirmBtn?.addEventListener('click', this.boundHandleConfirm);
     cancelBtn?.addEventListener('click', this.boundClose);
     cancelX?.addEventListener('click', this.boundClose);
+    secondaryBtn?.addEventListener(
+      'click',
+      this.boundHandleSecondary,
+    );
 
     // Attach keyboard listener to the modal wrapper
     this.modalElement?.addEventListener(
@@ -97,21 +118,28 @@ export abstract class BaseModal {
     const confirmBtn = document.getElementById('modal-confirm-btn');
     const cancelBtn = document.getElementById('modal-cancel-btn');
     const cancelX = document.getElementById('modal-cancel-x');
+    const secondaryBtn = document.getElementById(
+      'modal-secondary-btn',
+    );
 
     // Destroy the button clicks
     confirmBtn?.removeEventListener('click', this.boundHandleConfirm);
     cancelBtn?.removeEventListener('click', this.boundClose);
     cancelX?.removeEventListener('click', this.boundClose);
-
+    secondaryBtn?.removeEventListener(
+      'click',
+      this.boundHandleSecondary,
+    );
     // Destroy the keyboard listener
     this.modalElement?.removeEventListener(
       'keypress',
       this.boundKeyPress as EventListener,
     );
   }
+
   protected onOpen(): void {}
   protected onClose(): void {}
-
+  protected handleSecondary(): void {}
   abstract renderContent(): string;
   abstract handleConfirm(): Promise<void> | void;
 }

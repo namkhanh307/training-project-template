@@ -5,6 +5,7 @@ const path = require('path');
 const { globSync } = require('glob');
 const LiveReloadPlugin = require('webpack-livereload-plugin');
 const webpack = require('webpack');
+const CopyPlugin = require('copy-webpack-plugin');
 
 const getEntries = function () {
   return globSync('./src/{scripts/pages,styles/pages}/**/!(_)*.{scss,ts,js}')
@@ -107,22 +108,20 @@ const commonConfig = {
       },
     ],
   },
-
   plugins: [
     new RemoveEmptyScriptsPlugin(),
-    new MiniCssExtractPlugin({
-      filename: 'css/[name].css',
-      chunkFilename: '[id].css',
-    }),
-    new LiveReloadPlugin({
-      protocol: 'http',
-    }),
-    new ESLintPlugin({
-      extensions: ['js'],
-      fix: true,
-    }),
+    new MiniCssExtractPlugin({ ... }),
+    new LiveReloadPlugin({ ... }),
+    new ESLintPlugin({ ... }),
     new webpack.ProgressPlugin(),
-  ],
+
+    // ADD THIS:
+    new CopyPlugin({
+      patterns: [
+        { from: 'blank.html', to: 'blank.html' },
+      ],
+    }),
+  ]
 };
 
 module.exports = commonConfig;

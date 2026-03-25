@@ -4,14 +4,20 @@ import { GetItemsRes } from '../model';
 import { BaseModal } from './baseModal';
 export class FileViewerModal extends BaseModal {
   private fileId: string;
-  private fileDetails: GetItemsRes = null; // Store the fetched metadata here
+  private fileDetails: GetItemsRes = null;
   protected confirmText = 'Download';
-
+  protected secondaryText = 'View';
   constructor(fileId: string) {
     super('File Details');
     this.fileId = fileId;
   }
+  protected handleSecondary(): void {
+    if (!this.fileDetails) return;
 
+    const fileUrl = `${BASE_IMAGE_URL}${this.fileDetails.dataPath}`;
+
+    window.open(fileUrl, '_blank');
+  }
   // 1. Initial Render: Show a beautiful loading state
   renderContent(): string {
     return `
@@ -36,14 +42,35 @@ export class FileViewerModal extends BaseModal {
       const formattedDate = new Date(
         file.modified,
       ).toLocaleDateString();
-      // Handle the API typo 'extenstion' if it still exists
       const extension = file.extension || file.extension || 'None';
+      const footer =
+        this.modalElement?.querySelector('.m-modal-footer');
+
+      const isPreviewable = ['pdf', 'png', 'jpg'].includes(
+        this.fileDetails.extension?.toLowerCase(),
+      );
+
+      if (footer && isPreviewable) {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline-primary';
+        btn.innerText = 'View';
+
+        btn.addEventListener('click', () => {
+          const fileUrl = `${BASE_IMAGE_URL}${this.fileDetails.dataPath}`;
+          window.open(fileUrl, '_blank');
+        });
+        footer.insertBefore(
+          btn,
+          footer.querySelector('#modal-confirm-btn'),
+        );
+      }
 
       // Inject the real data!
       container.innerHTML = `
         <div class="file-details-container text-start">
-          <h4 class="mb-3 text-primary"><i class="fas fa-file me-2"></i>${file.name}</h4>
-          <table class="table table-sm table-borderless">
+            <h4 class="mb-3 text-primary text-truncate-filename">
+              <i class="fas fa-file me-2"></i>${file.name}
+            </h4>          <table class="table table-sm table-borderless">
             <tbody>
               <tr>
                 <th scope="row" class="text-muted" style="width: 120px;">Extension:</th>

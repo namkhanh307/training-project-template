@@ -169,7 +169,7 @@ export class FileExplorer {
           // Refactored Modal: Only needs current ID and a callback to refresh the UI
           const newFolderModal = new CreateFolderModal(
             this._currentFolderId,
-            () => this.renderCurrentView()
+            () => this.renderCurrentView(),
           );
           newFolderModal.open();
           break;
@@ -209,14 +209,19 @@ export class FileExplorer {
     // 1. THE POPUP DEFENDER
     // ==========================================
     // If this window has an 'opener', it means we are inside the tiny Microsoft popup.
-    if (window.opener) {
+    console.log('--- APP BOOTSTRAP STARTED ---');
+    console.log('1. Window opener exists?', !!window.opener);
+    console.log('2. Window name:', window.name);
+    console.log('3. Current URL:', window.location.href);
+    if (window.opener && window.name.startsWith('msal.')) {
       console.log(
-        'Inside popup window. Waiting for MSAL to process and close...',
+        '--> POPUP DETECTED. Halting all JS execution completely.',
       );
-      msalInstance.initialize();
-      // Do NOT execute anything else. MSAL will read the URL and close this window in a millisecond.
+      // Do absolutely NOTHING.
+      // Do NOT initialize MSAL. Do NOT run handleRedirectPromise.
+      // The main window will read the URL hash and close this window automatically.
     } else {
-      // We are in the normal, main browser tab. Boot up the app!
+      console.log('--> MAIN WINDOW DETECTED. Booting normal app...');
       initializeMainApp();
     }
 
@@ -244,13 +249,28 @@ export class FileExplorer {
 
     async function signIn(e: Event) {
       e.preventDefault();
+      console.log(
+        '--> Login button clicked. Triggering MSAL loginPopup...',
+      );
+
       try {
-        // Back to the trusty popup!
-        const response = await msalInstance.loginPopup(loginRequest);
+        // We override the redirectUri JUST for this popup request
+        const response = await msalInstance.loginPopup({
+          ...loginRequest,
+          redirectUri: 'http://localhost:3000/blank.html',
+        });
+
+        console.log(
+          '--> loginPopup SUCCESS! Received response:',
+          response,
+        );
         currentAccount = response.account;
         updateUI();
       } catch (error) {
-        console.error('Popup login failed:', error);
+        console.error(
+          '--> loginPopup FAILED or was cancelled:',
+          error,
+        );
       }
     }
 
