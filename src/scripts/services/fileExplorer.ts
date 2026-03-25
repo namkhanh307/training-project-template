@@ -46,65 +46,68 @@ export class FileExplorer {
     });
   }
   private async initializeMsal() {
-    await this._msalInstance.initialize();
-    console.log('MSAL ready');
+  await this._msalInstance.initialize();
 
+  // CRITICAL: always call this on every page load
+  // It handles the redirect response when Microsoft sends the user back
+  const result = await this._msalInstance.handleRedirectPromise();
+
+  if (result) {
+    // We just came back from Microsoft redirect — grab the account
+    console.log('Redirect response received:', result.account.username);
+    this._currentAccount = result.account;
+  } else {
+    // Normal page load — check if already logged in
     const accounts = this._msalInstance.getAllAccounts();
     if (accounts.length > 0) {
       this._currentAccount = accounts[0];
-      console.log(
-        'Already authenticated:',
-        this._currentAccount.username,
-      );
+      console.log('Already authenticated:', this._currentAccount.username);
     }
-    this.updateUI();
   }
 
-  private async signIn(e: Event) {
-    e.preventDefault();
-    await this._msalReady;
+  this.updateUI();
+}
+
+private async signIn(e: Event) {
+  e.preventDefault();
+  await this._msalReady;
+
+  const accounts = this._msalInstance.getAllAccounts();
+
+  if (accounts.length > 0) {
+    // Already have account, try silent first
     try {
-      let response;
-      const accounts = this._msalInstance.getAllAccounts();
-
-      if (accounts.length > 0) {
-        try {
-          response = await this._msalInstance.acquireTokenSilent({
-            ...loginRequest,
-            account: accounts[0],
-          });
-        } catch {
-          response = await this._msalInstance.acquireTokenPopup({
-            ...loginRequest,
-            account: accounts[0],
-          });
-        }
-      } else {
-        response = await this._msalInstance.loginPopup({
-          ...loginRequest,
-        });
-      }
-
+      const response = await this._msalInstance.acquireTokenSilent({
+        ...loginRequest,
+        account: accounts[0],
+      });
       this._currentAccount = response.account;
       this.updateUI();
-    } catch (error) {
-      console.error('--> Auth FAILED:', error);
-    }
-  }
-  private async signOut(e: Event) {
-    e.preventDefault();
-    if (!this._currentAccount) return;
-    try {
-      await this._msalInstance.logoutPopup({
-        mainWindowRedirectUri: '/',
+    } catch {
+      // Silent failed, redirect to Microsoft
+      await this._msalInstance.acquireTokenRedirect({
+        ...loginRequest,
+        account: accounts[0],
       });
-      this._currentAccount = null;
-      this.updateUI();
-    } catch (error) {
-      console.error('Logout failed:', error);
+      // Page will redirect — code below won't run
     }
+  } else {
+    // No account — full login redirect
+    await this._msalInstance.loginRedirect({
+      ...loginRequest,
+    });
+    // Page will redirect — code below won't run
   }
+}
 
+private async signOut(e: Event) {
+  e.preventDefault();
+  if (!this._currentAccount) return;
+  await this._msalInstance.logoutRedirect({
+    postLogoutRedirectUri: 'http://localhost:3000',
+  });
+  // Page will redirect — code below won't run
+}
   private async callApi() {
     if (!this._currentAccount) return;
     try {
