@@ -28,6 +28,7 @@ export const MINE_TYPES: Record<string, string> = {
 
 export const BASE_URL = 'https://localhost:7029/api/'
 
+export const BASE_IMAGE_URL = 'https://localhost:7029/image/'
 export const END_POINT = {
   ITEMS: "Items"
 }

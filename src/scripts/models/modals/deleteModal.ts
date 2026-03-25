@@ -7,6 +7,7 @@ export class DeleteModal extends BaseModal {
   private itemName: string;
   private isFolder: boolean;
   private refreshUI: () => void;
+  protected confirmText = 'Delete';
 
   constructor(
     itemId: string,

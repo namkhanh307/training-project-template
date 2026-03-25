@@ -1,12 +1,14 @@
-
-import { getItemById } from "../../services/apiService";
-import { BaseModal } from "./baseModal";
+import { getItemById } from '../../services/apiService';
+import { BASE_IMAGE_URL } from '../../utilities/_const';
+import { GetItemsRes } from '../model';
+import { BaseModal } from './baseModal';
 export class FileViewerModal extends BaseModal {
   private fileId: string;
-  private fileDetails: any = null; // Store the fetched metadata here
+  private fileDetails: GetItemsRes = null; // Store the fetched metadata here
+  protected confirmText = 'Download';
 
   constructor(fileId: string) {
-    super("File Details");
+    super('File Details');
     this.fileId = fileId;
   }
 
@@ -30,10 +32,12 @@ export class FileViewerModal extends BaseModal {
     try {
       this.fileDetails = await getItemById(this.fileId);
       const file = this.fileDetails;
-      
-      const formattedDate = new Date(file.modified).toLocaleDateString();
+
+      const formattedDate = new Date(
+        file.modified,
+      ).toLocaleDateString();
       // Handle the API typo 'extenstion' if it still exists
-      const extension = file.extenstion || file.extension || 'None';
+      const extension = file.extension || file.extension || 'None';
 
       // Inject the real data!
       container.innerHTML = `
@@ -75,48 +79,42 @@ export class FileViewerModal extends BaseModal {
     }
 
     // Assuming BaseModal creates a button with this ID (adjust if needed)
-    const confirmBtn = document.getElementById('modal-confirm-btn') as HTMLButtonElement;
-    
+    const confirmBtn = document.getElementById(
+      'modal-confirm-btn',
+    ) as HTMLButtonElement;
+
     try {
       if (confirmBtn) {
         confirmBtn.disabled = true;
         confirmBtn.innerText = 'Downloading...';
       }
 
-      // 1. Fetch the actual file binary from the server
-      // (Assuming your API has a download endpoint)
-      const response = await fetch(`{{baseUrl}}api/Items/${this.fileId}/download`);
+      const file = this.fileDetails;
+      const fileUrl = `${BASE_IMAGE_URL}${file.dataPath}`;
+      console.log(fileUrl);
+      const response = await fetch(fileUrl);
       if (!response.ok) throw new Error('Download failed');
 
-      // 2. Convert the response to a Blob (Binary file data)
       const blob = await response.blob();
-      
-      // 3. Create a temporary local URL for the Blob
       const url = window.URL.createObjectURL(blob);
-      
-      // 4. Trigger the browser's native download behavior
+
       const link = document.createElement('a');
       link.href = url;
-      
-      const extension = this.fileDetails.extenstion || '';
-      link.download = `${this.fileDetails.name}${extension}`;
-      
+      link.download = file.name;
+
       document.body.appendChild(link);
       link.click();
-      
-      // 5. Clean up
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url); // Free up browser memory
-      
+
+      window.URL.revokeObjectURL(url);
+
       this.close();
-        
-    } catch(error) {
+    } catch (error) {
       console.error('Download error:', error);
-      alert('Failed to download the file. The file might be empty or unavailable.');
-      
+
       if (confirmBtn) {
         confirmBtn.disabled = false;
-        confirmBtn.innerText = 'Confirm'; 
+        confirmBtn.innerText = 'Confirm';
       }
     }
   }

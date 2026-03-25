@@ -1,8 +1,10 @@
-import { UIManager } from "../../services/uiManager";
+import { UIManager } from '../../services/uiManager';
 
 export abstract class BaseModal {
   public isOpen: boolean = false;
   public title: string;
+  protected confirmText: string = 'Confirm';
+  protected cancelText: string = 'Cancel';
   protected modalElement: HTMLElement | null;
   // 🔴 1. Create stable references for our events so we can delete them later
   private boundHandleConfirm: (e: Event) => void;
@@ -64,10 +66,11 @@ export abstract class BaseModal {
           <button class="btn-close" id="modal-cancel-x"><i class="fa-solid fa-x"></i></button>
         </div>
         <div class="m-modal-body">
-          ${this.renderContent()} </div>
-        <div class="m-modal-footer d-flex gap-2 justify-content-end mt-3">
-          <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
-          <button class="btn btn-primary" id="modal-confirm-btn">Confirm</button>
+          ${this.renderContent()} 
+          <div class="m-modal-footer d-flex gap-2 justify-content-end mt-3">
+            <button class="btn btn-secondary" id="modal-cancel-btn">${this.cancelText}</button>
+            <button class="btn btn-primary" id="modal-confirm-btn">${this.confirmText}</button>
+          </div>
         </div>
       </div>
     `;

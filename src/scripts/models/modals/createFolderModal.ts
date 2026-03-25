@@ -6,7 +6,7 @@ import { BaseModal } from './baseModal';
 export class CreateFolderModal extends BaseModal {
   private currentFolderId: string | null;
   private refreshUI: () => void;
-
+  protected confirmText = 'Create';   
   constructor(currentFolderId: string | null, refreshUI: () => void) {
     super('Create New Folder'); // Pass title to BaseModal
     this.currentFolderId = currentFolderId;

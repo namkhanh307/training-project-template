@@ -9,6 +9,7 @@ export class RenameModal extends BaseModal {
   private currentName: string;
   private isFolder: boolean;
   private refreshUI: () => void;
+  protected confirmText = 'Rename';   
 
   constructor(
     itemId: string,
