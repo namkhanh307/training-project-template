@@ -13,7 +13,7 @@ export const msalConfig: Configuration = {
     redirectUri: 'http://localhost:3000',
   },
   cache: {
-    cacheLocation: 'localStorage', // Changed from sessionStorage
+    cacheLocation: 'sessionStorage', 
   },
   system: {
     loggerOptions: {
