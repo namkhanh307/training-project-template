@@ -55,7 +55,7 @@ export class CreateFolderModal extends BaseModal {
     const payload: PostFolderReq = {
       name: newName,
       parentId: this.currentFolderId,
-      organizationId: '112d268e-9c46-485d-b4a2-2ad8e5569d81',
+      organizationId: 'd09600d6-acac-480e-84d9-7b68daf22e3c',
     };
 
     try {
@@ -69,7 +69,7 @@ export class CreateFolderModal extends BaseModal {
       this.close();
     } catch (error: any) {
       // 1. We removed the console.error() here to stop double-logging in the console
-      
+
       if (errorDiv) {
         // 2. Extract the 'detail' property from the C# ProblemDetails object
         // If it doesn't exist, fall back to a generic message

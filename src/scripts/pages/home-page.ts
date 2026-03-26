@@ -9,7 +9,6 @@ ready(() => {
   // The main window is polling this popup's URL — once it reads the auth code, 
   // it will close the popup itself. But if we're here, we just need to stop.
   if (window.opener && window.name.startsWith('msal')) {
-    console.log('Popup detected — stopping');
     // Do NOT call handleRedirectPromise
     // Do NOT instantiate FileExplorer
     // Just stop execution completely

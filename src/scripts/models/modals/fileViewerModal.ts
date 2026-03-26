@@ -118,7 +118,6 @@ export class FileViewerModal extends BaseModal {
 
       const file = this.fileDetails;
       const fileUrl = `${BASE_IMAGE_URL}${file.dataPath}`;
-      console.log(fileUrl);
       const response = await fetch(fileUrl);
       if (!response.ok) throw new Error('Download failed');
 

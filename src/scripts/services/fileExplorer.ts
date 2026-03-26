@@ -17,7 +17,7 @@ import {
   triggerUpload,
 } from '../utilities/_helper';
 import { ItemType } from '../models/enum';
-import { getItemById, getItemPath } from './apiService';
+import { getItemById, getItemPath, register } from './apiService';
 import {
   AccountInfo,
   PublicClientApplication,
@@ -34,7 +34,6 @@ export class FileExplorer {
   private _msalReady: Promise<void>;
 
   constructor() {
-    console.log('1. RAW URL ON BOOT:', window.location.href);
     this._msalReady = this.initializeMsal();
 
     // 1. Attach listeners immediately (Synchronous)
@@ -59,21 +58,12 @@ export class FileExplorer {
     const result = await this._msalInstance.handleRedirectPromise();
 
     if (result) {
-      // We just came back from Microsoft redirect — grab the account
-      console.log(
-        'Redirect response received:',
-        result.account.username,
-      );
       this._currentAccount = result.account;
+      await register();
     } else {
-      // Normal page load — check if already logged in
       const accounts = this._msalInstance.getAllAccounts();
       if (accounts.length > 0) {
         this._currentAccount = accounts[0];
-        console.log(
-          'Already authenticated:',
-          this._currentAccount.username,
-        );
       }
     }
 
@@ -152,7 +142,7 @@ export class FileExplorer {
    */
   private async initializeRoute() {
     const idFromUrl = getIdFromUrl();
-    UIManager.renderLoadingState(); 
+    UIManager.renderLoadingState();
 
     try {
       if (idFromUrl) {
@@ -295,7 +285,7 @@ export class FileExplorer {
     fileInput?.addEventListener('change', (event) => {
       processFileSelection(
         this._currentFolderId,
-        '112d268e-9c46-485d-b4a2-2ad8e5569d81',
+        'd09600d6-acac-480e-84d9-7b68daf22e3c',
         event,
         () => this.renderCurrentView(),
       );
