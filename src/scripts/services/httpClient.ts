@@ -2,7 +2,6 @@ import { PublicClientApplication } from '@azure/msal-browser';
 import { loginRequest, msalConfig } from '../models/authConfig';
 import { ErrorResponse } from '../models/model';
 
-// Singleton MSAL instance shared across the app
 // Will be set by FileExplorer after initialize()
 let _msalInstance: PublicClientApplication | null = null;
 
