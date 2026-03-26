@@ -2,7 +2,11 @@ import { CreateFolderModal } from '../models/modals/createFolderModal';
 import { DeleteModal } from '../models/modals/deleteModal';
 import { FileViewerModal } from '../models/modals/fileViewerModal';
 import { RenameModal } from '../models/modals/renameModal';
-import { BREAD_CRUMB, ROOT_FOLDER } from '../utilities/_const';
+import {
+  BASE_FE_URL,
+  BREAD_CRUMB,
+  ROOT_FOLDER,
+} from '../utilities/_const';
 import {
   getIdFromUrl,
   updateUrlWithId,
@@ -20,13 +24,14 @@ import {
 } from '@azure/msal-browser';
 import { loginRequest, msalConfig } from '../models/authConfig';
 import { GetPathsRes } from '../models/model';
+import { setMsalInstance } from './httpClient';
 
 export class FileExplorer {
   private _currentFolderId: string | null = null;
   private _breadcrumbPath: GetPathsRes[] = [];
   private _msalInstance = new PublicClientApplication(msalConfig);
   private _currentAccount: AccountInfo | null = null;
-  private _msalReady: Promise<void>; // ← ADD THIS
+  private _msalReady: Promise<void>;
 
   constructor() {
     console.log('1. RAW URL ON BOOT:', window.location.href);
@@ -46,125 +51,108 @@ export class FileExplorer {
     });
   }
   private async initializeMsal() {
-  await this._msalInstance.initialize();
+    await this._msalInstance.initialize();
+    setMsalInstance(this._msalInstance); // ← ADD THIS
 
-  // CRITICAL: always call this on every page load
-  // It handles the redirect response when Microsoft sends the user back
-  const result = await this._msalInstance.handleRedirectPromise();
+    // CRITICAL: always call this on every page load
+    // It handles the redirect response when Microsoft sends the user back
+    const result = await this._msalInstance.handleRedirectPromise();
 
-  if (result) {
-    // We just came back from Microsoft redirect — grab the account
-    console.log('Redirect response received:', result.account.username);
-    this._currentAccount = result.account;
-  } else {
-    // Normal page load — check if already logged in
-    const accounts = this._msalInstance.getAllAccounts();
-    if (accounts.length > 0) {
-      this._currentAccount = accounts[0];
-      console.log('Already authenticated:', this._currentAccount.username);
+    if (result) {
+      // We just came back from Microsoft redirect — grab the account
+      console.log(
+        'Redirect response received:',
+        result.account.username,
+      );
+      this._currentAccount = result.account;
+    } else {
+      // Normal page load — check if already logged in
+      const accounts = this._msalInstance.getAllAccounts();
+      if (accounts.length > 0) {
+        this._currentAccount = accounts[0];
+        console.log(
+          'Already authenticated:',
+          this._currentAccount.username,
+        );
+      }
     }
+
+    this.updateUI();
   }
 
-  this.updateUI();
-}
+  private async signIn(e: Event) {
+    e.preventDefault();
+    await this._msalReady;
 
-private async signIn(e: Event) {
-  e.preventDefault();
-  await this._msalReady;
+    const accounts = this._msalInstance.getAllAccounts();
 
-  const accounts = this._msalInstance.getAllAccounts();
-
-  if (accounts.length > 0) {
-    // Already have account, try silent first
-    try {
-      const response = await this._msalInstance.acquireTokenSilent({
+    if (accounts.length > 0) {
+      // Already have account, try silent first
+      try {
+        const response = await this._msalInstance.acquireTokenSilent({
+          ...loginRequest,
+          account: accounts[0],
+        });
+        this._currentAccount = response.account;
+        this.updateUI();
+      } catch {
+        // Silent failed, redirect to Microsoft
+        await this._msalInstance.acquireTokenRedirect({
+          ...loginRequest,
+          account: accounts[0],
+        });
+        // Page will redirect — code below won't run
+      }
+    } else {
+      // No account — full login redirect
+      await this._msalInstance.loginRedirect({
         ...loginRequest,
-        account: accounts[0],
-      });
-      this._currentAccount = response.account;
-      this.updateUI();
-    } catch {
-      // Silent failed, redirect to Microsoft
-      await this._msalInstance.acquireTokenRedirect({
-        ...loginRequest,
-        account: accounts[0],
       });
       // Page will redirect — code below won't run
     }
-  } else {
-    // No account — full login redirect
-    await this._msalInstance.loginRedirect({
-      ...loginRequest,
+  }
+
+  private async signOut(e: Event) {
+    e.preventDefault();
+    if (!this._currentAccount) return;
+    await this._msalInstance.logoutRedirect({
+      postLogoutRedirectUri: BASE_FE_URL,
     });
     // Page will redirect — code below won't run
   }
-}
-
-private async signOut(e: Event) {
-  e.preventDefault();
-  if (!this._currentAccount) return;
-  await this._msalInstance.logoutRedirect({
-    postLogoutRedirectUri: 'http://localhost:3000',
-  });
-  // Page will redirect — code below won't run
-}
-  private async callApi() {
-    if (!this._currentAccount) return;
-    try {
-      const tokenResponse =
-        await this._msalInstance.acquireTokenSilent({
-          ...loginRequest,
-          account: this._currentAccount,
-        });
-      const response = await fetch(
-        'https://localhost:7029/api/Auth/me',
-        {
-          headers: {
-            Authorization: `Bearer ${tokenResponse.accessToken}`,
-          },
-        },
-      );
-      const data = await response.json();
-      const apiResponse = document.getElementById(
-        'apiResponse',
-      ) as HTMLPreElement;
-      apiResponse.textContent = JSON.stringify(data, null, 2);
-    } catch (error) {
-      console.error('API Call failed.', error);
-    }
-  }
 
   private updateUI() {
-    const loginBtn = document.getElementById(
-      'loginBtn',
-    ) as HTMLButtonElement;
-    const logoutBtn = document.getElementById(
-      'logoutBtn',
-    ) as HTMLButtonElement;
-    const apiSection = document.getElementById(
-      'api-section',
-    ) as HTMLDivElement;
-    const apiResponse = document.getElementById(
-      'apiResponse',
-    ) as HTMLPreElement;
+    const isAuthenticated = !!this._currentAccount;
 
-    if (this._currentAccount) {
-      loginBtn.classList.add('hidden');
-      logoutBtn.classList.remove('hidden');
-      apiSection.classList.remove('hidden');
-    } else {
-      loginBtn.classList.remove('hidden');
-      logoutBtn.classList.add('hidden');
-      apiSection.classList.add('hidden');
-      if (apiResponse)
-        apiResponse.textContent = 'API Data will appear here...';
-    }
+    // Auth buttons
+    document
+      .getElementById('signInBtn')
+      ?.classList.toggle('hidden', isAuthenticated);
+    document
+      .getElementById('signOutBtn')
+      ?.classList.toggle('hidden', !isAuthenticated);
+
+    // Disable toolbar actions when not authenticated
+    const protectedActions = [
+      'upload-file',
+      'sync',
+      'export',
+      'flow',
+      'more',
+      'new-folder',
+    ];
+    protectedActions.forEach((action) => {
+      document
+        .querySelector(`[data-action="${action}"]`)
+        ?.classList.toggle('is-disabled', !isAuthenticated);
+    });
   }
   /**
    * Handles the initial URL parsing and data fetching.
    */
   private async initializeRoute() {
     const idFromUrl = getIdFromUrl();
+    UIManager.renderLoadingState(); 
 
     try {
       if (idFromUrl) {
@@ -265,14 +253,11 @@ private async signOut(e: Event) {
   }
   private initAuthEvents() {
     document
-      .getElementById('loginBtn')
+      .getElementById('signInBtn')
       ?.addEventListener('click', (e) => this.signIn(e));
     document
-      .getElementById('logoutBtn')
+      .getElementById('signOutBtn')
       ?.addEventListener('click', (e) => this.signOut(e));
-    document
-      .getElementById('callApiBtn')
-      ?.addEventListener('click', () => this.callApi());
   }
   private initToolbarEvents() {
     const desktopToolbar = document.querySelector('.l-toolbar');
@@ -308,7 +293,6 @@ private async signOut(e: Event) {
     });
 
     fileInput?.addEventListener('change', (event) => {
-      // processFileSelection now needs to handle an API POST
       processFileSelection(
         this._currentFolderId,
         '112d268e-9c46-485d-b4a2-2ad8e5569d81',

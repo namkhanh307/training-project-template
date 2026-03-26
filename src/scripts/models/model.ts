@@ -63,8 +63,9 @@ export interface MinimalItem {
   name: string;
 }
 
-export interface ErrorResponse{
-  statusCode: number,
-  message: string | null,
-  details: string | null
+export interface ErrorResponse {
+  title: string;
+  status: number;
+  detail: string;
+  instance: string;
 }

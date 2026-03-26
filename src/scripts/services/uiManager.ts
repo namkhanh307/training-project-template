@@ -51,7 +51,7 @@ export class UIManager {
       );
       if (container) {
         container.innerHTML =
-          '<p class="mt-4 text-center text-danger">Failed to load folder contents.</p>';
+          '<p class="mt-4 text-center text-danger">Sign in to view contents!!!</p>';
       }
     }
   }

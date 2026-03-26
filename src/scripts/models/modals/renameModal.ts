@@ -81,13 +81,7 @@ export class RenameModal extends BaseModal {
       if (errorDiv) errorDiv.style.display = 'none';
 
       // 4. Send the PUT request to the server
-      const response = await renameItem(payload);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        // Throw the parsed object directly to the catch block
-        throw errorData;
-      }
+      await renameItem(payload);
 
       // 5. Success! Redraw the screen and close the modal
       this.refreshUI();

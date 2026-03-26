@@ -62,22 +62,14 @@ export class CreateFolderModal extends BaseModal {
       if (nameInput) nameInput.disabled = true;
       if (errorDiv) errorDiv.style.display = 'none';
 
-      const response = await postFolder(payload);
-
-      // Handle non-200 responses
-      if (!response.ok) {
-        // Parse the ASP.NET ProblemDetails JSON
-        const errorData = await response.json();
-        // Throw the parsed object directly to the catch block
-        throw errorData;
-      }
+     await postFolder(payload);
 
       // Success!
       this.refreshUI();
       this.close();
     } catch (error: any) {
       // 1. We removed the console.error() here to stop double-logging in the console
-
+      
       if (errorDiv) {
         // 2. Extract the 'detail' property from the C# ProblemDetails object
         // If it doesn't exist, fall back to a generic message

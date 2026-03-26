@@ -4,6 +4,8 @@ import {
   RenameModel,
   UniqueNameModel,
 } from '../models/model';
+import { uploadFiles } from '../services/apiService';
+import { httpClient } from '../services/httpClient';
 import {
   BASE_URL,
   END_POINT,
@@ -141,7 +143,7 @@ export function triggerUpload() {
  */
 export async function processFileSelection(
   currentFolderId: string | null,
-  organizationId: string, // Added this since your BE requires it!
+  organizationId: string,
   event: Event,
   refreshUI: () => void,
 ) {
@@ -150,53 +152,21 @@ export async function processFileSelection(
 
   if (!files || files.length === 0) return;
 
-  // Show a loading state in the UI
   const container = document.getElementById('unified-row-container');
   if (container)
     container.innerHTML =
-      '<p class="mt-4 text-center">Uploading files...</p>';
+      '<div class="d-flex justify-content-center align-items-center w-100" style="height: 200px;"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
   try {
-    const totalFiles = files.length;
-    let completed = 0;
-
-    const uploadPromises = Array.from(files).map((selectedFile) => {
-      const formData = new FormData();
-      formData.append('OrganizationId', organizationId);
-      if (currentFolderId)
-        formData.append('ParentId', currentFolderId);
-      formData.append('Files', selectedFile);
-
-      return fetch(`${BASE_URL}${END_POINT.ITEMS}/uploadFile`, {
-        method: 'POST',
-        body: formData,
-      }).then((response) => {
-        if (!response.ok) throw new Error(selectedFile.name);
-
-        // Optional: Update UI progress
-        completed++;
-        if (container) {
-          container.innerHTML = `<p class="mt-4 text-center">Uploading (${completed}/${totalFiles})...</p>`;
-        }
-        return response;
-      });
-    });
-
-    const results = await Promise.allSettled(uploadPromises);
-
-    // Check if any failed
-    const failures = results.filter((r) => r.status === 'rejected');
-    if (failures.length > 0) {
-      console.error('Some files failed:', failures);
-      alert(`${failures.length} file(s) failed to upload.`);
-    }
-  } catch (error) {
-    console.error('Upload Error:', error);
-    alert('One or more files failed to upload. Please try again.');
+    await uploadFiles(
+      organizationId,
+      currentFolderId,
+      Array.from(files),
+      (failedFile) => alert(`${failedFile} failed to upload.`),
+    );
   } finally {
-    // 5. Clean up and Refresh the UI
-    target.value = ''; // Reset the input field
-    refreshUI(); // Redraw the grid
+    target.value = '';
+    refreshUI();
   }
 }
 export function getEmptyBase64Data(extension: string): string {

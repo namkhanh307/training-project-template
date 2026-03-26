@@ -1,5 +1,4 @@
 import {
-  ErrorResponse,
   GetItemsRes,
   GetPathsRes,
   PagingRes,
@@ -7,83 +6,67 @@ import {
   RenameItemReq,
 } from '../models/model';
 import { BASE_URL, END_POINT } from '../utilities/_const';
+import { httpClient } from './httpClient';
 
 export const getItems = async (
   parentId: string | null,
   pageNumber: number = 1,
   pageSize: number = 50,
 ): Promise<PagingRes<GetItemsRes>> => {
-  const queryId = parentId ? parentId : '';
-
-  const response = await fetch(
+  const queryId = parentId ?? '';
+  return httpClient.get(
     `${BASE_URL}${END_POINT.ITEMS}?parentId=${queryId}&pageNumber=${pageNumber}&pageSize=${pageSize}`,
   );
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch items: ${response.statusText}`);
-  }
-  const data = await response.json();
-  return data as PagingRes<GetItemsRes>;
 };
 
 export const getItemById = async (
   id: string,
 ): Promise<GetItemsRes> => {
-  const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}/${id}`);
-  if (!response.ok) throw new Error('Failed to fetch file details');
-  const data = await response.json();
-  return data as GetItemsRes;
+  return httpClient.get(`${BASE_URL}${END_POINT.ITEMS}/${id}`);
 };
 
-export const getItemPath = async (id: string): Promise<GetPathsRes[]> => {
-  const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}/path/${id}`);
-  if(!response.ok) throw new Error('Failed to fecth path details');
-  return await response.json() as GetPathsRes[];
-}
+export const getItemPath = async (
+  id: string,
+): Promise<GetPathsRes[]> => {
+  return httpClient.get(`${BASE_URL}${END_POINT.ITEMS}/path/${id}`);
+};
 
 export const postFolder = async (payload: PostFolderReq) => {
-  const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-
-  // 1. Check if the backend returned an error (4xx or 5xx)
-  if (!response.ok) {
-    let errorData: ErrorResponse;
-    try {
-      // 2. Try to parse the clean JSON error your middleware generated
-      errorData = await response.json();
-    } catch {
-      // Fallback if the server crashes and doesn't return JSON
-      errorData = { 
-        statusCode: response.status, 
-        message: 'An unexpected server error occurred.', 
-        details: null 
-      };
-    }
-    // 3. Throw the parsed object to be caught by the UI
-    throw errorData;
-  }
-
-  // If successful, return the data
-  return response; 
-};
-export const deleteItem = async (id: string) => {
-  const response = await fetch(
-    `${BASE_URL}${END_POINT.ITEMS}/${id}`,
-    {
-      method: 'DELETE',
-    },
-  );
-  return response;
+  return httpClient.post(`${BASE_URL}${END_POINT.ITEMS}`, payload);
 };
 
 export const renameItem = async (payload: RenameItemReq) => {
-  const response = await fetch(`${BASE_URL}${END_POINT.ITEMS}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  return response;
+  return httpClient.patch(`${BASE_URL}${END_POINT.ITEMS}`, payload);
+};
+export const deleteItem = async (id: string) => {
+  return httpClient.delete(`${BASE_URL}${END_POINT.ITEMS}/${id}`);
+};
+export const uploadFiles = async (
+  organizationId: string,
+  currentFolderId: string | null,
+  files: File[],
+  onFileError?: (fileName: string) => void,
+): Promise<void> => {
+  const formData = new FormData();
+  formData.append('OrganizationId', organizationId);
+  if (currentFolderId) formData.append('ParentId', currentFolderId);
+  files.forEach((file) => formData.append('Files', file));
+
+  try {
+    await httpClient.postFormData(
+      `${BASE_URL}${END_POINT.ITEMS}/uploadFile`,
+      formData,
+    );
+  } catch (error) {
+    console.error('Failed to upload files:', error);
+    onFileError?.('upload');
+  }
+};
+
+export const register = async () => {
+  console.log(
+    'call register',
+    `${BASE_URL}${END_POINT.AUTH}/register`,
+  );
+  return httpClient.post(`${BASE_URL}${END_POINT.AUTH}/register`, {});
 };

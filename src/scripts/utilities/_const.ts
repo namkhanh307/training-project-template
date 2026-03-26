@@ -1,15 +1,15 @@
 export const ROOT_FOLDER_ID = 'cb875544839f44fc9947cd55e81b7ade';
 export const SUPPORTED_ICONS = [
-  'txt',
-  'pdf',
-  'csv',
-  'doc',
-  'docx',
-  'xls',
-  'xlsx',
-  'png',
-  'jpg',
-  'jpeg',
+  '.txt',
+  '.pdf',
+  '.csv',
+  '.doc',
+  '.docx',
+  '.xls',
+  '.xlsx',
+  '.png',
+  '.jpg',
+  '.jpeg',
 ];
 export const BREAD_CRUMB = 'breadcrumb';
 export const UNIFIED_ROW_CONTAINER = 'unified-row-container';
@@ -26,11 +26,12 @@ export const MINE_TYPES: Record<string, string> = {
   jpeg: 'image/jpeg',
 };
 
-export const BASE_URL = 'https://localhost:7029/api/'
-
-export const BASE_IMAGE_URL = 'https://localhost:7029/image/'
+export const BASE_URL = 'https://localhost:7029/api/';
+export const BASE_IMAGE_URL = 'https://localhost:7029/image/';
+export const BASE_FE_URL = 'http://localhost:3000';
 export const END_POINT = {
-  ITEMS: "Items"
-}
+  ITEMS: "Items",
+  AUTH: "Auth"
+};
 
 export const ROOT_FOLDER = 'Documents';

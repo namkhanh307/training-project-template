@@ -56,10 +56,7 @@ export class DeleteModal extends BaseModal {
 
       // 1. Send the DELETE request to the server
       // Note: We append the itemId directly to the URL based on standard REST conventions
-      const response = await deleteItem(this.itemId);
-      if (!response.ok) {
-        throw new Error(`Server rejected request: ${response.statusText}`);
-      }
+      await deleteItem(this.itemId);
 
       // 2. Success! Redraw the screen and close the modal
       this.refreshUI();
@@ -67,8 +64,13 @@ export class DeleteModal extends BaseModal {
 
     } catch (error) {
       console.error('Failed to delete item:', error);
-      if (errorDiv) {
-        errorDiv.textContent = 'Failed to delete. Make sure you have permission, or check your connection.';
+       if (errorDiv) {
+        // 2. Extract the 'detail' property from the C# ProblemDetails object
+        // If it doesn't exist, fall back to a generic message
+        const displayMessage =
+          error.detail || error.message;
+
+        errorDiv.textContent = displayMessage; // Shows: "This name is already existed..."
         errorDiv.style.display = 'block';
       }
       
