@@ -44,6 +44,7 @@ export class FileExplorer {
     breadcrumbPath: [{ id: null, name: ROOT_FOLDER }],
   };
   constructor() {
+    UIManager.renderLoadingState();
     this._msalReady = this.initializeMsal();
 
     // 1. Attach listeners immediately (Synchronous)
@@ -55,18 +56,22 @@ export class FileExplorer {
       await navigateTo(
         poppedId,
         null,
-        this._state, // Pass the reference
+        this._state,
         (id, path) => UIManager.renderCurrentView(id, path),
       );
     });
 
-    this._msalReady.then(() => {
-      this.initializeRoute();
+    this._msalReady.then(async () => {
+      UIManager.renderLoadingState();
+
+      await this.initializeRoute();
     });
   }
   private async initializeMsal() {
+    UIManager.renderLoadingState(); 
+
     await this._msalInstance.initialize();
-    setMsalInstance(this._msalInstance); // ← ADD THIS
+    setMsalInstance(this._msalInstance);
 
     // CRITICAL: always call this on every page load
     // It handles the redirect response when Microsoft sends the user back
@@ -74,6 +79,8 @@ export class FileExplorer {
 
     if (result) {
       this._currentAccount = result.account;
+      UIManager.renderLoadingState();
+
       await register();
     } else {
       const accounts = this._msalInstance.getAllAccounts();
@@ -84,13 +91,8 @@ export class FileExplorer {
 
     UIManager.updateAuthenUI(this._currentAccount);
   }
-  /**
-   * Handles the initial URL parsing and data fetching.
-   */
   private async initializeRoute() {
     const idFromUrl = getIdFromUrl();
-    UIManager.renderLoadingState();
-
     try {
       if (idFromUrl) {
         this._currentFolderId = idFromUrl;
@@ -199,7 +201,11 @@ export class FileExplorer {
         this._currentFolderId,
         'd09600d6-acac-480e-84d9-7b68daf22e3c',
         event,
-        () => UIManager.renderCurrentView(this._currentFolderId, this._breadcrumbPath),
+        () =>
+          UIManager.renderCurrentView(
+            this._currentFolderId,
+            this._breadcrumbPath,
+          ),
       );
     });
   }
@@ -227,7 +233,7 @@ export class FileExplorer {
             await navigateTo(
               itemId,
               itemName,
-              this._state, 
+              this._state,
               (id, path) => UIManager.renderCurrentView(id, path),
             );
           }

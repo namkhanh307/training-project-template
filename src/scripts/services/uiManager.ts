@@ -17,7 +17,6 @@ export class UIManager {
    */
   static async refreshUI(folderId: string | null) {
     UIManager.closeMobileMenu();
-    UIManager.renderLoadingState();
 
     try {
       // 1. FETCH: Get ONLY the items for this specific folder from the API
@@ -201,12 +200,9 @@ export class UIManager {
     currentFolderId: string | null,
     breadcrumbPath: GetPathsRes[] = [],
   ) {
-    // 1. Draw the Grid (This is now async and fetches data inside the UIManager!)
+    UIManager.renderLoadingState();
     await UIManager.refreshUI(currentFolderId);
-
-    // 2. Draw the Breadcrumbs (Passing the history stack directly)
     UIManager.renderBreadcrumbs(BREAD_CRUMB, breadcrumbPath);
-    console.log(currentFolderId, breadcrumbPath);
   }
   static async updateAuthenUI(currentAccount: any) {
     const isAuthenticated = !!currentAccount;
