@@ -69,3 +69,8 @@ export interface ErrorResponse {
   detail: string;
   instance: string;
 }
+
+export interface NavState {
+  currentFolderId: string | null;
+  breadcrumbPath: GetPathsRes[];
+}

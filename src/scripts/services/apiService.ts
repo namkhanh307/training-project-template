@@ -5,7 +5,7 @@ import {
   PostFolderReq,
   RenameItemReq,
 } from '../models/model';
-import { BASE_URL, END_POINT } from '../utilities/_const';
+import { BASE_FE_URL, BASE_URL, END_POINT } from '../utilities/_const';
 import { httpClient } from './httpClient';
 
 export const getItems = async (
@@ -70,3 +70,42 @@ export const register = async () => {
   );
   return httpClient.post(`${BASE_URL}${END_POINT.AUTH}/register`, {});
 };
+export async function signIn(e: Event, loginRequest: any, currentAccount: any, msalInstance: any, msalReady: Promise<void>, updateUI: () => void) {
+    e.preventDefault();
+    await msalReady;
+
+    const accounts = msalInstance.getAllAccounts();
+
+    if (accounts.length > 0) {
+      // Already have account, try silent first
+      try {
+        const response = await msalInstance.acquireTokenSilent({
+          ...loginRequest,
+          account: accounts[0],
+        });
+        currentAccount = response.account;
+        updateUI();
+      } catch {
+        // Silent failed, redirect to Microsoft
+        await msalInstance.acquireTokenRedirect({
+          ...loginRequest,
+          account: accounts[0],
+        });
+        // Page will redirect — code below won't run
+      }
+    } else {
+      // No account — full login redirect
+      await msalInstance.loginRedirect({
+        ...loginRequest,
+      });
+      // Page will redirect — code below won't run
+    }
+  }
+
+  export async function signOut(e: Event, currentAccount: any, msalInstance: any) {
+    e.preventDefault();
+    if (!currentAccount) return;
+    await msalInstance.logoutRedirect({
+      postLogoutRedirectUri: BASE_FE_URL,
+    });
+  }

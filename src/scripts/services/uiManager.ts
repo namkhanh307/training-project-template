@@ -1,11 +1,13 @@
 import { getFileIconHTML } from '../utilities/_helper';
 import { getRelativeTime } from '../utilities/_helper';
 import {
+  BREAD_CRUMB,
   UNIFIED_ROW_CONTAINER,
 } from '../utilities/_const';
 import { getItems } from './apiService';
 import { ItemType } from '../models/enum';
 import { Item } from '../models/entity';
+import { GetPathsRes } from '../models/model';
 export class UIManager {
   /**
    * RefreshUI
@@ -195,23 +197,41 @@ export class UIManager {
       }
     }
   }
-  /**
-   * Executes an API call (Create/Update/Delete) and refreshes the current folder view.
-   * @param apiAction A promise representing the API call (e.g., deleteItem(id))
-   * @param currentFolderId The folder currently being viewed
-   */
-  static async executeActionAndRefresh(
-    apiAction: Promise<any>,
+  static async renderCurrentView(
     currentFolderId: string | null,
+    breadcrumbPath: GetPathsRes[] = [],
   ) {
-    UIManager.renderLoadingState(); // Show spinner while saving
-    try {
-      await apiAction; // Wait for the backend to confirm the change
-      await this.refreshUI(currentFolderId); // Re-fetch the updated folder contents
-    } catch (error) {
-      console.error('Action failed:', error);
-      alert('Something went wrong. Please try again.');
-      await this.refreshUI(currentFolderId); // Reload anyway to ensure UI matches DB
-    }
+    // 1. Draw the Grid (This is now async and fetches data inside the UIManager!)
+    await UIManager.refreshUI(currentFolderId);
+
+    // 2. Draw the Breadcrumbs (Passing the history stack directly)
+    UIManager.renderBreadcrumbs(BREAD_CRUMB, breadcrumbPath);
+    console.log(currentFolderId, breadcrumbPath);
+  }
+  static async updateAuthenUI(currentAccount: any) {
+    const isAuthenticated = !!currentAccount;
+
+    // Auth buttons
+    document
+      .getElementById('signInBtn')
+      ?.classList.toggle('hidden', isAuthenticated);
+    document
+      .getElementById('signOutBtn')
+      ?.classList.toggle('hidden', !isAuthenticated);
+
+    // Disable toolbar actions when not authenticated
+    const protectedActions = [
+      'upload-file',
+      'sync',
+      'export',
+      'flow',
+      'more',
+      'new-folder',
+    ];
+    protectedActions.forEach((action) => {
+      document
+        .querySelector(`[data-action="${action}"]`)
+        ?.classList.toggle('is-disabled', !isAuthenticated);
+    });
   }
 }
